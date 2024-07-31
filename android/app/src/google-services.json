@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "809694032755",
+    "project_id": "voramobile-70ba7",
+    "storage_bucket": "voramobile-70ba7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809694032755:android:50389af14da3a7a8f58b06",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPveHrKRFX6Yj7szdR_Cvg7Mo5qGcIWRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
