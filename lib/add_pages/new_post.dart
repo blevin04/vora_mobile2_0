@@ -52,7 +52,7 @@ class _NewPostState extends State<NewPost> {
         ),
         leading: IconButton(
             onPressed: () {
-              Navigator.pop(context,
+              Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => const Homepage()));
             },
             icon: const Icon(
@@ -169,9 +169,11 @@ class _NewPostState extends State<NewPost> {
                                     ],
                                     allowMultiple: false));
                             if (result != null) {
-                              doc = result.files.single.path!;
+                             
                               showsnackbar(context, "documents added");
-                              setState(() {});
+                              setState(() {
+                                 doc = result.files.single.path!;
+                              });
                             }
                             if (result == null) {
                               showsnackbar(context, 'no image chossen');
@@ -202,7 +204,7 @@ class _NewPostState extends State<NewPost> {
                           doc.isNotEmpty
                               ? doc.split("/")[doc.split("/").length - 1]
                               : "",
-                          style: TextStyle(color: Colors.white),
+                          style:const TextStyle(color: Colors.white),
                         ),
                       ),
                     )),
@@ -217,11 +219,18 @@ class _NewPostState extends State<NewPost> {
                     return Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Container(
+                        alignment: Alignment.topRight,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           image: DecorationImage(
                               image: FileImage(File(imgs[index]))),
                         ),
+                        child: IconButton(onPressed: (){
+                          imgs.removeAt(index);
+                          setState(() {
+                            
+                          });
+                        }, icon:const Icon(Icons.delete_outline_outlined,color: Color.fromARGB(255, 143, 140, 140),)),
                       ),
                     );
                   }),
@@ -255,13 +264,9 @@ class _NewPostState extends State<NewPost> {
                           print(state);
                         }
                         if (state == "Success") {
-                          showsnackbar(context, "Post Added");
-                          await const Duration(milliseconds: 500);
-
-                          Navigator.pop(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Homepage()));
+                        //  showsnackbar(context, "Post Added");
+                          Navigator.pushReplacement(context, (MaterialPageRoute(builder: (context)=>const Homepage())));
+                          
                         }
                       }
                     },

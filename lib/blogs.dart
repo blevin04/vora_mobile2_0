@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+
 import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/homepage.dart';
 
@@ -13,13 +17,95 @@ class Blogs extends StatefulWidget {
   @override
   State<Blogs> createState() => _BlogsState();
 }
-
+ var name;
+                      Duration posttime = Duration();
+                      String name_ = '';
+                      String nick_name = '';
 Widget blog_show = Text("Blogs");
 TextEditingController search_blogs = TextEditingController();
 List<String> blogIds = List.empty(growable: true);
 bool _blogs_visi = false;
+String postdata = '';
+String timedif(Duration t){
+  String tm ='';
+  if (t.inSeconds>=60) {
+    tm= t.inMinutes.toString();
+  }
+  if (t.inMinutes >=60) {
+    tm = t.inHours.toString();
+  }
+  if (t.inHours >= 24) {
+    tm = t.inDays.toString();
 
-Future<void> getblogsid() async {
+  }
+  if (t.inDays >= 30) {
+    tm = "> month";
+  }
+  return tm;
+
+}
+
+Future<Map<String,dynamic>> resolve( int postnum)async{
+
+Map<String,dynamic> data =Map();
+  await firestore
+                          .collection("posts")
+                          .doc(blogIds[postnum])
+                          .get()
+                          .then((onval)async {
+                        name = onval.data()!["UserId"];
+                        var then = onval.data()!["PostTime"].toDate();
+                        
+                      
+                      final postd = <String, dynamic>{"BlogPost":onval.data()!["BlogPost"]};
+                      final t = <String,dynamic>{"PostTime":DateTime.now().difference(then)};
+                      
+                      data.addAll(postd);
+                      data.addAll(t);
+                      
+                      await  firestore
+                            .collection("users")
+                            .doc(name)
+                            .get()
+                            .then((onValue) {
+                          
+                          final names = <String,dynamic>{"UserName":onValue.data()!["fullName"]};
+                          final n_name = <String,dynamic>{"nick_name": onValue.data()!["nickname"]};
+                          
+                        data.addAll(names);
+                        data.addAll(n_name);
+                        });
+                      });
+        await store3.child("/posts/${blogIds[postnum]}/images").list().then((onValue)async{
+          List<Uint8List> imgs = List.empty(growable: true);
+          for(var val in onValue.items){
+            var path = val.toString().split("/");
+            path = path[path.length-1].split(")");
+            String dir = path[0];
+            await store3.child("/posts/${blogIds[postnum]}/images/$dir").getData().then((value){
+              imgs.add(value!);
+            });
+          }
+
+       //   print(onValue.items);
+          final images = <String,dynamic>{"Images":imgs};
+          data.addAll(images);
+
+        });
+        await store3.child("/posts/${blogIds[postnum]}/docs").list().then((doc)async{
+        var path = doc.items.toString().split("/")[doc.items.toString().split("/").length-1];
+        path = path.split(")")[0];
+        await store3.child("/posts/${blogIds[postnum]}/docs/$path").getData().then((document){
+            final docs =<String,dynamic>{"Document":document!};
+            data.addAll(docs);
+        });
+          
+        });
+                      return data;
+
+}
+
+Future<String> getblogsid() async {
   blogIds.clear();
 
   await firestore
@@ -31,11 +117,15 @@ Future<void> getblogsid() async {
       blogIds.add(id["PostId"]);
     }
   });
+  return "ok";
 }
 
 late ListResult imgsdir;
-Future<void> getpostimg(int index) async {
+Future<Map<String,dynamic>> getpostimg(int index) async {
+  Map<String,dynamic> dat = Map();
   imgsdir = await store3.child("/posts/${blogIds[index]}").list();
+ dat = await resolve(index);
+  return dat;
 }
 
 class _BlogsState extends State<Blogs> {
@@ -96,82 +186,141 @@ class _BlogsState extends State<Blogs> {
                 ),
               ),
             ),
+            // StreamBuilder(
+            //   stream: firestore.collection("posts").snapshots(),
+            //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+            //     return Container(
+            //       child: Center(
+            //         child: ListView.builder(
+            //           shrinkWrap: true,
+            //           itemCount: blogIds.length,
+            //           itemBuilder: (context, index){
+            //           return Container(
+            //             height: 50,
+            //             child:Text(" snapshot.data.doc(blogIds[index]).get().toString(),")
+            //           );
+            //         }),
+            //       ),
+            //     );
+            //   },
+            // ),
             FutureBuilder(
               future: getblogsid(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(),);
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator(),);
+                }
                 return ListView.builder(
                     shrinkWrap: true,
                     itemCount: blogIds.length,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, postnum) {
-                      var name;
-                      Duration posttime = Duration();
-                      String name_ = '';
-                      String nick_name = '';
-                      firestore
-                          .collection("posts")
-                          .doc(blogIds[postnum])
-                          .get()
-                          .then((onval) {
-                        name = onval.data()!["UserId"];
-                        var then = onval.data()!["PostTime"].toDate();
-                        posttime = then.difference(DateTime.now());
-                        firestore
-                            .collection("users")
-                            .doc(name)
-                            .get()
-                            .then((onValue) {
-                          name_ = onValue.data()!["fullName"];
-                          nick_name = onValue.data()!["nickname"];
-                        });
-                      });
+                      print(blogIds.length);
+                        // postdata ='';
+                        //   name_ = '';
+                        //   nick_name = '';
+                        //   posttime =Duration.zero;
+                        
                       return Card(
-                        child: FutureBuilder(
-                          future: getpostimg(postnum),
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            return Column(
-                              children: [
-                                Container(
-                                  height: 50,
-                                  child: Row(
-                                    children: [
-                                      const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: CircleAvatar(
-                                          backgroundImage:
-                                              AssetImage("lib/assets/dp.png"),
+                        color: const Color.fromARGB(255, 49, 47, 47),
+                        child: Container(
+                          constraints: BoxConstraints(minHeight: 200),
+                          child: FutureBuilder(
+                            future: getpostimg(postnum),
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                          
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator(),);
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return const Center(child: CircularProgressIndicator(),);
+                                  }
+                                 
+                                  String names_ = snapshot.data["UserName"];
+                                  String n_name = snapshot.data["nick_name"];
+                                  Duration postTime = snapshot.data["PostTime"];
+                                  String blogPost = snapshot.data["BlogPost"];
+                                  List<Uint8List> images_ = snapshot.data["Images"];
+                                  Uint8List document = snapshot.data["Document"];
+                                  if (images_.isNotEmpty) {
+                                    print("Images is goood");
+                                  }
+                                  if (document.isNotEmpty) {
+                                    print("Doc is good");
+                                  }
+                              return Column(
+                                children: [
+                                  Container(
+                                    height: 50,
+                                    child: Row(
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: CircleAvatar(
+                                            backgroundImage:
+                                                AssetImage("lib/assets/dp.png"),
+                                          ),
                                         ),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 10.0),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              "$name_ / $nick_name",
-                                              style: const TextStyle(
-                                                  color: Color.fromARGB(
-                                                      189, 255, 255, 255)),
-                                            ),
-                                            Text(
-                                              "${posttime.inHours}/ ${posttime.inHours}",
-                                              style: const TextStyle(
-                                                  color: Color.fromARGB(
-                                                      174, 255, 255, 255)),
-                                            )
-                                          ],
-                                        ),
-                                      )
-                                    ],
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 10.0),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "$n_name @$names_",
+                                                style: const TextStyle(
+                                                    color: Color.fromARGB(
+                                                        189, 255, 255, 255)),
+                                              ),
+                                              Text(
+                                                 "${timedif(postTime)} min ago",
+                                                style: const TextStyle(
+                                                    color: Color.fromARGB(
+                                                        174, 255, 255, 255)),
+                                              )
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  height: 100,
-                                  child: Text("Post data....."),
-                                ),
-                              ],
-                            );
-                          },
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      constraints: BoxConstraints(maxHeight: 100),
+                                      child: Text(blogPost,style:const TextStyle(color: Colors.white),),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 180,
+                                    child: GridView.count(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      crossAxisSpacing: 0,
+                                      mainAxisSpacing: 1,
+                                      crossAxisCount: 2,
+                                      children: List.generate(images_.length, (imageindex){
+                                        return Center(child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Container(
+                                                                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                                                                             
+                                                                              child: GridTile(
+                                                                                child: Image.memory(fit: BoxFit.cover,images_[0]))
+                                                                            ),
+                                        ),);
+                                      })
+                                    ),
+                                  ),
+                                  
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       );
                     });

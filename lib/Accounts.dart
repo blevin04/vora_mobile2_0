@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:vora_mobile/add_pages/new_announcement.dart';
 
 import 'package:vora_mobile/homepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,7 +39,11 @@ class _AccountsState extends State<Accounts> {
   void getImagelnk() async {
     img = await storage.getData();
   }
+List<Widget> _screens = <Widget>[
+postpage(),clubs(),eventsattended(),mycallender()
 
+];
+PageController p_controller = PageController();
   @override
   Widget build(BuildContext context) {
     // double _width = MediaQuery.of(context).size.width;
@@ -68,35 +74,33 @@ class _AccountsState extends State<Accounts> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              FutureBuilder(
-                future: storage.getData(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  Uint8List data_ = Uint8List(2);
-                  if (snapshot.hasData) {
-                    Uint8List data = snapshot.data;
-                    data_ = data;
-                  }
-
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: 100,
-                            backgroundColor: Colors.white,
-                            backgroundImage: snapshot.hasData
-                                ? MemoryImage(data_)
-                                : const AssetImage('lib/assets/dp.png'),
-                          ),
-                          IconButton(
+              Padding(padding: EdgeInsets.all(10)),
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 100,
+                    child: FutureBuilder(
+                    future: storage.getData(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+                      Uint8List data_ = Uint8List(2);
+                      if (snapshot.hasData) {
+                        Uint8List data = snapshot.data;
+                        data_ = data;
+                      }
+                      return CircleAvatar(
+                        radius: 100,
+                        backgroundColor: Colors.white,
+                        backgroundImage: snapshot.hasData
+                            ? MemoryImage(data_)
+                            : const AssetImage('lib/assets/dp.png'),
+                      );
+                    },
+                  ),
+                  ),IconButton(
                               color: Colors.black,
                               onPressed: () async {
                                 await Permission.accessMediaLocation
@@ -129,11 +133,7 @@ class _AccountsState extends State<Accounts> {
                                 color: Color.fromARGB(255, 147, 132, 132),
                                 size: 25,
                               ))
-                        ],
-                      ),
-                    ],
-                  );
-                },
+                ],
               ),
               FutureBuilder(
                 future: store.collection('users').doc(user.uid).get(),
@@ -179,15 +179,83 @@ class _AccountsState extends State<Accounts> {
                           endIndent: 30,
                           color: Color.fromARGB(160, 69, 69, 69),
                         ),
+                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Container(
+                              height: 40,
+                             
+                              child: TextButton(onPressed: (){},child:const Text("Posts",style: TextStyle(color: Colors.white),),),
+                            ),
+                            Container(
+                              height: 40,
+                             
+                              child: TextButton(onPressed: (){},child:const Text("Clubs",style: TextStyle(color: Colors.white),),),
+                            ),
+                            Container(
+                              height: 40,
+                           
+                              child: TextButton(onPressed: (){},child:const Text("Events",style: TextStyle(color: Colors.white),),),
+                            ),
+                            Container(
+                              height: 40,
+                            
+                              child: TextButton(onPressed: (){},child:const Text("My Calender",style: TextStyle(color: Colors.white),),),
+                            ),
+
+                          ],
+                        ),
+                        
+
                       ],
                     ),
                   );
                 },
               ),
+              Container(
+               height:400,
+                child: PageView(
+                  scrollDirection: Axis.horizontal,
+                  onPageChanged: (value) {
+                    print(value);
+                  },
+                  controller: p_controller,
+                  children: _screens,
+                )
+              )
+
             ],
           ),
         ),
       ),
     );
   }
+}
+
+Widget postpage(){
+  return Container(
+    
+    color: Colors.white,
+    child: Text("Postpage",),
+  );
+}
+Widget clubs(){
+  return Container(
+   
+    color: Colors.white,
+    child: Text("Postpage",),
+  );
+
+}
+Widget eventsattended(){
+  return Container(
+    
+    color: Colors.white,
+    child: Text("Postpage",),
+  );
+}
+Widget mycallender(){
+  return Container(
+    child: TableCalendar(focusedDay: DateTime.now(), firstDay: DateTime(2020), lastDay: DateTime(2040)),
+  );
 }
