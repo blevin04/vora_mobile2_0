@@ -145,14 +145,24 @@ class communityModel {
 }
 
 class rsvpmodel {
-  final String eventid;
-  List events = List.empty(growable: true);
+  final List<String> rsvps;
+  
   rsvpmodel({
-    required this.eventid,
-  }) {
-    events.add(eventid);
-  }
+    required this.rsvps,
+  }) ;
   Map<String, dynamic> tojson() => {
-        "Events": events,
+        "Events": rsvps,
       };
+}
+class joincomModel{
+  
+  List<String> comm ;
+  joincomModel({
+    
+    required this.comm,
+  });
+  
+  Map<String,List> tojson() =>{
+    "Communities":comm,
+  };
 }

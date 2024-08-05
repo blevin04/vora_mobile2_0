@@ -258,6 +258,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                     margin: const EdgeInsets.all(0),
                     width: _width / 2.2,
                     decoration: BoxDecoration(
+                      border:Border.all(color:Colors.transparent),
                         color: Colors.lightBlue,
                         borderRadius: BorderRadius.circular(10)),
                     child: const OutlinedButton(

@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vora_mobile/utils.dart';
 
 late MemoryImage img1;
 
@@ -107,7 +112,22 @@ class _ClubsState extends State<Clubs> {
       }
     });
   }
+Future<Map<String,dynamic>> clubdata (String clubId)async{
+  Map<String,dynamic> clubd_ = Map();
 
+  await firestore.collection("Communities").doc(clubId).get().then((onValue){
+    final name =<String,dynamic>{"Name":onValue.data()!["Name"]};
+    final about =<String,dynamic>{"About":onValue.data()!["About"]};
+    clubd_.addAll(name);
+    clubd_.addAll(about);
+  });
+  await store1.child("/communities/$clubId/cover_picture").getData().then((onValue1){
+    final cover_pic =<String,dynamic>{"Image":onValue1!};
+    clubd_.addAll(cover_pic);
+  });
+
+  return clubd_;
+}
   bool _search_vis = false;
   @override
   Widget build(BuildContext context) {
@@ -230,183 +250,182 @@ class _ClubsState extends State<Clubs> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
-                        //  Map<String, dynamic> numbers = {};
-                        var name = '';
-                        var img;
-                        firestore
-                            .collection("Communities")
-                            .doc(communities_[index])
-                            .get()
-                            .then((value) {
-                          name = value.data()!["Name"];
-                          //  numbers = value.data()!["Numbers"];
-                        });
-                        return FutureBuilder(
-                            initialData: img = AssetImage("lib/assets/dp.png"),
-                            future: store1
-                                .child(
-                                    "/communities/${communities_[index]}/cover_picture")
-                                .getData()
-                                .then((onValue) {
-                              // print(onValue);
-                              img = onValue!;
-                            }),
-                            builder: (context, snapshot) {
-                              return InkWell(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Container(
-                                    height: _height / 4.5,
-                                    decoration: BoxDecoration(
-                                        color: const Color.fromARGB(
-                                            255, 46, 45, 45),
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                    width: _width,
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Center(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                    fit: BoxFit.contain,
-                                                    image: img ==
-                                                            const AssetImage(
-                                                                "lib/assets/dp.png")
-                                                        ? img
-                                                        : MemoryImage(img)),
-                                                borderRadius:
-                                                    BorderRadius.circular(20)),
-                                            width: _width / 2.3,
+
+                        
+                        return SizedBox(
+                           height: _height / 4.5,
+                          child: FutureBuilder(
+                             // initialData: img = AssetImage("lib/assets/dp.png"),
+                              future: clubdata(communities_[index]),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(child: CircularProgressIndicator(),);
+                                }
+                                Uint8List c_image = snapshot.data!["Image"];
+                                String C_name = snapshot.data!["Name"];
+                                String C_about = snapshot.data!["About"];
+                                return InkWell(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Container(
+                                     
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromARGB(
+                                              255, 46, 45, 45),
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      width: _width,
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                      fit: BoxFit.contain,
+                                                      image: MemoryImage(c_image)
+                                                          ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20)),
+                                              width: _width / 2.3,
+                                            ),
                                           ),
-                                        ),
-                                        Container(
-                                            width: _width / 2,
-                                            alignment: Alignment.topCenter,
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  name,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 20),
-                                                ),
-                                                const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    "About...",
-                                                    style: TextStyle(
-                                                        color: Colors.white),
-                                                    maxLines: 3,
-                                                    overflow: TextOverflow.fade,
+                                          Container(
+                                              width: _width / 2,
+                                              alignment: Alignment.topCenter,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    C_name,
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 20),
                                                   ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 10,
-                                                ),
-                                                InkWell(
-                                                  onTap: () {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return Center(
-                                                            child: Dialog(
-                                                              insetPadding:
-                                                                  const EdgeInsets
-                                                                      .all(10),
-                                                              backgroundColor:
-                                                                  const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      51,
-                                                                      52,
-                                                                      53),
-                                                              child: SizedBox(
-                                                                height: 120,
-                                                                width: 170,
-                                                                child: Column(
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          10.0),
-                                                                      child:
-                                                                          Text(
-                                                                        "Join $name",
-                                                                        style: const TextStyle(
-                                                                            color:
-                                                                                Colors.white),
+                                                   Padding(
+                                                    padding: EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      C_about,
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                      maxLines: 3,
+                                                      overflow: TextOverflow.fade,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return Center(
+                                                              child: Dialog(
+                                                                insetPadding:
+                                                                    const EdgeInsets
+                                                                        .all(10),
+                                                                backgroundColor:
+                                                                    const Color
+                                                                        .fromARGB(
+                                                                        255,
+                                                                        51,
+                                                                        52,
+                                                                        53),
+                                                                child: SizedBox(
+                                                                  height: 120,
+                                                                  width: 170,
+                                                                  child: Column(
+                                                                    children: [
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            10.0),
+                                                                        child:
+                                                                            Text(
+                                                                          "Join $C_name",
+                                                                          style: const TextStyle(
+                                                                              color:
+                                                                                  Colors.white),
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                    const SizedBox(
-                                                                      height:
-                                                                          20,
-                                                                    ),
-                                                                    Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceAround,
-                                                                      children: [
-                                                                        TextButton(
-                                                                            onPressed:
-                                                                                () {},
-                                                                            child: Container(
-                                                                                decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-                                                                                child: const Padding(
-                                                                                  padding: EdgeInsets.all(10.0),
-                                                                                  child: Text(
-                                                                                    "Yes",
-                                                                                    style: TextStyle(color: Colors.white),
-                                                                                  ),
-                                                                                ))),
-                                                                        TextButton(
-                                                                            onPressed:
-                                                                                () {},
-                                                                            child:
-                                                                                Container(decoration: BoxDecoration(color: Colors.deepPurpleAccent, borderRadius: BorderRadius.circular(10)), child: Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
-                                                                      ],
-                                                                    )
-                                                                  ],
+                                                                      const SizedBox(
+                                                                        height:
+                                                                            20,
+                                                                      ),
+                                                                      Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment
+                                                                                .spaceAround,
+                                                                        children: [
+                                                                          TextButton(
+                                                                              onPressed:
+                                                                                  () async{
+                                                                                 String state=  await join(communId: communities_[index]);
+                                                                                      if (state == "Success") {
+                                                                                        showsnackbar(context, "Successfully joined $C_name");
+                                                                                      }
+                                                                                      else{print(state);}
+                                                                                      Navigator.pop(context);
+                                                                                  },
+                                                                              child: Container(
+                                                                                  decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                                                                                  child: const Padding(
+                                                                                    padding: EdgeInsets.all(10.0),
+                                                                                    child: Text(
+                                                                                      "Yes",
+                                                                                      style: TextStyle(color: Colors.white),
+                                                                                    ),
+                                                                                  ))),
+                                                                          TextButton(
+                                                                              onPressed:
+                                                                                  () {
+                                                                                    Navigator.pop(context);
+                                                                                  },
+                                                                              child:
+                                                                                  Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), child: Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
+                                                                        ],
+                                                                      )
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          );
-                                                        });
-                                                  },
-                                                  enableFeedback: true,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            Colors.blueAccent,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10)),
-                                                    child: const Padding(
-                                                      padding:
-                                                          EdgeInsets.all(8.0),
-                                                      child: Text(
-                                                        "Join Community",
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.white),
+                                                            );
+                                                          });
+                                                    },
+                                                    enableFeedback: true,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              Colors.blueAccent,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10)),
+                                                      child: const Padding(
+                                                        padding:
+                                                            EdgeInsets.all(8.0),
+                                                        child: Text(
+                                                          "Join Community",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                                TextButton(
-                                                    onPressed: () {},
-                                                    child: const Text(
-                                                        "Clubs Events..."))
-                                              ],
-                                            ))
-                                      ],
+                                                  TextButton(
+                                                      onPressed: () {},
+                                                      child: const Text(
+                                                          "Clubs Events..."))
+                                                ],
+                                              ))
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            });
+                                );
+                              }),
+                        );
                       });
                 }),
           ],

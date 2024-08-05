@@ -39,6 +39,47 @@ void userget()async{
     print("eve");
   });
 }
+
+Future<Map<String,dynamic>> getcontent(String eventId)async{
+  Map<String,dynamic> _data =Map();
+
+await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
+  var comn = onValue.data()!["Community"];
+  await firestore_.collection("Communities").doc(comn).get().then((onvalue1){
+    final comm = <String,dynamic>{"Community":onvalue1.data()!["Name"]};
+    _data.addAll(comm);
+  });
+  
+  final evdate =<String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
+  final ttle = <String,dynamic>{"Title":onValue.data()!["Title"]};
+  
+  _data.addAll(evdate);
+  _data.addAll(ttle);
+
+});
+await store_1.child("/events/$eventId/cover").getData().then((value){
+  final imgs = <String,dynamic>{"ImgData":value!};
+  _data.addAll(imgs);
+});
+  return _data;
+}
+  List<String> events_Ids = List.empty(growable: true);
+Future<int> getevents()async{
+ int eventsno = 0;
+  await firestore_.collection("Events").where("EventDate", isLessThan: Timestamp.now()).get().then((onValue)async{
+    eventsno = onValue.docs.length;
+    for(var val1 in onValue.docs){
+      
+      if (!events_Ids.contains(val1.id)) {
+        events_Ids.add(val1.id);
+      }
+    }
+  });
+  return eventsno;
+}
+
+
+
 class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   late AnimationController _drawercontroller;
   late AnimationController _animationController;
@@ -95,9 +136,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
 
         ?{ _animationController.reverse(),blur_=ImageFilter.blur()}
         : {_animationController.forward(),blur_ = ImageFilter.blur(sigmaX: 3.0,sigmaY: 3.0)};
-    setState(() {
-      addvisible = !addvisible;
-    });
+    
   }
 
   // var imglist = [
@@ -108,40 +147,10 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
   //   'lib/assets/art1.png',
   //   'lib/assets/cover.jpg'
   // ];
-  List<String> events_Ids = List.empty(growable: true);
 
-Future<Map<String,dynamic>> getcontent(String eventId)async{
-  Map<String,dynamic> _data =Map();
 
-await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
-  final comm = <String,dynamic>{"Community":onValue.data()!["Community"]};
-  final evdate =<String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
-  final ttle = <String,dynamic>{"Title":onValue.data()!["Title"]};
-  _data.addAll(comm);
-  _data.addAll(evdate);
-  _data.addAll(ttle);
 
-});
-await store_1.child("/events/$eventId/cover").getData().then((value){
-  final imgs = <String,dynamic>{"ImgData":value!};
-  _data.addAll(imgs);
-});
-  return _data;
-}
 
-Future<int> getevents()async{
- int eventsno = 0;
-  await firestore_.collection("Events").where("EventDate", isLessThan: Timestamp.now()).get().then((onValue)async{
-    eventsno = onValue.docs.length;
-    for(var val1 in onValue.docs){
-      
-      if (!events_Ids.contains(val1.id)) {
-        events_Ids.add(val1.id);
-      }
-    }
-  });
-  return eventsno;
-}
 
   void _toggleDrawer() {
     if (_isDrawerOpen() || _isDrawerOpening()) {
@@ -194,13 +203,13 @@ Future<int> getevents()async{
                               child: Column(
                                 children: [
                                   TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
+                                      onPressed: ()async {
+                                       Navigator.pop(context);
+                                        await Navigator.pushReplacement(
                                             context,
-                                            (MaterialPageRoute(
+                                            MaterialPageRoute(
                                                 builder: (context) =>
-                                                    const Accounts())));
+                                                    const Accounts()));
                                       },
                                       child: const Text(
                                         "Account",
@@ -390,116 +399,8 @@ Future<int> getevents()async{
                     ),
                   ),
                   const SizedBox(height: 5,),
-                  Container(
-                    height: _height / 3.7,
-                    alignment: Alignment.bottomLeft,
-                    child: FutureBuilder(
-                      future: getevents(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator(),);
-                        }
-                        if (!snapshot.hasData) {
-                          return const Center(child: CircularProgressIndicator(),);
-                        }
-                        print(events_Ids);
-                        return CarouselSlider(
-                        options: CarouselOptions(
-                            autoPlay: true,
-                            viewportFraction: 0.9,
-                            autoPlayInterval: const Duration(seconds: 4)),
-                        items:events_Ids
-                            .map((item) => FutureBuilder(
-                              future: getcontent(item),
-                              
-                              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                if (snapshot.connectionState ==ConnectionState.waiting) {
-                                  return const Center(child: CircularProgressIndicator(),);
-                                }
-                                if (!snapshot.hasData) {
-                                  return const Center(child: CircularProgressIndicator(),);
-                                }
-                                Uint8List im = snapshot.data["ImgData"];
-                                String title = snapshot.data["Title"];
-                                String club = snapshot.data["Community"];
-                                DateTime date = snapshot.data["EventDate"].toDate();
-                                print(date);
-                                return InkWell(
-                                  child: Container(
-                                    width: _width,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                        image:
-                                            DecorationImage(image: MemoryImage(im))),
-                                    child: Column(
-                                      children: [
-                                        SizedBox(
-                                          height: _height / 6,
-                                        ),
-                                        Expanded(
-                                          child: Container(
-                                              color: const Color.fromARGB(
-                                                  250, 32, 33, 36),
-                                              width: _width,
-                                              child:  Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                      const  EdgeInsets.only(left: 30.0),
-                                                    child: Text(
-                                                      title,
-                                                      style:const TextStyle(
-                                                          fontSize: 22,
-                                                          fontWeight: FontWeight.w800,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                      const  EdgeInsets.only(left: 20.0),
-                                                    child: Text(
-                                                      club,
-                                                      style:const TextStyle(
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: [
-                                                    const  Padding(
-                                                          padding: EdgeInsets.only(
-                                                              left: 25)),
-                                                      Text(
-                                                       "${date.difference(DateTime.now()).inDays.toString()} days go ",
-                                                        style:const TextStyle(
-                                                            color: Color.fromARGB(255, 255, 255, 255)),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
-                                              )),
-                                        )
-                                      ],
-                                    )),
-                                );
-                              },
-                            )
-                              
-                            )
-                            .toList(),
-                      );
-                      },
-                    ),
-                     
-                    
-                  ),
+                  carosel(_height,_width),
+                  
                   const Divider(),
                   
                   // ListView.builder(
@@ -522,133 +423,138 @@ Future<int> getevents()async{
                       : BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 5.0,sigmaY: 5.0),
                         
-                        child: TapRegion(
-                          onTapOutside: (tap){
-                            if (_drawercontroller.value == 1) {
-                              setState(() {
-                            _toggleDrawer();
-                          });
-                            }
-                            },
-                          child: Container(
-                              decoration: BoxDecoration(
-                                  color: _isDrawerOpen()
-                                      ? const Color.fromARGB(255, 29, 29, 29)
-                                      : Colors.black,
-                                  borderRadius: BorderRadius.circular(10)),
-                              //height: 220,
-                              width: 190,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ListTile(
-                                    title: Text(
-                                      "Account",
-                                      style: TextStyle(
-                                          color: _isDrawerOpen()
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const Accounts()));
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text(
-                                      "clubs & Communities",
-                                      style: TextStyle(
-                                          color: _isDrawerOpen()
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => const Clubs()));
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text(
-                                      "Events",
-                                      style: TextStyle(
-                                          color: _isDrawerOpen()
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const Events()));
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text(
-                                      "Posts & Blogs",
-                                      style: TextStyle(
-                                          color: _isDrawerOpen()
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => const Blogs()));
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Badge(
-                                      label: const Text("9"),
-                                      child: Text(
-                                        "Announcements",
+                        child: StatefulBuilder(
+                          builder: (context, setstate2) {
+                            return TapRegion(
+                            onTapOutside: (tap){
+                              if (_drawercontroller.value == 1) {
+                                setstate2(() {
+                              _toggleDrawer();
+                            });
+                              }
+                              },
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    color: _isDrawerOpen()
+                                        ? const Color.fromARGB(255, 29, 29, 29)
+                                        : Colors.black,
+                                    borderRadius: BorderRadius.circular(10)),
+                                //height: 220,
+                                width: 190,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    ListTile(
+                                      title: Text(
+                                        "Account",
                                         style: TextStyle(
                                             color: _isDrawerOpen()
                                                 ? Colors.white
                                                 : Colors.black),
                                       ),
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const Accounts()));
+                                      },
                                     ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const Announcemnts()));
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text(
-                                      "My Callender",
-                                      style: TextStyle(
-                                          color: _isDrawerOpen()
-                                              ? Colors.white
-                                              : Colors.black),
+                                    ListTile(
+                                      title: Text(
+                                        "clubs & Communities",
+                                        style: TextStyle(
+                                            color: _isDrawerOpen()
+                                                ? Colors.white
+                                                : Colors.black),
+                                      ),
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => const Clubs()));
+                                      },
                                     ),
-                                    //takes you to the callender page
-                                    onTap: () async{
-                                      Navigator.pop(context);
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const Calender()));
-                                    },
-                                  ),
-                                ],
+                                    ListTile(
+                                      title: Text(
+                                        "Events",
+                                        style: TextStyle(
+                                            color: _isDrawerOpen()
+                                                ? Colors.white
+                                                : Colors.black),
+                                      ),
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const Events()));
+                                      },
+                                    ),
+                                    ListTile(
+                                      title: Text(
+                                        "Posts & Blogs",
+                                        style: TextStyle(
+                                            color: _isDrawerOpen()
+                                                ? Colors.white
+                                                : Colors.black),
+                                      ),
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => const Blogs()));
+                                      },
+                                    ),
+                                    ListTile(
+                                      title: Badge(
+                                        label: const Text("9"),
+                                        child: Text(
+                                          "Announcements",
+                                          style: TextStyle(
+                                              color: _isDrawerOpen()
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const Announcemnts()));
+                                      },
+                                    ),
+                                    ListTile(
+                                      title: Text(
+                                        "My Callender",
+                                        style: TextStyle(
+                                            color: _isDrawerOpen()
+                                                ? Colors.white
+                                                : Colors.black),
+                                      ),
+                                      //takes you to the callender page
+                                      onTap: () async{
+                                        Navigator.pop(context);
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const Calender()));
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                          );
+                          },
+                         
                         ),
                       ),
                 );
@@ -658,122 +564,147 @@ Future<int> getevents()async{
         ),
         floatingActionButton: BackdropFilter(
           filter: blur_,
-          child: TapRegion(
-            onTapOutside:(tap){
-              if (addvisible) {
-                openicons();
-              }
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Visibility(
-                    visible: addvisible,
-                    child: CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Color.fromARGB(255, 73, 74, 74),
-                      child: IconButton(
-                        onPressed: () {
-                          openicons();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Newcommunity()));
-                          
-                        },
-                        icon: const Icon(
-                          Icons.group_sharp,
-                          size: 28,
+          child: StatefulBuilder(
+            builder: (context, setstate1) {
+              return TapRegion(
+              onTapOutside:(tap){
+                if (addvisible) {
+                  openicons();
+                  setstate1((){
+                     addvisible = !addvisible;
+                  });
+                }
+              },
+              child: 
+                 Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Visibility(
+                        visible: addvisible,
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Color.fromARGB(255, 73, 74, 74),
+                          child: IconButton(
+                            onPressed: () {
+                              openicons();
+                              setstate1(() {
+                  addvisible = !addvisible;
+                });
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Newcommunity()));
+                              
+                            },
+                            icon: const Icon(
+                              Icons.group_sharp,
+                              size: 28,
+                            ),
+                            color: const Color.fromARGB(255, 255, 255, 255),
+                          ),
+                        )),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Visibility(
+                      visible: addvisible,
+                      child: CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Color.fromARGB(255, 73, 74, 74),
+                        child: IconButton(
+                          onPressed: () {
+                            openicons();
+                            setstate1(() {
+                  addvisible = !addvisible;
+                });
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const NewPost()));
+                            
+                          },
+                          icon: const Icon(
+                            Icons.post_add,
+                            size: 28,
+                          ),
+                          color: const Color.fromARGB(255, 255, 255, 255),
                         ),
-                        color: const Color.fromARGB(255, 255, 255, 255),
                       ),
-                    )),
-                const SizedBox(
-                  height: 5,
-                ),
-                Visibility(
-                  visible: addvisible,
-                  child: CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Color.fromARGB(255, 73, 74, 74),
-                    child: IconButton(
-                      onPressed: () {
-                        openicons();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const NewPost()));
-                        
-                      },
-                      icon: const Icon(
-                        Icons.post_add,
-                        size: 28,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Visibility(
+                      visible: addvisible,
+                      child: CircleAvatar(
+                        radius: 28,
+                        backgroundColor: const Color.fromARGB(255, 73, 74, 74),
+                        child: IconButton(
+                          onPressed: () {
+                            openicons();
+                            setstate1(() {
+                  addvisible = !addvisible;
+                });
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const NewAnnouncement()));
+                            
+                          },
+                          icon: const Icon(Icons.announcement_sharp),
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
                       ),
-                      color: const Color.fromARGB(255, 255, 255, 255),
                     ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                Visibility(
-                  visible: addvisible,
-                  child: CircleAvatar(
-                    radius: 28,
-                    backgroundColor: const Color.fromARGB(255, 73, 74, 74),
-                    child: IconButton(
-                      onPressed: () {
-                        openicons();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const NewAnnouncement()));
-                        
-                      },
-                      icon: const Icon(Icons.announcement_sharp),
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                    const SizedBox(
+                      height: 5,
                     ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                Visibility(
-                  visible: addvisible,
-                  child: CircleAvatar(
-                    radius: 28,
-                    backgroundColor: const Color.fromARGB(255, 73, 74, 74),
-                    child: IconButton(
-                      onPressed: () {
-                         openicons();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddEvent()));
-                       
-                      },
-                      icon: const Icon(Icons.celebration),
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                    Visibility(
+                      visible: addvisible,
+                      child: CircleAvatar(
+                        radius: 28,
+                        backgroundColor: const Color.fromARGB(255, 73, 74, 74),
+                        child: IconButton(
+                          onPressed: () {
+                             openicons();
+                             setstate1(() {
+                  addvisible = !addvisible;
+                });
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const AddEvent()));
+                           
+                          },
+                          icon: const Icon(Icons.celebration),
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                CircleAvatar(
-                    radius: 28,
-                    backgroundColor: const Color.fromARGB(255, 73, 74, 74),
-                    child: InkWell(
-                      onTap: () {
-                        openicons();
-                      },
-                      child: AnimatedIcon(
-                          icon: AnimatedIcons.add_event,
-                          color: Colors.white,
-                          progress: _animationController),
-                    )),
-              ],
-            ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    CircleAvatar(
+                        radius: 28,
+                        backgroundColor: const Color.fromARGB(255, 73, 74, 74),
+                        child: InkWell(
+                          onTap: () {
+                            openicons();
+                            setstate1(() {
+                  addvisible = !addvisible;
+                });
+                          },
+                          child: AnimatedIcon(
+                              icon: AnimatedIcons.add_event,
+                              color: Colors.white,
+                              progress: _animationController),
+                        )),
+                  ],
+                )
+               
+            );
+            },
+             
           ),
         ),
         // floatingActionButton: FloatingActionButton(
@@ -792,4 +723,118 @@ Future<int> getevents()async{
       ),
     );
   }
+}
+Widget carosel(double _height,double _width){
+  return StatefulBuilder(
+                    builder: (context, st2){
+                      return Container(
+                      height: _height / 3.7,
+                      alignment: Alignment.bottomLeft,
+                      child: FutureBuilder(
+                        future: getevents(),
+                        builder: (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator(),);
+                          }
+                          if (!snapshot.hasData) {
+                            return const Center(child: CircularProgressIndicator(),);
+                          }
+                          
+                          return CarouselSlider(
+                          options: CarouselOptions(
+                              autoPlay: true,
+                              viewportFraction: 0.9,
+                              autoPlayInterval: const Duration(seconds: 4)),
+                          items:events_Ids
+                              .map((item) => FutureBuilder(
+                                future: getcontent(item),
+                                
+                                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState ==ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator(),);
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return const Center(child: CircularProgressIndicator(),);
+                                  }
+                                  Uint8List im = snapshot.data["ImgData"];
+                                  String title = snapshot.data["Title"];
+                                  String club = snapshot.data["Community"];
+                                  DateTime date = snapshot.data["EventDate"].toDate();
+                                  
+                                  return InkWell(
+                                    child: Container(
+                                      width: _width,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                          image:
+                                              DecorationImage(image: MemoryImage(im))),
+                                      child: Column(
+                                        children: [
+                                          SizedBox(
+                                            height: _height / 6,
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                                color: const Color.fromARGB(
+                                                    250, 32, 33, 36),
+                                                width: _width,
+                                                child:  Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                        const  EdgeInsets.only(left: 30.0),
+                                                      child: Text(
+                                                        title,
+                                                        style:const TextStyle(
+                                                            fontSize: 22,
+                                                            fontWeight: FontWeight.w800,
+                                                            color: Colors.white),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                        const  EdgeInsets.only(left: 20.0),
+                                                      child: Text(
+                                                        club,
+                                                        style:const TextStyle(
+                                                            color: Colors.white),
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                      children: [
+                                                      const  Padding(
+                                                            padding: EdgeInsets.only(
+                                                                left: 25)),
+                                                        Text(
+                                                         "${date.difference(DateTime.now()).inDays.toString()} days go ",
+                                                          style:const TextStyle(
+                                                              color: Color.fromARGB(255, 255, 255, 255)),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                )),
+                                          )
+                                        ],
+                                      )),
+                                  );
+                                },
+                              )
+                                
+                              )
+                              .toList(),
+                        );
+                        },
+                      ),
+                    );
+                    }, 
+                  );
 }

@@ -161,13 +161,50 @@ Future<String> rsvp({
   required String eventId,
 }) async {
   String state = "Some Error Occured...";
-  rsvpmodel model = rsvpmodel(eventid: eventId);
+
   try {
+      List<String> original = List.empty(growable: true);
+  await firestore.collection("users").doc(user_.uid).get().then((val){
+    var d = val.data()!["Events"];
+    print(d);
+    for(var x in d){
+      original.add(x);
+    }
+  });
+  if (!original.contains(eventId)) {
+    original.add(eventId);
+  }
+  rsvpmodel model = rsvpmodel(rsvps: original);
     await firestore.collection("users").doc(user_.uid).update(model.tojson());
     state = "Success";
   } catch (e) {
     state = e.toString();
   }
 
+  return state;
+}
+Future<String> join({
+  required String communId,
+})async{
+  String state = "Some Error occured...";
+  try{
+    List<String> origin = List.empty(growable: true);
+    await firestore.collection("users").doc(user_.uid).get().then((onValue){
+      var nums_ = onValue.data()!["Communities"];
+      for(var ids in nums_){
+        origin.add(ids);
+      }
+    });
+    if (!origin.contains(communId)) {
+      origin.add(communId);
+    }
+    
+    joincomModel joins = joincomModel(comm: origin);
+    await firestore.collection("users").doc(user_.uid).update(joins.tojson());
+    state = "Success";
+  }
+  catch(e){
+    state = e.toString();
+  }
   return state;
 }
