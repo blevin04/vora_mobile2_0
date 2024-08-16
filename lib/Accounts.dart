@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -158,6 +159,9 @@ PageController p_controller = PageController();
             "My Profile",
             style: TextStyle(color: Colors.white),
           ),
+          actions: [
+            IconButton(onPressed: (){}, icon:const Icon(Icons.edit,color: Colors.white,))
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -291,10 +295,10 @@ PageController p_controller = PageController();
                                    
                                     child: TextButton(onPressed: ()async{
                                       
-                                      p_controller.animateToPage(0, duration: Duration(milliseconds: 500), curve: Curves.ease);
+                                      p_controller.animateToPage(0, duration:const Duration(milliseconds: 500), curve: Curves.ease);
                                       setstate1((){});
                                     },child:Container(
-                                      decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==0? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                      decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==0?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==0? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
                                         padding:  EdgeInsets.all(2.0),
                                         child:  Text("Posts",style: TextStyle(color: Colors.white),),
@@ -305,10 +309,10 @@ PageController p_controller = PageController();
                                    
                                     child: TextButton(onPressed: ()async{
                                       
-                                      p_controller.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
+                                      p_controller.animateToPage(1, duration:const Duration(milliseconds: 500), curve: Curves.ease);
                                       setstate1((){});
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==1? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==1?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==1? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
                                         padding:  EdgeInsets.all(2.0),
                                         child:  Text("Clubs",style: TextStyle(color: Colors.white),),
@@ -318,11 +322,11 @@ PageController p_controller = PageController();
                                     height: 40,
                                  
                                     child: TextButton(onPressed: (){
-                                      p_controller.animateToPage(2, duration: Duration(milliseconds: 500), curve: Curves.ease);
+                                      p_controller.animateToPage(2, duration:const Duration(milliseconds: 500), curve: Curves.ease);
                                       setstate1((){});
                                      
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==2? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==2?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==2? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
                                         padding:  EdgeInsets.all(2.0),
                                         child:  Text("Events",style: TextStyle(color: Colors.white),),
@@ -332,10 +336,10 @@ PageController p_controller = PageController();
                                     height: 40,
                                   
                                     child: TextButton(onPressed: (){
-                                     p_controller.animateToPage(3, duration: Duration(milliseconds: 500), curve: Curves.ease);
+                                     p_controller.animateToPage(3, duration:const Duration(milliseconds: 500), curve: Curves.ease);
                                      setstate1((){});
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==3? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==3?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==3? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
                                         padding:  EdgeInsets.all(2.0),
                                         child:  Text("My Calender",style: TextStyle(color: Colors.white),),
@@ -404,7 +408,7 @@ Widget postpage(){
                   Text("On ${postdata["PostTime"].toDate().day}",style: TextStyle(color: Colors.white),),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(postdata["post"],style:TextStyle(color: Colors.white) ,),
+                    child: Text(postdata["post"],style:const TextStyle(color: Colors.white) ,),
                   ),
                   Container(
                     child: Padding(
@@ -467,7 +471,7 @@ Widget clubs(){
          String name_ = all_data["Name"];
          
         return Center(
-          child: Padding(padding: EdgeInsets.all(5),
+          child: Padding(padding:const EdgeInsets.all(5),
           child: Container(
             decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(255, 53, 52, 52)),borderRadius: BorderRadius.circular(10)),
             child: Row(
@@ -493,6 +497,7 @@ Widget clubs(){
 
 }
 Widget eventsattended(){
+ bool commented = false;
   return FutureBuilder(
     future: events_(),
     
@@ -510,22 +515,57 @@ Widget eventsattended(){
       return ListView.builder(
         itemCount: snapshot.data.length,
         itemBuilder: (context,index){
+          bool like= false;
         Map<String,dynamic> all_events =  snapshot.data![index];
         String E_title= all_events["Title"];
         DateTime ttime = all_events["Date"].toDate();
+        String date_s = period(ttime);
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 decoration: BoxDecoration(
+                  color:const Color.fromARGB(233, 47, 46, 46),
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(color: const Color.fromARGB(141, 0, 0, 0))
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    Text(E_title,style:const TextStyle(color: Colors.white),),
-                   const SizedBox(width: 30,),
-                   Text(ttime.day.toString(),style:const TextStyle(color: Colors.white),)
+                    ListTile(leading:const Padding(
+                      padding:  EdgeInsets.all(8.0),
+                      child:   CircleAvatar(radius: 40,),
+                    ), 
+                    onTap: (){},
+                    
+                    title: Text(E_title,style:const TextStyle(color: Colors.white),),
+                    trailing:Text(date_s,style:const TextStyle(color: Colors.white),) ,
+                    ),
+                    Center(child: Row(children: [
+                      StatefulBuilder(
+                        builder: (BuildContext context, setStateLike) {
+                          
+                          return IconButton(onPressed: (){
+                            setStateLike((){
+                              like = !like;
+                            });
+                          }, 
+                          icon: Icon(Icons.favorite_rounded,
+                          
+                          color:like?Colors.red:const Color.fromARGB(205, 255, 255, 255),));
+                        },
+                      ),
+                      StatefulBuilder(
+                        builder: (BuildContext context, setStateComment) {
+                          return IconButton(onPressed: (){
+                            setStateComment((){
+                              commented = !commented;
+                            });
+                          }, 
+                          icon:  Icon(Icons.comment,
+                          color:commented?Colors.blue:const Color.fromARGB(139, 225, 222, 222),));
+                        },
+                      ),
+                    ],),)
                   ],
                 ),
               ),

@@ -69,8 +69,7 @@ class _CalenderState extends State<Calender> {
             45,
           ),
           leading: IconButton(
-              onPressed: () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Homepage())),
+              onPressed: () => Navigator.pop(context),
               icon: const Icon(
                 Icons.arrow_back,
                 color: Colors.white,

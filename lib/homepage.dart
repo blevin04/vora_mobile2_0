@@ -592,7 +592,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                       //takes you to the callender page
                                       onTap: () async{
                                         Navigator.pop(context);
-                                        Navigator.push(
+                                       await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>

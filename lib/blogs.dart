@@ -220,7 +220,7 @@ class _BlogsState extends State<Blogs> {
                       return Card(
                         color: const Color.fromARGB(255, 49, 47, 47),
                         child: Container(
-                          constraints: BoxConstraints(minHeight: 200),
+                          constraints:const BoxConstraints(minHeight: 200),
                           child: FutureBuilder(
                             future: getpostimg(postnum),
                             builder:

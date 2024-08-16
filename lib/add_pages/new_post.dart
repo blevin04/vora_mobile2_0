@@ -51,9 +51,8 @@ class _NewPostState extends State<NewPost> {
           45,
         ),
         leading: IconButton(
-            onPressed: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Homepage()));
+            onPressed: () async{
+             Navigator.of(context).pop();
             },
             icon: const Icon(
               Icons.arrow_back,
