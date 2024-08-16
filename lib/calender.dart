@@ -144,6 +144,9 @@ class _CalenderState extends State<Calender> {
                       if (!snapshot.hasData) {
                          return const Center(child: CircularProgressIndicator(),);
                       }
+                      if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                   var d = eventdate.indexWhere((test)=>test.day == selected.day && test.month == selected.month && test.year == selected.year);
                     
                       return d>=0? FutureBuilder(
@@ -155,6 +158,9 @@ class _CalenderState extends State<Calender> {
                           if(!snapshot.hasData){
                           return  const Center(child: CircularProgressIndicator(),);
                           }
+                          if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                           String titles_ = snapshot.data["Title"];
                           String decrip = snapshot.data["Descrip"];
                           int tim_h = eventdate[d].hour;

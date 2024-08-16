@@ -1,4 +1,6 @@
 //snackbar
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -65,4 +67,52 @@ Future getimage(BuildContext context, bool multiple) async {
   if (result == null) {
     showsnackbar(context, 'no image chossen');
   }
+}
+String period(DateTime time){
+ Duration duration = time.difference(DateTime.now());
+ int days = duration.inDays;
+ days = sqrt(days*days).ceil();
+ int hrs = duration.inHours;
+ hrs = sqrt(hrs*hrs).ceil();
+ int sec = duration.inSeconds;
+ sec = sqrt(sec*sec).ceil();
+  int min = duration.inMinutes;
+  min = sqrt(min*min).ceil();
+  
+bool status = duration.isNegative;
+String retrn = "";
+
+ if (hrs> 0 && days<0 ) {
+  if (status) {
+    retrn = "$hrs h ago";
+  }else{
+    retrn = "in $hrs h";
+  }
+   
+ }
+ if (days>0 ) {
+  if (status) {
+    retrn = "$days days ago";
+  }
+   else{
+    retrn = "in $days days";
+   }
+ }
+ if (sec>0 && min<0 ) {
+  if (status) {
+    retrn = "$sec seconds ago";
+  }
+  else{
+    retrn = "in $sec seconds";
+  }
+ }
+ if (min>0 && hrs<0) {
+  if (status) {
+     retrn = "$min minutes ago";
+  }else{
+    retrn = "in $min minutes ";
+  }
+ }
+  return retrn;
+
 }

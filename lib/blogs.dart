@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/homepage.dart';
+import 'package:vora_mobile/utils.dart';
 
 final store3 = FirebaseStorage.instance.ref();
 final firestore = FirebaseFirestore.instance;
@@ -58,7 +60,7 @@ Map<String,dynamic> data =Map();
                         
                       
                       final postd = <String, dynamic>{"BlogPost":onval.data()!["BlogPost"]};
-                      final t = <String,dynamic>{"PostTime":DateTime.now().difference(then)};
+                      final t = <String,dynamic>{"PostTime":then};
                       
                       data.addAll(postd);
                       data.addAll(t);
@@ -104,7 +106,7 @@ Map<String,dynamic> data =Map();
                       return data;
 
 }
-
+ValueNotifier<bool> visible_Search = ValueNotifier(false);
 Future<String> getblogsid() async {
   blogIds.clear();
 
@@ -157,9 +159,9 @@ class _BlogsState extends State<Blogs> {
         actions: [
           IconButton(
               onPressed: () {
-                setState(() {
+                
                   events_vis = !events_vis;
-                });
+                visible_Search.value = !visible_Search.value;
               },
               icon: const Icon(
                 Icons.search,
@@ -170,40 +172,28 @@ class _BlogsState extends State<Blogs> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Visibility(
-              visible: events_vis,
-              child: Container(
-                width: _width - 100,
-                alignment: Alignment.center,
-                height: 50,
-                child: TextField(
-                  controller: search_blogs,
-                  decoration: const InputDecoration(
-                      label: Icon(
-                    Icons.search,
-                    color: Colors.white,
-                  )),
-                ),
-              ),
+            ListenableBuilder(
+              listenable: visible_Search,
+              builder: (context,child) {
+                return Visibility(
+                  visible: events_vis,
+                  child: Container(
+                    width: _width - 100,
+                    alignment: Alignment.center,
+                    height: 50,
+                    child: TextField(
+                      controller: search_blogs,
+                      decoration: const InputDecoration(
+                          label: Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      )),
+                    ),
+                  ),
+                );
+              }
             ),
-            // StreamBuilder(
-            //   stream: firestore.collection("posts").snapshots(),
-            //   builder: (BuildContext context, AsyncSnapshot snapshot) {
-            //     return Container(
-            //       child: Center(
-            //         child: ListView.builder(
-            //           shrinkWrap: true,
-            //           itemCount: blogIds.length,
-            //           itemBuilder: (context, index){
-            //           return Container(
-            //             height: 50,
-            //             child:Text(" snapshot.data.doc(blogIds[index]).get().toString(),")
-            //           );
-            //         }),
-            //       ),
-            //     );
-            //   },
-            // ),
+            
             FutureBuilder(
               future: getblogsid(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -213,6 +203,9 @@ class _BlogsState extends State<Blogs> {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator(),);
                 }
+                if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                 return ListView.builder(
                     shrinkWrap: true,
                     itemCount: blogIds.length,
@@ -239,19 +232,17 @@ class _BlogsState extends State<Blogs> {
                                   if (!snapshot.hasData) {
                                     return const Center(child: CircularProgressIndicator(),);
                                   }
+                                  if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                                  
                                   String names_ = snapshot.data["UserName"];
                                   String n_name = snapshot.data["nick_name"];
-                                  Duration postTime = snapshot.data["PostTime"];
+                                  DateTime postTime = snapshot.data["PostTime"];
                                   String blogPost = snapshot.data["BlogPost"];
                                   List<Uint8List> images_ = snapshot.data["Images"];
                                   Uint8List document = snapshot.data["Document"];
-                                  if (images_.isNotEmpty) {
-                                    print("Images is goood");
-                                  }
-                                  if (document.isNotEmpty) {
-                                    print("Doc is good");
-                                  }
+                                  String time = period(postTime);
                               return Column(
                                 children: [
                                   Container(
@@ -277,7 +268,7 @@ class _BlogsState extends State<Blogs> {
                                                         189, 255, 255, 255)),
                                               ),
                                               Text(
-                                                 "${timedif(postTime)} min ago",
+                                                 time,
                                                 style: const TextStyle(
                                                     color: Color.fromARGB(
                                                         174, 255, 255, 255)),
@@ -291,7 +282,7 @@ class _BlogsState extends State<Blogs> {
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Container(
-                                      constraints: BoxConstraints(maxHeight: 100),
+                                      constraints:const BoxConstraints(maxHeight: 100),
                                       child: Text(blogPost,style:const TextStyle(color: Colors.white),),
                                     ),
                                   ),

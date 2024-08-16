@@ -179,6 +179,9 @@ PageController p_controller = PageController();
                         Uint8List data = snapshot.data;
                         data_ = data;
                       }
+                      if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                       return CircleAvatar(
                         radius: 100,
                         backgroundColor: Colors.white,
@@ -239,6 +242,9 @@ PageController p_controller = PageController();
                       child: CircularProgressIndicator(),
                     );
                   }
+                  if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -288,9 +294,9 @@ PageController p_controller = PageController();
                                       p_controller.animateToPage(0, duration: Duration(milliseconds: 500), curve: Curves.ease);
                                       setstate1((){});
                                     },child:Container(
-                                      decoration:p_controller.positions.isNotEmpty? BoxDecoration(color: p_controller.page == 0? Colors.lightBlue:Colors.transparent,borderRadius: BorderRadius.circular(10)):null,
+                                      decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==0? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
-                                        padding:  EdgeInsets.all(4.0),
+                                        padding:  EdgeInsets.all(2.0),
                                         child:  Text("Posts",style: TextStyle(color: Colors.white),),
                                       )),),
                                   ),
@@ -302,9 +308,9 @@ PageController p_controller = PageController();
                                       p_controller.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
                                       setstate1((){});
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color: p_controller.page == 1? Colors.lightBlue:Colors.transparent,borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==1? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
-                                        padding:  EdgeInsets.all(4.0),
+                                        padding:  EdgeInsets.all(2.0),
                                         child:  Text("Clubs",style: TextStyle(color: Colors.white),),
                                       )),),
                                   ),
@@ -316,9 +322,9 @@ PageController p_controller = PageController();
                                       setstate1((){});
                                      
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color: p_controller.page == 2? Colors.lightBlue:Colors.transparent,borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==2? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
-                                        padding:  EdgeInsets.all(4.0),
+                                        padding:  EdgeInsets.all(2.0),
                                         child:  Text("Events",style: TextStyle(color: Colors.white),),
                                       )),),
                                   ),
@@ -329,9 +335,9 @@ PageController p_controller = PageController();
                                      p_controller.animateToPage(3, duration: Duration(milliseconds: 500), curve: Curves.ease);
                                      setstate1((){});
                                     },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color: p_controller.page == 3? Colors.lightBlue:Colors.transparent,borderRadius: BorderRadius.circular(10)):null,
+                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(border: Border.all(color: p_controller.page==3? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
                                       child:const Padding(
-                                        padding:  EdgeInsets.all(4.0),
+                                        padding:  EdgeInsets.all(2.0),
                                         child:  Text("My Calender",style: TextStyle(color: Colors.white),),
                                       )),),
                                   ),
@@ -376,6 +382,9 @@ Widget postpage(){
       if (!snapshot.hasData) {
         return const Center(child: Text("No Posts Yet...",style: TextStyle(color: Colors.white),),);
       }
+      if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
       return ListView.builder(
         shrinkWrap: true,
         physics:const AlwaysScrollableScrollPhysics(),
@@ -444,6 +453,9 @@ Widget clubs(){
       if (!snapshot.hasData) {
         return const Center(child: Text("You are not a member of any club...",style: TextStyle(color: Colors.white),),);
       }
+      if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
       
       return ListView.builder(
         shrinkWrap: true,
@@ -491,6 +503,9 @@ Widget eventsattended(){
       if (!snapshot.hasData) {
         return const Center(child: Text("No Events Attended Yet...",style: TextStyle(color: Colors.white),),);
       }
+      if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
 
       return ListView.builder(
         itemCount: snapshot.data.length,

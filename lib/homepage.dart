@@ -20,6 +20,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:vora_mobile/utils.dart';
 
 final firestore_ = FirebaseFirestore.instance;
 final store_1 = FirebaseStorage.instance.ref();
@@ -33,11 +34,12 @@ class Homepage extends StatefulWidget {
 User user_ = FirebaseAuth.instance.currentUser!;
 ScrollController _scrollController = ScrollController();
 String User_Name = "";
-void userget()async{
+Future<String> userget()async{
+  String _name ="";
   await firestore_.collection("users").doc(user_.uid).get().then((onValue)async{
-    User_Name =await onValue.data()!["nickname"];
-    print("eve");
+    _name =await onValue.data()!["nickname"];
   });
+  return _name;
 }
 
 Future<Map<String,dynamic>> getcontent(String eventId)async{
@@ -63,6 +65,19 @@ await store_1.child("/events/$eventId/cover").getData().then((value){
 });
   return _data;
 }
+Future<Map<String,dynamic>> getclubsAndEvents()async{
+Map<String,dynamic> ret = Map();
+await firestore_.collection("users").doc(user.uid).get().then((onValue)async{
+  List<dynamic> vals = onValue.data()!["Events"];
+  List<dynamic> val2 = onValue.data()!["Communities"];
+  final clubno =<String,dynamic>{"C_num":val2.length};
+  final eventsno = <String,dynamic>{"E_num":vals.length};
+  ret.addAll(eventsno);
+  ret.addAll(clubno);
+});
+
+return ret;
+}
   List<String> events_Ids = List.empty(growable: true);
 Future<int> getevents()async{
  int eventsno = 0;
@@ -77,8 +92,6 @@ Future<int> getevents()async{
   });
   return eventsno;
 }
-
-
 
 class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   late AnimationController _drawercontroller;
@@ -101,7 +114,6 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    userget();
     _drawercontroller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 150),
@@ -135,8 +147,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
     addvisible
 
         ?{ _animationController.reverse(),blur_=ImageFilter.blur()}
-        : {_animationController.forward(),blur_ = ImageFilter.blur(sigmaX: 3.0,sigmaY: 3.0)};
-    
+        : {_animationController.forward(),blur_ = ImageFilter.blur(sigmaX: 3.0,sigmaY: 3.0)}; 
   }
 
   // var imglist = [
@@ -147,11 +158,6 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
   //   'lib/assets/art1.png',
   //   'lib/assets/cover.jpg'
   // ];
-
-
-
-
-
   void _toggleDrawer() {
     if (_isDrawerOpen() || _isDrawerOpening()) {
       _drawercontroller.reverse();
@@ -198,7 +204,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                               36,
                               45,
                             ),
-                            child: Container(
+                            child: SizedBox(
                               height: 150,
                               child: Column(
                                 children: [
@@ -248,7 +254,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   onPressed:() {
                     if (_isDrawerClosed()) {
                         _toggleDrawer();
-                        print("object");
+                       
                     }
                   },
                   icon: _isDrawerOpen() || _isDrawerOpening()
@@ -274,144 +280,188 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   //Padding(padding: EdgeInsets.all(3)),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 5.0,
-                          ),
-                          child: Container(
+                    child: StatefulBuilder(
+                      builder: (context,setstate_head){
+                        return  Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
                             padding: const EdgeInsets.only(
-                                top: 8, bottom: 8, left: 8),
-                            alignment: Alignment.center,
-                            height: 140,
-                            //width: _width / 2,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(
-                                255,
-                                29,
-                                36,
-                                45,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
+                              top: 5.0,
                             ),
-                            child:  Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Hello $User_Name \n welcome to vora",
-                                style:const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 21,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              top: 5.0, bottom: 3.0, right: 5.0, left: 5),
-                          child: Container(
-                            height: 140,
-                            width: 110,
-                            decoration: BoxDecoration(
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                  top: 8, bottom: 8, left: 8),
+                              alignment: Alignment.center,
+                              height: 140,
+                              //width: _width / 2,
+                              decoration: BoxDecoration(
                                 color: const Color.fromARGB(
                                   255,
                                   29,
                                   36,
                                   45,
                                 ),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        "CLUBS",
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 15),                         
-                                      ),
-                                      Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,)
-                                    ],
-                                  ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child:  Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: FutureBuilder(
+                                  initialData: "User",
+                                  future: userget(),
+                                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting){
+                                      return const Text(
+                                    "Hello  \n welcome to vora",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 21,
+                                    ),
+                                  );
+                                    }
+                                    if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
+                                    return Text(
+                                    "Hello ${snapshot.data} \n welcome to vora",
+                                    style:const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 21,
+                                    ),
+                                  );
+                                  },
                                 ),
-                                
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.0),
-                                  child: Column(
-                                    children: [
-                                      Text("2", style: TextStyle(color: Colors.white,fontSize: 30)),
-                                      Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
-                                    ],
-                                  ),
-                                )
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5, right: 5),
-                          child: Container(
-                            height: 140,
-                            width: _width / 4,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(
-                                  255,
-                                  29,
-                                  36,
-                                  45,
-                                ),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: const Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Column(
-                                    children: [
-                                      Text("EVENTS",
-                                          style: TextStyle(color: Colors.white)),
-                                          Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,),
-                                    ],
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 5.0, bottom: 3.0, right: 5.0, left: 5),
+                            child: Container(
+                              height: 140,
+                              width: 110,
+                              decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    29,
+                                    36,
+                                    45,
                                   ),
-                                ),
-                                    
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.0),
-                                  child: Column(
-                                    children: [
-                                      Text("8", style: TextStyle(color: Colors.white,fontSize: 30)),
-                                      Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
-                                    ],
+                                  borderRadius: BorderRadius.circular(10)),
+                              child:  Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                const  Padding(
+                                    padding: EdgeInsets.only(top: 8.0),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          "CLUBS",
+                                          style: TextStyle(
+                                              color: Colors.white, fontSize: 15),                         
+                                        ),
+                                        Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,)
+                                      ],
+                                    ),
                                   ),
-                                ),
-                               // SizedBox(height: 1,)
-                              ],
+                                  
+                                  Padding(
+                                    padding:const EdgeInsets.only(bottom: 8.0),
+                                    child: Column(
+                                      children: [
+                                        FutureBuilder(
+                                          future: getclubsAndEvents(),
+                                          initialData: 0,
+                                          builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                              return const Center(child: CircularProgressIndicator(),);
+                                            }
+                                            if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
+                                            var c_numb =snapshot.data!["C_num"];
+                                            
+                                            return  Text(
+                                            c_numb==null? "Offline": c_numb.toString(), 
+                                              style:const TextStyle(color: Colors.white,fontSize: 30));
+                                          },
+                                        ),
+                                      const  Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
-                        )
-                      ],
-                    ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 5, right: 5),
+                            child: Container(
+                              height: 140,
+                              width: _width / 4,
+                              decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    29,
+                                    36,
+                                    45,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10)),
+                              child:  Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                 const Padding(
+                                    padding: EdgeInsets.only(top: 8.0),
+                                    child: Column(
+                                      children: [
+                                        Text("EVENTS",
+                                            style: TextStyle(color: Colors.white)),
+                                            Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,),
+                                      ],
+                                    ),
+                                  ),
+                                      
+                                  Padding(
+                                    padding:const EdgeInsets.only(bottom: 8.0),
+                                    child: Column(
+                                      children: [
+                                        FutureBuilder(
+                                          future: getclubsAndEvents(),
+                                          initialData: 0,
+                                          builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                              return const Center(child: CircularProgressIndicator(),);
+                                            }
+                                            if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
+                                            var E_numb = snapshot.data!["E_num"];
+                                            return Text(
+                                           E_numb==null?"Offline...": E_numb.toString(), 
+                                            style:const TextStyle(color: Colors.white,fontSize: 30)
+                                            );
+                                          },
+                                        ),
+                                       const Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
+                                      ],
+                                    ),
+                                  ),
+                                 // SizedBox(height: 1,)
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      );
+                      },
+                    )
                   ),
                   const SizedBox(height: 5,),
                   carosel(_height,_width),
                   
                   const Divider(),
-                  
-                  // ListView.builder(
-                  //     shrinkWrap: true,
-                  //     physics: const NeverScrollableScrollPhysics(),
-                  //     itemCount: 20,
-                  //     itemBuilder: (BuildContext context, index) {
-                  //       return  Container(
-                  //         child: Text("data"),
-                  //       );
-                  //     }),
                 ]),
             AnimatedBuilder(
               animation: _drawercontroller,
@@ -583,7 +633,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                         visible: addvisible,
                         child: CircleAvatar(
                           radius: 28,
-                          backgroundColor: Color.fromARGB(255, 73, 74, 74),
+                          backgroundColor:const Color.fromARGB(255, 73, 74, 74),
                           child: IconButton(
                             onPressed: () {
                               openicons();
@@ -610,7 +660,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                       visible: addvisible,
                       child: CircleAvatar(
                         radius: 28,
-                        backgroundColor: Color.fromARGB(255, 73, 74, 74),
+                        backgroundColor:const Color.fromARGB(255, 73, 74, 74),
                         child: IconButton(
                           onPressed: () {
                             openicons();
@@ -707,19 +757,6 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
              
           ),
         ),
-        // floatingActionButton: FloatingActionButton(
-        //   elevation: 8,
-        //   backgroundColor: Colors.transparent,
-        //   foregroundColor: Colors.transparent,
-        //   onPressed: () {},
-        //   child: const CircleAvatar(
-        //     backgroundColor: Color.fromARGB(255, 73, 74, 74),
-        //     child: Icon(
-        //       Icons.celebration,
-        //       color: Color.fromARGB(255, 255, 156, 27),
-        //     ),
-        //   ),
-        // ),
       ),
     );
   }
@@ -755,6 +792,9 @@ Widget carosel(double _height,double _width){
                                   }
                                   if (!snapshot.hasData) {
                                     return const Center(child: CircularProgressIndicator(),);
+                                  }
+                                  if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
                                   Uint8List im = snapshot.data["ImgData"];
                                   String title = snapshot.data["Title"];
@@ -814,7 +854,7 @@ Widget carosel(double _height,double _width){
                                                             padding: EdgeInsets.only(
                                                                 left: 25)),
                                                         Text(
-                                                         "${date.difference(DateTime.now()).inDays.toString()} days go ",
+                                                         period(date),
                                                           style:const TextStyle(
                                                               color: Color.fromARGB(255, 255, 255, 255)),
                                                         ),

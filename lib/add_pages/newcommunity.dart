@@ -98,12 +98,12 @@ class _NewcommunityState extends State<Newcommunity> {
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 decoration: BoxDecoration(
-                    border: Border.all(color: Color.fromARGB(255, 86, 86, 86)),
+                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
                   controller: namecontroller,
                   style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
+                  decoration:const InputDecoration(
                       labelStyle:
                           TextStyle(color: Color.fromARGB(255, 161, 159, 159))),
                 ),
@@ -120,7 +120,7 @@ class _NewcommunityState extends State<Newcommunity> {
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 decoration: BoxDecoration(
-                    border: Border.all(color: Color.fromARGB(255, 86, 86, 86)),
+                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
                   controller: leadController,
@@ -139,11 +139,11 @@ class _NewcommunityState extends State<Newcommunity> {
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 decoration: BoxDecoration(
-                    border: Border.all(color: Color.fromARGB(255, 86, 86, 86)),
+                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
                   keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(),
+                  decoration:const InputDecoration(),
                   controller: emailController,
                   style: const TextStyle(color: Colors.white),
                 ),
@@ -273,7 +273,7 @@ class _NewcommunityState extends State<Newcommunity> {
                                                   return ListTile(
                                                     title: Text(
                                                       socials[index],
-                                                      style: TextStyle(
+                                                      style:const TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 17),
                                                     ),
@@ -325,7 +325,7 @@ class _NewcommunityState extends State<Newcommunity> {
                               padding: const EdgeInsets.only(left: 10.0),
                               child: Text(
                                 socials[index],
-                                style: TextStyle(
+                                style:const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                 ),
@@ -336,10 +336,10 @@ class _NewcommunityState extends State<Newcommunity> {
                               child: Container(
                                 decoration: BoxDecoration(
                                     border: Border.all(
-                                        color: Color.fromARGB(255, 86, 86, 86)),
+                                        color:const Color.fromARGB(255, 86, 86, 86)),
                                     borderRadius: BorderRadius.circular(10)),
                                 child: TextField(
-                                  style: TextStyle(color: Colors.white),
+                                  style:const TextStyle(color: Colors.white),
                                   controller: socialsController[index],
                                 ),
                               ),
@@ -361,7 +361,7 @@ class _NewcommunityState extends State<Newcommunity> {
                         emailController.text.isNotEmpty) {
                       for (var i = 0; i < socials.length; i++) {
                         if (socialsController[i].text.isNotEmpty) {
-                          print("OKKK$i");
+                         
                           var name = socials[i];
                           var link = socialsController[i];
                           final ok = <String, String>{name: link.text};

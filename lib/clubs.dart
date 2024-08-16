@@ -92,12 +92,15 @@ class _ClubsState extends State<Clubs> {
     }
     return icon;
   }
+ValueNotifier<bool> search_visible = ValueNotifier(false);
 
+void _visibleChanged(){}
   List<String> communities_ = List.empty(growable: true);
   String dropdown_value = "all";
   @override
   void initState() {
     super.initState();
+    search_visible.addListener(_visibleChanged);
   }
 
   Future<void> get() async {
@@ -160,9 +163,8 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
         actions: [
           IconButton(
               onPressed: () {
-                setState(() {
-                  _search_vis = !_search_vis;
-                });
+                _search_vis = !_search_vis;
+                search_visible.value = !search_visible.value;
               },
               icon: const Icon(
                 Icons.search_sharp,
@@ -189,20 +191,30 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Visibility(
-                    visible: _search_vis,
-                    child: SizedBox(
-                      width: 120,
-                      child: TextField(
-                        controller: _search,
-                        decoration: const InputDecoration(
-                            label: Icon(
-                          Icons.search,
-                          size: 20,
-                          color: Colors.white,
-                        )),
-                      ),
-                    ),
+                  StatefulBuilder(
+                    builder: (context,setstate2) {
+                      return ListenableBuilder(
+                        listenable: search_visible,
+                        builder: (context, child) {
+                          return Visibility(
+                          visible: _search_vis,
+                          child: SizedBox(
+                            width: 120,
+                            child: TextField(
+                              controller: _search,
+                              decoration: const InputDecoration(
+                                  label: Icon(
+                                Icons.search,
+                                size: 20,
+                                color: Colors.white,
+                              )),
+                            ),
+                          ),
+                                              );
+                        }
+                      );
+                    },
+                    
                   ),
                   const SizedBox(
                     width: 50,
@@ -245,6 +257,12 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
             FutureBuilder(
                 future: get(),
                 builder: (context, snpsht) {
+                  if (snpsht.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(),);
+                  }
+                  if (snpsht.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                   return ListView.builder(
                       itemCount: communities_.length,
                       shrinkWrap: true,
@@ -261,6 +279,9 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                 if (snapshot.connectionState == ConnectionState.waiting) {
                                   return const Center(child: CircularProgressIndicator(),);
                                 }
+                                if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                                 Uint8List c_image = snapshot.data!["Image"];
                                 String C_name = snapshot.data!["Name"];
                                 String C_about = snapshot.data!["About"];
@@ -303,10 +324,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                                         fontSize: 20),
                                                   ),
                                                    Padding(
-                                                    padding: EdgeInsets.all(8.0),
+                                                    padding:const EdgeInsets.all(8.0),
                                                     child: Text(
                                                       C_about,
-                                                      style: TextStyle(
+                                                      style:const TextStyle(
                                                           color: Colors.white),
                                                       maxLines: 3,
                                                       overflow: TextOverflow.fade,

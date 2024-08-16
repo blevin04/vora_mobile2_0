@@ -41,7 +41,7 @@ class _AnnouncemntsState extends State<Announcemnts> {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => const Homepage()));
             },
-            icon: Icon(
+            icon:const Icon(
               Icons.arrow_back,
               color: Colors.white,
             )),
@@ -58,6 +58,9 @@ class _AnnouncemntsState extends State<Announcemnts> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator(),);
           }
+          if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
           
           return ListView.builder(
             itemCount: snapshot.data.length,
@@ -71,6 +74,9 @@ class _AnnouncemntsState extends State<Announcemnts> {
                   if (!snapshot2.hasData) {
                     return const Center(child: CircularProgressIndicator(),);
                   }
+                  if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                   String titles_ =snapshot2.data["Title"];
                   String data_ = snapshot2.data["Description"];
                   String club_ = snapshot2.data["Community"];

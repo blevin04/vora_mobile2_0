@@ -30,11 +30,12 @@ String event_value = "all";
 bool events_vis = false;
 TextEditingController _search_events = TextEditingController();
 List<String> eventIds = List.empty(growable: true);
-
+ValueNotifier<bool> Search_visible_ = ValueNotifier(false);
 class _EventsState extends State<Events> {
   @override
   void initState() {
     super.initState();
+    
   }
 
   Future<void> getevents([String filter = "null"]) async {
@@ -130,9 +131,9 @@ class _EventsState extends State<Events> {
         actions: [
           IconButton(
               onPressed: () {
-                setState(() {
+                
                   events_vis = !events_vis;
-                });
+               Search_visible_.value = !Search_visible_.value;
               },
               icon: const Icon(
                 Icons.search_sharp,
@@ -148,19 +149,24 @@ class _EventsState extends State<Events> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Visibility(
-                    visible: events_vis,
-                    child: SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _search_events,
-                        decoration: const InputDecoration(
-                            label: Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        )),
-                      ),
-                    )),
+                ListenableBuilder(
+                  listenable: Search_visible_,
+                  builder: (context,child) {
+                    return Visibility(
+                        visible: events_vis,
+                        child: SizedBox(
+                          width: 150,
+                          child: TextField(
+                            controller: _search_events,
+                            decoration: const InputDecoration(
+                                label: Icon(
+                              Icons.search,
+                              color: Colors.white,
+                            )),
+                          ),
+                        ));
+                  }
+                ),
                 const SizedBox(
                   width: 50,
                 ),
@@ -217,6 +223,9 @@ class _EventsState extends State<Events> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
+                  if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                   return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -236,6 +245,9 @@ class _EventsState extends State<Events> {
                                 ),
                               ),);
                             }
+                            if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
                             if (!snapshot.hasData) {
                               return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
                             }
@@ -274,7 +286,7 @@ class _EventsState extends State<Events> {
                                                       color: Colors.blue,fontSize: 18),
                                                 ),
                                                 Text(
-                                                  time.day.toString(),
+                                                  period(time),
                                                   style:const TextStyle(
                                                       color: Color.fromARGB(
                                                           174, 255, 255, 255)),
@@ -282,7 +294,7 @@ class _EventsState extends State<Events> {
                                               ],
                                             ),
                                           ),
-                                         SizedBox(width: 30,),
+                                         const   SizedBox(width: 30,),
                                           Padding(
                                             padding: const EdgeInsets.all(5.0),
                                             child: Text("by $C_name ",style: TextStyle(color: Colors.white,fontSize: 12),),
