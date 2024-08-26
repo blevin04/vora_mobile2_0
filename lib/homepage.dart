@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/add_pages/add_event.dart';
 import 'package:vora_mobile/add_pages/new_announcement.dart';
@@ -17,7 +17,7 @@ import 'package:vora_mobile/calender.dart';
 import 'package:vora_mobile/clubs.dart';
 import 'package:vora_mobile/events.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' ;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:vora_mobile/utils.dart';
@@ -778,6 +778,7 @@ Widget carosel(double _height,double _width){
                           }
                           
                           return CarouselSlider(
+                            
                           options: CarouselOptions(
                               autoPlay: true,
                               viewportFraction: 0.9,
