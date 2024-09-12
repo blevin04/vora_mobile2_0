@@ -16,6 +16,7 @@ Future<String> addcommunity(
     required Map<String, String> socials,
     required String Email,
     required bool visibility,
+    required List<String> categories,
     required String cover_pic}) async {
   String state = "some Error occured";
   String communityId = Uuid().v1();
@@ -28,6 +29,7 @@ Future<String> addcommunity(
     numbers: socials,
     uid: communityId,
     visibility: visibility,
+    category: categories
   );
 
   try {

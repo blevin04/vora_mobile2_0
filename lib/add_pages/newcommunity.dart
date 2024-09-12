@@ -27,6 +27,16 @@ List<String> socials = [
   "YouTube",
   "Facebook"
 ];
+List<String>categories = [
+  "All",
+  "Technology",
+    "Arts",
+    "Religion",
+    "Music",
+    "Travel",
+    "Engineering",
+    
+];
 List<bool> active_socials = [
   false,
   false,
@@ -54,6 +64,7 @@ bool visibility = true;
 class _NewcommunityState extends State<Newcommunity> {
   String cover_photo = '';
   String dropdownvalue = "Public";
+  String dropdownvalue1 = "All";
   var visible = ["Private", "Public"];
   @override
   Widget build(BuildContext context) {
@@ -178,6 +189,27 @@ class _NewcommunityState extends State<Newcommunity> {
             const SizedBox(
               height: 10,
             ),
+            Container(
+              color: Colors.black,
+              child: DropdownButton(
+                borderRadius: BorderRadius.circular(10),
+                dropdownColor: const Color.fromARGB(255, 57, 56, 56),
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                value: dropdownvalue1,
+                icon: const Icon(Icons.keyboard_arrow_down_sharp),
+                items: categories.map((String item) {
+                  return DropdownMenuItem(value: item, child: Text(item));
+                }).toList(),
+                onChanged: (newval) {
+                  if (newval != dropdownvalue1) {
+                    setState(() {
+                      dropdownvalue1 = newval!;
+                    });
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
             const Text(
               "Cover Photo",
               style: TextStyle(color: Colors.white, fontSize: 18),
@@ -368,10 +400,12 @@ class _NewcommunityState extends State<Newcommunity> {
                           fsocials_.addEntries(ok.entries);
                         }
                       }
-
+                      List<String> categ = List.empty(growable: true);
+                      categ.add(dropdownvalue1);
                       state = await addcommunity(
                           name: namecontroller.text,
                           lead: leadController.text,
+                          categories: categ,
                           socials: fsocials_,
                           Email: emailController.text,
                           visibility: visibility,

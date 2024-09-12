@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:vora_mobile/utils.dart';
@@ -256,12 +257,15 @@ class _EventsState extends State<Events> {
                             List<dynamic> event_imgs = snapshot.data!["Images"];
                             DateTime time = snapshot.data!["EventDate"].toDate();
                             String C_name = snapshot.data!["Club_Name"];
+                            String eventId_ = eventIds[index2];
                             return Padding(
                             padding: const EdgeInsets.all(2),
                             child: Card(
                               color: const Color.fromARGB(86, 82, 81, 81),
                               elevation: 10,
                               child: InkWell(
+                                onTap:()=> Navigator.push(context,MaterialPageRoute(builder: 
+                                (context)=> Dedicatedeventpage(eventId:eventId_ ,))),
                                 child: Column(
                                   children: [
                                     SizedBox(
@@ -297,7 +301,7 @@ class _EventsState extends State<Events> {
                                          const   SizedBox(width: 30,),
                                           Padding(
                                             padding: const EdgeInsets.all(5.0),
-                                            child: Text("by $C_name ",style: TextStyle(color: Colors.white,fontSize: 12),),
+                                            child: Text("by $C_name ",style:const TextStyle(color: Colors.white,fontSize: 12),),
                                           ),
                                           const SizedBox(width: 50,),
                                           TextButton(onPressed: (){
@@ -306,13 +310,13 @@ class _EventsState extends State<Events> {
                                                 alignment: Alignment.center,
                                                 elevation: 10,
                                                 child: Container(height: 150,width: 100,
-                                                decoration: BoxDecoration(color: Color.fromARGB(255, 19, 18, 18),borderRadius: BorderRadius.circular(15)),
+                                                decoration: BoxDecoration(color:const Color.fromARGB(255, 19, 18, 18),borderRadius: BorderRadius.circular(15)),
                                                 child:Column(
                                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                   children: [
-                                                    Padding(padding: EdgeInsets.all(10),child: 
-                                                    Text("RSVP to $Event_title by $C_name ",style: TextStyle(color: Color.fromARGB(188, 215, 212, 212)),),),
-                                                    Padding(padding: EdgeInsets.all(10),
+                                                    Padding(padding:const EdgeInsets.all(10),child: 
+                                                    Text("RSVP to $Event_title by $C_name ",style:const TextStyle(color: Color.fromARGB(188, 215, 212, 212)),),),
+                                                    Padding(padding:const EdgeInsets.all(10),
                                                     child:Row(
                                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                       children: [
@@ -320,12 +324,12 @@ class _EventsState extends State<Events> {
                                                         String state = await  rsvp(eventId: eventIds[index2]);
                                                         if (state == "Success") {
                                                           showsnackbar(context, "Successfully rsvp'd to $Event_title");
-                                                        }else{print(state);}
+                                                        }
                                                         Navigator.pop(context);
-                                                        }, child: Text("YES",style: TextStyle(color: const Color.fromARGB(144, 255, 255, 255)),)),
+                                                        }, child:const Text("YES",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),)),
                                                         TextButton(onPressed: (){
                                                           Navigator.pop(context);
-                                                        }, child: Text("Cancel",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),))
+                                                        }, child:const Text("Cancel",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),))
                                                       ],
                                                     ) ,)
                                                   ],

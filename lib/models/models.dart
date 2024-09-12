@@ -121,7 +121,7 @@ class communityModel {
   final Map<String, String> numbers;
   final String uid;
   final bool visibility;
-
+  final List<String> category ;
   communityModel({
     required this.Lead,
     required this.eventsId,
@@ -130,6 +130,7 @@ class communityModel {
     required this.numbers,
     required this.uid,
     required this.visibility,
+    required this.category
   });
 
   //to json
@@ -140,7 +141,9 @@ class communityModel {
         "Email": Email,
         "Numbers": numbers,
         "Uid": uid,
-        "Visibility": visibility
+        "Visibility": visibility,
+        "Category":category
+        
       };
 }
 

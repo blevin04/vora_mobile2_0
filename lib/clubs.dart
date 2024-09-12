@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -35,7 +36,9 @@ class _ClubsState extends State<Clubs> {
     "Religion",
     "Music",
     "Travel",
-    "Engineering"
+    "Engineering",
+    "Member",
+    "Non-Member"
   ];
   FaIcon Ausomicons(String name) {
     FaIcon icon;
@@ -95,7 +98,7 @@ class _ClubsState extends State<Clubs> {
 ValueNotifier<bool> search_visible = ValueNotifier(false);
 
 void _visibleChanged(){}
-  List<String> communities_ = List.empty(growable: true);
+  
   String dropdown_value = "all";
   @override
   void initState() {
@@ -103,9 +106,11 @@ void _visibleChanged(){}
     search_visible.addListener(_visibleChanged);
   }
 
-  Future<void> get() async {
-    communities_.clear();
-    await firestore
+  Future<List<String>> get(String filter) async {
+    List<String> communities_ = List.empty(growable: true);
+    switch (filter) {
+      case "all":
+        await firestore
         .collection("Communities")
         .where("Visibility", isEqualTo: true)
         .get()
@@ -114,6 +119,90 @@ void _visibleChanged(){}
         communities_.add(snap["Uid"]);
       }
     });
+        break;
+
+      case "Technology":
+        await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Technology")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+      case "Arts": 
+      await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Arts")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+      case "Religion":
+        await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Religion")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+
+      case "Music":
+        await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Music")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+
+      case "Travel":
+        await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Travel")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+    
+      case "Engineering":
+        await firestore
+        .collection("Communities")
+        .where("Category", isEqualTo: "Engineering")
+        .get()
+        .then((onValue) {
+      for (var snap in onValue.docs) {
+        communities_.add(snap["Uid"]);
+      }
+    });
+        break;
+
+      case "Member":
+        
+        break;
+      
+      case  "Non-Member":
+
+        break;
+    
+      default:
+    }
+    
+    return communities_;
   }
 Future<Map<String,dynamic>> clubdata (String clubId)async{
   Map<String,dynamic> clubd_ = Map();
@@ -128,7 +217,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
     final cover_pic =<String,dynamic>{"Image":onValue1!};
     clubd_.addAll(cover_pic);
   });
-
+  final Sdata = <String,Map<String,dynamic>>{clubId:clubd_};
+  if (!clubData.containsKey(clubId)) {
+    clubData.addAll(Sdata);
+  }
   return clubd_;
 }
   bool _search_vis = false;
@@ -203,11 +295,9 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                             child: TextField(
                               controller: _search,
                               decoration: const InputDecoration(
-                                  label: Icon(
-                                Icons.search,
-                                size: 20,
-                                color: Colors.white,
-                              )),
+                                  labelText:"Search" ,
+                                  labelStyle: TextStyle(color: Colors.white)
+                                  ),
                             ),
                           ),
                                               );
@@ -246,35 +336,40 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                     }).toList(),
 
                     onChanged: (String? newValue) {
-                      setState(() {
+                      if (newValue != dropdown_value) {
+                        setState(() {
                         dropdown_value = newValue!;
                       });
+                      }
+                      
                     },
                   ),
                 ],
               ),
             ),
+            clubData.isEmpty || clubIds.isEmpty?
             FutureBuilder(
-                future: get(),
+                future: get(dropdown_value),
                 builder: (context, snpsht) {
                   if (snpsht.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(),);
                   }
                   if (snpsht.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    return const Center(child: 
+                                    Column(children: [Icon(Icons.wifi_off_rounded),
+                                    Text("Offline...")],),);
                                   }
+                  List<String> data_snap = snpsht.data!;
                   return ListView.builder(
-                      itemCount: communities_.length,
+                      itemCount: data_snap.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
-
-                        
                         return SizedBox(
                            height: _height / 4.5,
                           child: FutureBuilder(
                              // initialData: img = AssetImage("lib/assets/dp.png"),
-                              future: clubdata(communities_[index]),
+                              future: clubdata(data_snap[index]),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState == ConnectionState.waiting) {
                                   return const Center(child: CircularProgressIndicator(),);
@@ -285,7 +380,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                 Uint8List c_image = snapshot.data!["Image"];
                                 String C_name = snapshot.data!["Name"];
                                 String C_about = snapshot.data!["About"];
+
                                 return InkWell(
+                                  onTap: () => Navigator.push(context,MaterialPageRoute(builder: 
+                                  (context)=>  Dedicatedcommunitypage(clubId: data_snap[index],))),
                                   child: Padding(
                                     padding: const EdgeInsets.all(5.0),
                                     child: Container(
@@ -382,7 +480,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                                                           TextButton(
                                                                               onPressed:
                                                                                   () async{
-                                                                                 String state=  await join(communId: communities_[index]);
+                                                                                 String state=  await join(communId: data_snap[index]);
                                                                                       if (state == "Success") {
                                                                                         showsnackbar(context, "Successfully joined $C_name");
                                                                                       }
@@ -448,10 +546,201 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                               }),
                         );
                       });
-                }),
+                })
+                :ListView.builder(
+                      itemCount: clubIds.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        String currentClubId = eventIds[index];
+                        Map<String,dynamic> currentClubData = eventData[currentClubId]!;
+                       Uint8List c_image = currentClubData["Image"];
+                                String C_name = currentClubData["Name"];
+                                String C_about = currentClubData["About"];
+                        return SizedBox(
+                           height: _height / 4.5,
+                          child: 
+                               
+                                 InkWell(
+                                  onTap: () => Navigator.push(context,MaterialPageRoute(builder: 
+                                  (context)=>  Dedicatedcommunitypage(clubId: currentClubId,))),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Container(
+                                     
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromARGB(
+                                              255, 46, 45, 45),
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      width: _width,
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                      fit: BoxFit.contain,
+                                                      image: MemoryImage(c_image)
+                                                          ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20)),
+                                              width: _width / 2.3,
+                                            ),
+                                          ),
+                                          Container(
+                                              width: _width / 2,
+                                              alignment: Alignment.topCenter,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    C_name,
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 20),
+                                                  ),
+                                                   Padding(
+                                                    padding:const EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      C_about,
+                                                      style:const TextStyle(
+                                                          color: Colors.white),
+                                                      maxLines: 3,
+                                                      overflow: TextOverflow.fade,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return Center(
+                                                              child: Dialog(
+                                                                insetPadding:
+                                                                    const EdgeInsets
+                                                                        .all(10),
+                                                                backgroundColor:
+                                                                    const Color
+                                                                        .fromARGB(
+                                                                        255,
+                                                                        51,
+                                                                        52,
+                                                                        53),
+                                                                child: SizedBox(
+                                                                  height: 120,
+                                                                  width: 170,
+                                                                  child: Column(
+                                                                    children: [
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            10.0),
+                                                                        child:
+                                                                            Text(
+                                                                          "Join $C_name",
+                                                                          style: const TextStyle(
+                                                                              color:
+                                                                                  Colors.white),
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                        height:
+                                                                            20,
+                                                                      ),
+                                                                      Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment
+                                                                                .spaceAround,
+                                                                        children: [
+                                                                          TextButton(
+                                                                              onPressed:
+                                                                                  () async{
+                                                                                 String state=  await join(communId: currentClubId);
+                                                                                      if (state == "Success") {
+                                                                                        showsnackbar(context, "Successfully joined $C_name");
+                                                                                      }
+                                                                                      else{print(state);}
+                                                                                      Navigator.pop(context);
+                                                                                  },
+                                                                              child: Container(
+                                                                                  decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                                                                                  child: const Padding(
+                                                                                    padding: EdgeInsets.all(10.0),
+                                                                                    child: Text(
+                                                                                      "Yes",
+                                                                                      style: TextStyle(color: Colors.white),
+                                                                                    ),
+                                                                                  ))),
+                                                                          TextButton(
+                                                                              onPressed:
+                                                                                  () {
+                                                                                    Navigator.pop(context);
+                                                                                  },
+                                                                              child:
+                                                                                  Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), child: Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
+                                                                        ],
+                                                                      )
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            );
+                                                          });
+                                                    },
+                                                    enableFeedback: true,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              Colors.blueAccent,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10)),
+                                                      child: const Padding(
+                                                        padding:
+                                                            EdgeInsets.all(8.0),
+                                                        child: Text(
+                                                          "Join Community",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                      onPressed: () {},
+                                                      child: const Text(
+                                                          "Clubs Events..."))
+                                                ],
+                                              ))
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        );
+                      }),
           ],
         ),
       ),
     ));
+  }
+}
+class feed extends StatefulWidget {
+  const feed({super.key});
+
+  @override
+  State<feed> createState() => _feedState();
+}
+
+class _feedState extends State<feed> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }

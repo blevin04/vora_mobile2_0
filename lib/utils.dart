@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 FirebaseFirestore store = FirebaseFirestore.instance;
@@ -116,3 +117,55 @@ String retrn = "";
   return retrn;
 
 }
+
+Map<String,Map<String,dynamic>> eventData = Map();
+//values include but not limited to :
+  //EventCoverImage
+  //EventTitle
+  //EventClub
+  //EventDate
+
+Map<String,Map<String,dynamic>> clubData = Map();
+//values include but not limited to:
+  //Club id as the key to the first map
+  //Name
+  //About
+  //Image
+
+Map<String,Map<String,dynamic>> announcementData = Map();
+Map<String,dynamic> more = Map();
+List<String> eventIds = List.empty(growable: true);
+List<String> clubIds = List.empty(growable: true);
+Map<String,dynamic> userData = Map();
+List<String> homepageEvents = List.empty(growable: true);
+
+
+Icon getIcon(String name){
+  Icon icon_ = Icon(Icons.group);
+  switch (name) {
+    case "Instagram":
+      icon_ =const Icon(FontAwesomeIcons.instagram,color:  Color.fromARGB(226, 255, 255, 255),);
+      
+      break;
+
+    case "LinkedIn":
+      icon_ =const Icon(FontAwesomeIcons.linkedinIn,color:  Color.fromARGB(226, 255, 255, 255));
+      break;
+
+    case "Twitter":
+      icon_ =const Icon(FontAwesomeIcons.twitter,color:  Color.fromARGB(226, 255, 255, 255));
+      break;
+    
+    case "Facebook":
+      icon_ = const Icon(FontAwesomeIcons.facebook,color:  Color.fromARGB(226, 255, 255, 255));
+      break;
+
+    default:
+      icon_ = const Icon(Icons.group,color:  Color.fromARGB(226, 255, 255, 255));
+      break;
+  }
+
+  return icon_;
+}
+
+

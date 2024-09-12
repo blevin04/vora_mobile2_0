@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 
 import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/homepage.dart';
@@ -219,98 +220,102 @@ class _BlogsState extends State<Blogs> {
                         
                       return Card(
                         color: const Color.fromARGB(255, 49, 47, 47),
-                        child: Container(
-                          constraints:const BoxConstraints(minHeight: 200),
-                          child: FutureBuilder(
-                            future: getpostimg(postnum),
-                            builder:
-                                (BuildContext context, AsyncSnapshot snapshot) {
-                          
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return const Center(child: CircularProgressIndicator(),);
-                                  }
-                                  if (!snapshot.hasData) {
-                                    return const Center(child: CircularProgressIndicator(),);
-                                  }
-                                  if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                                 
-                                  String names_ = snapshot.data["UserName"];
-                                  String n_name = snapshot.data["nick_name"];
-                                  DateTime postTime = snapshot.data["PostTime"];
-                                  String blogPost = snapshot.data["BlogPost"];
-                                  List<Uint8List> images_ = snapshot.data["Images"];
-                                  Uint8List document = snapshot.data["Document"];
-                                  String time = period(postTime);
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 50,
-                                    child: Row(
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.all(5),
-                                          child: CircleAvatar(
-                                            backgroundImage:
-                                                AssetImage("lib/assets/dp.png"),
+                        child: InkWell(
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: 
+                          (context)=>const Dedicatedblogpage())),
+                          child: Container(
+                            constraints:const BoxConstraints(minHeight: 200),
+                            child: FutureBuilder(
+                              future: getpostimg(postnum),
+                              builder:
+                                  (BuildContext context, AsyncSnapshot snapshot) {
+                            
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const Center(child: CircularProgressIndicator(),);
+                                    }
+                                    if (!snapshot.hasData) {
+                                      return const Center(child: CircularProgressIndicator(),);
+                                    }
+                                    if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                                   
+                                    String names_ = snapshot.data["UserName"];
+                                    String n_name = snapshot.data["nick_name"];
+                                    DateTime postTime = snapshot.data["PostTime"];
+                                    String blogPost = snapshot.data["BlogPost"];
+                                    List<Uint8List> images_ = snapshot.data["Images"];
+                                    Uint8List document = snapshot.data["Document"];
+                                    String time = period(postTime);
+                                return Column(
+                                  children: [
+                                    Container(
+                                      height: 50,
+                                      child: Row(
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.all(5),
+                                            child: CircleAvatar(
+                                              backgroundImage:
+                                                  AssetImage("lib/assets/dp.png"),
+                                            ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10.0),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                "$n_name @$names_",
-                                                style: const TextStyle(
-                                                    color: Color.fromARGB(
-                                                        189, 255, 255, 255)),
-                                              ),
-                                              Text(
-                                                 time,
-                                                style: const TextStyle(
-                                                    color: Color.fromARGB(
-                                                        174, 255, 255, 255)),
-                                              )
-                                            ],
-                                          ),
-                                        )
-                                      ],
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10.0),
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  "$n_name @$names_",
+                                                  style: const TextStyle(
+                                                      color: Color.fromARGB(
+                                                          189, 255, 255, 255)),
+                                                ),
+                                                Text(
+                                                   time,
+                                                  style: const TextStyle(
+                                                      color: Color.fromARGB(
+                                                          174, 255, 255, 255)),
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      constraints:const BoxConstraints(maxHeight: 100),
-                                      child: Text(blogPost,style:const TextStyle(color: Colors.white),),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        constraints:const BoxConstraints(maxHeight: 100),
+                                        child: Text(blogPost,style:const TextStyle(color: Colors.white),),
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 180,
-                                    child: GridView.count(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      crossAxisSpacing: 0,
-                                      mainAxisSpacing: 1,
-                                      crossAxisCount: 2,
-                                      children: List.generate(images_.length, (imageindex){
-                                        return Center(child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Container(
-                                                                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-                                                                             
-                                                                              child: GridTile(
-                                                                                child: Image.memory(fit: BoxFit.cover,images_[0]))
-                                                                            ),
-                                        ),);
-                                      })
+                                    SizedBox(
+                                      height: 180,
+                                      child: GridView.count(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        crossAxisSpacing: 0,
+                                        mainAxisSpacing: 1,
+                                        crossAxisCount: 2,
+                                        children: List.generate(images_.length, (imageindex){
+                                          return Center(child: Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: Container(
+                                                                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                                                                               
+                                                                                child: GridTile(
+                                                                                  child: Image.memory(fit: BoxFit.cover,images_[0]))
+                                                                              ),
+                                          ),);
+                                        })
+                                      ),
                                     ),
-                                  ),
-                                  
-                                ],
-                              );
-                            },
+                                    
+                                  ],
+                                );
+                              },
+                            ),
                           ),
                         ),
                       );
