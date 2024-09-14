@@ -255,7 +255,7 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                     decoration: BoxDecoration(color: Colors.transparent,borderRadius: BorderRadius.circular(10)),
                     child:const Row(
                       children: [
-                        Text("Resources",style: TextStyle(color: Colors.white),),
+                        Text("Club Resources",style: TextStyle(color: Colors.white),),
                         SizedBox(width: 20,)
                         ,Icon(Icons.book,color: Colors.white,)
                       ],

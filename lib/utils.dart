@@ -4,9 +4,13 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:uuid/uuid.dart';
+
+import 'package:vora_mobile/Accounts.dart';
 
 FirebaseFirestore store = FirebaseFirestore.instance;
 showsnackbar(BuildContext context, String content) {
@@ -134,10 +138,14 @@ Map<String,Map<String,dynamic>> clubData = Map();
 
 Map<String,Map<String,dynamic>> announcementData = Map();
 Map<String,dynamic> more = Map();
-List<String> eventIds = List.empty(growable: true);
+List<String> eventIdsEventspage = List.empty(growable: true);
 List<String> clubIds = List.empty(growable: true);
 Map<String,dynamic> userData = Map();
 List<String> homepageEvents = List.empty(growable: true);
+Map<String,Map<String,dynamic>> blogsdata = Map();
+List<String> blogsPageIds = List.empty(growable: true);
+//caries the blog data with variables like:
+
 
 
 Icon getIcon(String name){
@@ -168,4 +176,71 @@ Icon getIcon(String name){
   return icon_;
 }
 
+Future<String> likeEvent (String ContentId)async{
+  String state = "Error Ocured";
+  var likes;
+  List<String> likes_ = List.empty(growable: true);
+  try {
+     await store.collection("Events").doc(ContentId).get().then((onValue)async{
+     likes = onValue.data()!["Likes"];
+     
+    if (likes == null) {
+      
+      likes_.add(user.uid);
+    }
+    else{
+      List lk = List.empty(growable: true);
+      if (likes.contains(user.uid)) {
+        likes.remove(user.uid);
+        print(likes);
+      }else{
+        likes.add(user.uid);
+        print(likes);
+      }
+      for(var id in likes){
+        likes_.add(id);
+      }
+    }
+  });
+     Map<String,List<String>> data = {"Likes":likes_};
+    await store.collection("Events").doc(ContentId).update(data);
+    state = "Success";
+  } catch (e) {
+    state = e.toString();
+  }
+  return state;
+}
+Future<String> comment_(String contentId,String comment)async{
+  String state ="Error occured";
+Map<String,dynamic> commented = Map();
+String username = '';
+await store.collection("users").doc(user.uid).get().then((name){
+username = name.data()!["nickname"];
+});
+final com = <String,dynamic>{"UserName":username,"TimeStamp":DateTime.now(),"Comment":comment,"Likes":[]};
+var uuid = Uuid().v1();
+final commentWritten = <String,dynamic>{uuid:com};
+
+try {
+  await store.collection("Events").doc(contentId).get().then((onValue){
+    var coments = onValue.data()!["Comments"];
+    if (coments == null) {
+      
+      commented.addAll(commentWritten);
+    }
+    else{
+      commented = onValue.data()!["Comments"];
+      commented.addAll(commentWritten);
+       
+    }
+  });
+    final acomm =<String,dynamic>{"Comments":commented};
+    await store.collection("Events").doc(contentId).update(acomm);
+    state = "Success";
+} catch (e) {
+  state = e.toString();
+}
+  
+  return state;
+}
 

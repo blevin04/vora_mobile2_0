@@ -9,7 +9,7 @@ class Dedicatedblogpage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        leading: IconButton(onPressed: ()async=> Navigator.pop, 
+        leading: IconButton(onPressed: ()async=> Navigator.pop(context), 
         icon:const Icon(Icons.arrow_back,color: Colors.white,)),
         title:const Text("Blog Title",style: TextStyle(color: Colors.white),),
 

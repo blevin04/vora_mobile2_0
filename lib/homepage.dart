@@ -48,10 +48,11 @@ Future<String> userget()async{
 
 Future<Map<String,dynamic>> getcontent(String eventId)async{
   Map<String,dynamic> _data =Map();
+  Map<String,dynamic> all = Map(); //find something to do with this 
   String comnid = " ";
 await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
   var comn = onValue.data()!["Community"];
-  
+
   comnid = comn.toString();
   
   await firestore_.collection("Communities").doc(comn).get().then((onvalue1){
@@ -65,13 +66,14 @@ await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
   _data.addAll(ttle);
 
 });
+
 await store_1.child("/events/$eventId/cover").getData().then((value){
   final imgs = <String,dynamic>{"EventCoverImage":value!};
   _data.addAll(imgs);
 });
 
-  final evetd = <String,Map<String,dynamic>>{comnid:_data};
-  eventData.addAll(evetd);
+
+  
   return _data;
 }
 Future<Map<String,dynamic>> getclubsAndEvents()async{
@@ -96,7 +98,9 @@ Future<int> getevents()async{
   await firestore_.collection("Events").where("EventDate", isLessThan: Timestamp.now()).get().then((onValue)async{
     eventsno = onValue.docs.length;
     for(var val1 in onValue.docs){
-      
+      if(!homepageEvents.contains(val1.id)){
+        homepageEvents.add(val1.id);
+      }
       if (!events_Ids.contains(val1.id)) {
         events_Ids.add(val1.id);
       }
@@ -423,7 +427,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                           Padding(
                             padding: const EdgeInsets.only(top: 5, right: 5),
                             child: InkWell(
-                              onTap:()=>Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events())),
+                              onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events())),
                               child: Container(
                                 height: 140,
                                 width: _width / 4,
@@ -536,7 +540,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                                 : Colors.black),
                                       ),
                                       onTap: () async {
-                                        Navigator.pop(context);
+                                       // Navigator.pop(context);
                                         await Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -553,7 +557,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                                 : Colors.black),
                                       ),
                                       onTap: () async {
-                                        Navigator.pop(context);
+                                      //  Navigator.pop(context);
                                         await Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -569,12 +573,8 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                                 : Colors.black),
                                       ),
                                       onTap: () async {
-                                        Navigator.pop(context);
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Events()));
+                                      //  Navigator.pop(context);
+                                        await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events()));
                                       },
                                     ),
                                     ListTile(
@@ -586,7 +586,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                                 : Colors.black),
                                       ),
                                       onTap: () async {
-                                        Navigator.pop(context);
+                                      //  Navigator.pop(context);
                                         await Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -605,7 +605,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                         ),
                                       ),
                                       onTap: () async {
-                                        Navigator.pop(context);
+                                       // Navigator.pop(context);
                                         await Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -623,7 +623,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                       ),
                                       //takes you to the callender page
                                       onTap: () async{
-                                        Navigator.pop(context);
+                                      //  Navigator.pop(context);
                                        await Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -911,7 +911,7 @@ Widget carosel(double _height,double _width){
                                       height: 20,
                                       decoration: BoxDecoration(
                                           image:
-                                              DecorationImage(image: MemoryImage(eventData[item]!["EventCoverImage"] as Uint8List))),
+                                              DecorationImage(image: MemoryImage(eventData[item]!["Cover_Image"] as Uint8List))),
                                       child: Column(
                                         children: [
                                           SizedBox(
@@ -933,7 +933,7 @@ Widget carosel(double _height,double _width){
                                                         const  EdgeInsets.only(left: 30.0),
                                                       child: Text(
                                                         //Title for event
-                                                        eventData[item]!["EventTitle"],
+                                                        eventData[item]!["Title"],
                                                         style:const TextStyle(
                                                             fontSize: 22,
                                                             fontWeight: FontWeight.w800,

@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:vora_mobile/homepage.dart';
+import 'package:vora_mobile/utils.dart';
 
 class Announcemnts extends StatefulWidget {
   const Announcemnts({super.key});
@@ -11,6 +14,30 @@ class Announcemnts extends StatefulWidget {
 }
 final store = FirebaseStorage.instance.ref();
 final firestore = FirebaseFirestore.instance;
+
+Future<Map<String,dynamic>> getannouncementData(String anId)async{
+Map<String,dynamic> data = Map();
+String comId = "";
+  await firestore.collection("Announcements").doc(anId).get().then((onValue){
+    data = onValue.data()!;
+    comId = onValue.data()!["Community"];
+    
+  });//voramobile-70ba7.appspot.com/communities/1c743d70-4cbb-11ef-bff1-d967d3b04270
+  await firestore.collection("Communities").where("Name", isEqualTo: comId).get().then((onValu){
+   for(var dat in onValu.docs){
+    print("object= ${dat.data()}");
+    comId = dat.id;
+   }
+  });
+
+  await store.child("/communities/$comId/cover_picture").getData().then((onValue){
+    final img = <String,dynamic>{"Cover_picture":onValue!};
+    data.addAll(img);
+  });
+
+return data;
+}
+
 
 Future<List<String>>getannouncements() async{
   List<String> AnnouncemntsIds = List.empty(growable: true);
@@ -38,8 +65,7 @@ class _AnnouncemntsState extends State<Announcemnts> {
         ),
         leading: IconButton(
             onPressed: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Homepage()));
+              Navigator.pop(context);
             },
             icon:const Icon(
               Icons.arrow_back,
@@ -66,13 +92,13 @@ class _AnnouncemntsState extends State<Announcemnts> {
             itemCount: snapshot.data.length,
             itemBuilder: (BuildContext context, int index) {
               return FutureBuilder(
-                future: firestore.collection("Announcements").doc(snapshot.data[index]).get(),
+                future: getannouncementData(snapshot.data[index]),
                 builder: (BuildContext context, AsyncSnapshot snapshot2) {
                   if (snapshot2.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(),);
                   }
                   if (!snapshot2.hasData) {
-                    return const Center(child: CircularProgressIndicator(),);
+                    return const Center(child: Text("Error occured",style: TextStyle(color: Colors.white),),);
                   }
                   if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
@@ -80,6 +106,8 @@ class _AnnouncemntsState extends State<Announcemnts> {
                   String titles_ =snapshot2.data["Title"];
                   String data_ = snapshot2.data["Description"];
                   String club_ = snapshot2.data["Community"];
+                  Uint8List cover_picture = snapshot2.data!["Cover_picture"];
+                  DateTime ttime = snapshot2.data!["Time"].toDate();
                   return Card(
                     color: const Color.fromARGB(255, 26, 26, 26),
                     margin: EdgeInsets.all(10),
@@ -88,16 +116,28 @@ class _AnnouncemntsState extends State<Announcemnts> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          height: 50,
+                          padding:const EdgeInsets.all(5),
+                          height: 70,
                           child: Row(
                             children: [
-                              CircleAvatar(),
-                              Padding(padding: EdgeInsets.only(left: 10),child: Text(club_,style: TextStyle(color: Colors.white,fontSize: 18),),)
+                              CircleAvatar(
+                                backgroundImage: MemoryImage(cover_picture),
+                              ),
+                              Padding(padding:const EdgeInsets.only(left: 10),child: Text(club_,style: TextStyle(color: Colors.white,fontSize: 18),),)
                             ],
                           ),
                         ),
-                        Text(titles_,style:const TextStyle(color:  Colors.white,fontSize: 18) ),
-                        Center(child: Text(data_,style:const TextStyle(color:  Colors.white,) ),)
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(titles_,style:const TextStyle(color:  Colors.white,fontSize: 18) ),
+                            Text(period(ttime),style:const TextStyle(color: Colors.white),)
+                          ],
+                        ),
+                        Center(child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(data_,style:const TextStyle(color:  Colors.white,) ),
+                        ),)
                       ],
                     ),
                     

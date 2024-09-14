@@ -59,11 +59,14 @@ Future<String> CoName ()async{
       body: SingleChildScrollView(
         child: FutureBuilder(
           future: clubdata(),
-          initialData: "Error",
+        //  initialData: Map(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: Container(),);
+            }
             String aboutClub = snapshot.data!["About"];
             Uint8List CoverImg = snapshot.data!["CoverImg"];
-            List<String> numbers = snapshot.data!["Numbers"];
+            Map<String,dynamic> numbers = snapshot.data!["Numbers"];
             if (snapshot.connectionState==ConnectionState.waiting) {
               return const Center(child:CircularProgressIndicator());
             }
@@ -73,19 +76,21 @@ Future<String> CoName ()async{
                   padding:const EdgeInsets.all(20),
                   child: Image(image: MemoryImage(CoverImg)),
                 ),
-                const SizedBox(height: 20,),
+                const SizedBox(height: 10,),
                 const Divider(),
                 Text(aboutClub,style:const TextStyle(color: Colors.white),),
                 const SizedBox(height: 10,),
+
                 ListView.builder(
                   itemCount: numbers.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context,index){
+                    List keys_ = numbers.keys.toList(growable: true);
                    return ListTile(
                     contentPadding:const EdgeInsets.all(20),
-                    leading: getIcon(numbers[index]),
-                    title: Text(numbers[index],style:const TextStyle(color: Colors.white),),
+                    leading: getIcon(keys_[index]),
+                    title: Text(numbers[keys_[index]],style:const TextStyle(color: Colors.white),),
                    );
                 })
 

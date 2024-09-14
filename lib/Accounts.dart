@@ -173,8 +173,7 @@ PageController p_controller = PageController();
             45,
           ),
           leading: IconButton(
-              onPressed: () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Homepage())),
+              onPressed: () =>Navigator.pop(context),
               icon: const Icon(
                 Icons.arrow_back,
                 color: Colors.white,

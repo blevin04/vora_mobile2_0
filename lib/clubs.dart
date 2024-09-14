@@ -240,9 +240,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
         ),
         leading: IconButton(
             onPressed: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => const Homepage(),
-              ));
+              Navigator.pop(context);
+              // Navigator.of(context).pop(MaterialPageRoute(
+              //   builder: (context) => const Homepage(),
+              // ));
             },
             icon: const Icon(
               Icons.arrow_back_sharp,
@@ -552,7 +553,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
-                        String currentClubId = eventIds[index];
+                        String currentClubId = clubIds[index];
                         Map<String,dynamic> currentClubData = eventData[currentClubId]!;
                        Uint8List c_image = currentClubData["Image"];
                                 String C_name = currentClubData["Name"];

@@ -3,9 +3,10 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
-import 'package:vora_mobile/homepage.dart';
+
 import 'package:vora_mobile/utils.dart';
 
 class Events extends StatefulWidget {
@@ -14,7 +15,7 @@ class Events extends StatefulWidget {
   @override
   State<Events> createState() => _EventsState();
 }
-
+List<bool> viewComments = List.empty(growable: true);
 final store = FirebaseStorage.instance.ref();
 final firestore = FirebaseFirestore.instance;
 Widget show =const Text(
@@ -27,18 +28,29 @@ var event_filter = [
   "not Registered",
   "From all clubs",
 ];
+void getnewcomments(String evId)async{
+  await firestore.collection("Events").doc(evId).get().then((onValue){
+    var comm = onValue.data()!["Comments"];
+    eventData[evId]!["Comments"]=comm;
+  });
+}
 String event_value = "all";
 bool events_vis = false;
+TextEditingController commentText = TextEditingController();
 TextEditingController _search_events = TextEditingController();
 List<String> eventIds = List.empty(growable: true);
 ValueNotifier<bool> Search_visible_ = ValueNotifier(false);
 class _EventsState extends State<Events> {
   @override
   void initState() {
-    super.initState();
-    
+    if(eventIdsEventspage.isNotEmpty){
+      for (var i = 0; i < eventIdsEventspage.length; i++) {
+        viewComments.add(false);
+      }
+      
+    }
+    super.initState(); 
   }
-
   Future<void> getevents([String filter = "null"]) async {
     eventIds.clear();
     await firestore
@@ -48,21 +60,52 @@ class _EventsState extends State<Events> {
         .then((onValue) {
       for (var snaps in onValue.docs) {
         eventIds.add(snaps["Uid"]);
-        //  print(snaps);
+        if (!eventIdsEventspage.contains(snaps["Uid"])) {
+          eventIdsEventspage.add(snaps["Uid"]);
+        }
+        viewComments.add(false);
       }
     });
+    
     // print(eventIds);
   }
   Future<Map<String,dynamic>> get_events(String eventId)async{
     Map<String,dynamic> even_m = Map();
     var comm_id;
     await firestore.collection("Events").doc(eventId).get().then((onValue){
-      final title = <String,dynamic>{"Title":onValue.data()!["Title"]};
+      // final title = <String,dynamic>{"Title":onValue.data()!["Title"]};
      comm_id = onValue.data()!["Community"];
-      final date = <String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
-      even_m.addAll(title);
-      even_m.addAll(date);
-     
+      // final date = <String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
+       var likes = onValue.data()!["Likes"];
+      // final desc = <String,dynamic>{"Description":onValue.data()!["Description"]};
+      even_m.addAll(onValue.data()!);
+      try {
+        var comments_ = onValue.data()!["Comments"];
+      Map<String,dynamic>allComents = {"Comments":comments_};
+      Map<String,dynamic>commentedalready = Map();
+      if (comments_.contains(user.uid)) {
+        commentedalready = {"Commented":true};
+      }else{
+        commentedalready = {"Commented":false};
+      }
+            even_m.addAll(commentedalready);
+      
+      } catch (e) {
+        print(e.toString());
+      }
+      
+      Map<String,dynamic> liked = Map();
+      if (likes.contains(user.uid)){
+        liked = {"Liked":true};
+      }else{liked = {"Liked":false};}
+     // even_m.addAll(title);
+     // even_m.addAll(date);
+      even_m.addAll(liked);
+     // even_m.addAll(desc);
+    });
+    await firestore.collection("Communities").doc(comm_id).get().then((comN){
+      final comname = <String,dynamic>{"EventClub":comN.data()!["Name"]};
+      even_m.addAll(comname);
     });
     await firestore.collection("Communities").doc(comm_id).get().then((value){
       final comm_name = <String,dynamic>{"Club_Name":value.data()!["Name"]};
@@ -89,7 +132,10 @@ class _EventsState extends State<Events> {
       final img_paths = <String,dynamic>{"Images":imgs_};
       even_m.addAll(img_paths);
     });
-    
+    if (!eventData.containsKey(eventId)) {
+      final curEvent = <String,Map<String,dynamic>>{eventId:even_m};
+      eventData.addAll(curEvent);
+    }
     return even_m;
   }
 
@@ -105,9 +151,10 @@ class _EventsState extends State<Events> {
 
   @override
   Widget build(BuildContext context) {
-    // double _width = MediaQuery.of(context).size.width;
+    double _width = MediaQuery.of(context).size.width;
     return SafeArea(
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(
@@ -117,9 +164,10 @@ class _EventsState extends State<Events> {
           45,
         ),
         leading: IconButton(
-            onPressed: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Homepage()));
+            onPressed: ()async {
+              Navigator.pop(context);
+            //  await Navigator.pushReplacement(context,
+            //       MaterialPageRoute(builder: (context) => const Homepage()));
             },
             icon: const Icon(
               Icons.arrow_back,
@@ -217,7 +265,7 @@ class _EventsState extends State<Events> {
                 36,
                 45,
               ),
-            ),
+            ),eventIdsEventspage.isEmpty?
             FutureBuilder(
                 future: getevents(),
                 builder: (context, snapshot) {
@@ -227,13 +275,36 @@ class _EventsState extends State<Events> {
                   if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
+                  if (viewComments.isEmpty) {
+                    for (var i = 0; i < eventIds.length; i++) {
+                    viewComments.add(false);
+                  }
+                  }
+                  
                   return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: eventIds.length,
                       itemBuilder: (context, index2) {
                         
-                        return 
+                        return eventData.containsKey(eventIds[index2])?
+                        StatefulBuilder(
+                          builder: (BuildContext context, setState_1) {
+                             Uint8List C_image_comm = eventData[eventIds[index2]]!["Cover_Image"];
+                            String Event_title = eventData[eventIds[index2]]!["Title"];
+                            List<dynamic> event_imgs = eventData[eventIds[index2]]!["Images"];
+                            DateTime time = eventData[eventIds[index2]]!["EventDate"].toDate();
+                            String C_name = eventData[eventIds[index2]]!["Club_Name"];
+                            String eventId_ = eventIds[index2];
+                            String description = eventData[eventIds[index2]]!["Description"];
+                            bool liked = eventData[eventIds[index2]]!["Liked"];
+                            Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
+                            bool commented = false;
+                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                          },
+                        )
+                        
+                        :
                         FutureBuilder(
                           future: get_events(eventIds[index2]),
                           
@@ -258,7 +329,99 @@ class _EventsState extends State<Events> {
                             DateTime time = snapshot.data!["EventDate"].toDate();
                             String C_name = snapshot.data!["Club_Name"];
                             String eventId_ = eventIds[index2];
-                            return Padding(
+                            String description = snapshot.data!["Description"];
+                            bool liked = snapshot.data!["Liked"];
+                            Map<String,dynamic> allComments = snapshot.data!["Comments"];
+                            bool commented = false;
+                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                          },
+                        );
+                        
+                      });
+                }):ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: homepageEvents.length,
+                      itemBuilder: (context, index2) {
+                        if (viewComments.isEmpty) {
+                          for (var i = 0; i < homepageEvents.length; i++) {
+                          viewComments.add(false);
+                        }
+                        }
+                        
+                        
+                        return eventData.containsKey(homepageEvents[index2])?
+                        StatefulBuilder(
+                          builder: (BuildContext context, setState_1) {
+                             Uint8List C_image_comm = eventData[homepageEvents[index2]]!["Cover_Image"];
+                            String Event_title = eventData[homepageEvents[index2]]!["Title"];
+                            List<dynamic> event_imgs = eventData[homepageEvents[index2]]!["Images"];
+                            DateTime time = eventData[homepageEvents[index2]]!["EventDate"].toDate();
+                            String C_name = eventData[homepageEvents[index2]]!["Club_Name"];
+                            String eventId_ = homepageEvents[index2];
+                            String description = eventData[homepageEvents[index2]]!["Description"];
+                            bool liked = eventData[homepageEvents[index2]]!["Liked"];
+                            Map<String,dynamic> allComments = eventData[homepageEvents[index2]]!["Comments"];
+                            bool commented = false;
+                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                          },
+                        )
+                        
+                        :
+                        FutureBuilder(
+                          future: get_events(homepageEvents[index2]),
+                          
+                          builder: (BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return  Center(child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 99, 94, 94),borderRadius: BorderRadius.circular(12)),height: 200,
+                                child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
+                                ),
+                              ),);
+                            }
+                            if (snapshot.connectionState == ConnectionState.none) {
+                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
+                            if (!snapshot.hasData) {
+                              return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
+                            }
+                            Uint8List C_image_comm = snapshot.data!["Cover_Image"];
+                            String Event_title = snapshot.data!["Title"];
+                            List<dynamic> event_imgs = snapshot.data!["Images"];
+                            DateTime time = snapshot.data!["EventDate"].toDate();
+                            String C_name = snapshot.data!["Club_Name"];
+                            String eventId_ = homepageEvents[index2];
+                            String description = snapshot.data!["Description"];
+                            bool liked = snapshot.data!["Liked"];
+                            Map<String,dynamic> allComments = snapshot.data!["Comments"];
+                            bool commented = false;
+                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                          },
+                        );
+                        
+                      })
+          ],
+        ),
+      ),
+    ));
+  }
+}
+Widget content(BuildContext context,
+                String eventId_,
+                Uint8List C_image_comm,
+                String Event_title,
+                DateTime time,
+                String C_name,
+                List<dynamic> event_imgs,
+                bool liked,
+                bool commented,
+                double _width,
+                String description,
+                bool viewComments,
+                Map<String,dynamic> commentsAll
+                ){
+  return Padding(
                             padding: const EdgeInsets.all(2),
                             child: Card(
                               color: const Color.fromARGB(86, 82, 81, 81),
@@ -321,7 +484,7 @@ class _EventsState extends State<Events> {
                                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                       children: [
                                                         TextButton(onPressed: ()async{
-                                                        String state = await  rsvp(eventId: eventIds[index2]);
+                                                        String state = await  rsvp(eventId: eventId_);
                                                         if (state == "Success") {
                                                           showsnackbar(context, "Successfully rsvp'd to $Event_title");
                                                         }
@@ -362,52 +525,170 @@ class _EventsState extends State<Events> {
                                                  child: Image(image: MemoryImage(E_img)),
                                                 );
                                              
-                                           
                                           }),
                                     ),
-                                    Container(
-                                      height: 50,
-                                      child: Row(
+                                    StatefulBuilder(
+                                      builder: (BuildContext context, setStateAll) {
+                                        return Column(
                                         children: [
-                                          //like button
-                                          IconButton(
-                                              onPressed: () {},
-                                              icon: const Icon(
-                                                Icons.thumb_up_alt_outlined,
-                                                color: Color.fromARGB(
-                                                    255, 108, 105, 105),
-                                              ))
-                                          //comment field
-                                          ,
-                                          IconButton(
-                                              onPressed: () {},
-                                              icon: const Icon(
-                                                Icons.comment,
-                                                color: Color.fromARGB(
-                                                    255, 99, 95, 95),
-                                              ))
+                                          Container(
+                                            height: 50,
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Container(
+                                                  height: 60,
+                                                  padding:const EdgeInsets.all(5),
+                                                  child:viewComments?SizedBox(height: 40,width: _width/2,child:
+                                                  
+                                                  TextField(
+                                                    onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                                                    style: const TextStyle(color: Colors.white),
+                                                    decoration: InputDecoration(
+                                                       enabledBorder: OutlineInputBorder(
+                                                      borderSide: const BorderSide(color: Colors.grey),
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderSide:  const BorderSide(
+                                                        color: Colors.black,
+                                                        width: 2,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    errorBorder: OutlineInputBorder(
+                                                      borderSide: const BorderSide(
+                                                        color: Colors.red,
+                                                        width: 2,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                        labelText: "Add comment",
+                                                        labelStyle: const TextStyle(
+                                                            color: Color.fromARGB(255, 161, 159, 159))),
+                                                    controller: commentText,
+                                                     ),
+                                                  ): 
+                                                  
+                                                   Padding(
+                                                     padding: const EdgeInsets.all(8.0),
+                                                     child: Text(commentsAll.isEmpty?"Be first to leave a comment":commentsAll[commentsAll.keys.first]["Comment"] ,style: TextStyle(color: Colors.white),
+                                                                                                       maxLines: 2,overflow: TextOverflow.fade,),
+                                                   ),
+                                                ),
+                                                Visibility(
+                                                  visible: viewComments,
+                                                  child:IconButton(onPressed: ()async{
+                                                  String  state = "Error occured";
+                                                  state = await comment_(eventId_, commentText.text);
+                                                  if (state == "Success") {
+                                                    print("Comment added");
+                                                    commentText.clear();
+                                                    setStateAll((){
+                                                      getnewcomments(eventId_);
+                                                    });
+
+                                                  }
+                                                  }, icon:
+                                                  const Icon(Icons.send,color: Colors.blueAccent,)) ),
+                                                Row(
+                                                  children: [
+                                                     //like button
+                                                    StatefulBuilder(
+                                                  builder: (BuildContext context, setStateL) {
+                                                    return IconButton(
+                                                      onPressed: ()async {
+                                                        print(commentsAll);
+                                                        String state = "Unsuccesfull";
+                                                          setStateL((){
+                                                            liked = !liked;
+                                                          });
+                                                       state = await likeEvent(eventId_);
+                                                       if (state == "Success") {
+                                                         showsnackbar(context, "Liked");
+                                                       }else{print(state);}
+                                                                                                
+                                                      },
+                                                      icon:  Icon(
+                                                        Icons.thumb_up_alt_outlined,
+                                                        color:liked?Colors.blue :const Color.fromARGB(
+                                                            255, 108, 105, 105),
+                                                      ));
+                                                  },
+                                                ),
+                                                    //comment field
+                                                
+                                                IconButton(
+                                                    onPressed: () async{
+                                                      setStateAll((){
+                                                        viewComments = !viewComments;
+                                                      });
+                                                      
+                                                    },
+                                                    icon:  Icon(
+                                                      Icons.comment,
+                                                      color:commented?Colors.blue:const Color.fromARGB(
+                                                          255, 99, 95, 95),
+                                                    ))
+                                                  ],
+                                                ),
+                                               
+                                              ],
+                                            ),
+                                          ),
+                                          Visibility(
+                                        visible:viewComments,
+                                        child:Padding(padding: EdgeInsets.all(10),
+                                        child: Container(
+                                          constraints: BoxConstraints(maxHeight: 200,),
+                                          child: ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemCount: commentsAll.length,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              var comId = commentsAll.keys.toList();
+                                             DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
+                                             String comOwner = commentsAll[comId[index]]["UserName"].toString();
+                                             String commentdata = commentsAll[comId[index]]["Comment"];
+                                             List likesall = commentsAll[comId[index]]["Likes"];
+                                              return Container(
+                                                decoration: BoxDecoration(color: const Color.fromARGB(236, 16, 16, 16),borderRadius: BorderRadius.circular(10)),
+                                                child: Column(
+                                                  children: [
+                                                    ListTile(
+                                                      leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
+                                                      title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
+                                                      trailing: Badge(
+                                                        label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
+                                                        child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite))),
+                                                    ),
+                                                    Container(
+                                                      padding: EdgeInsets.all(5),
+                                                      alignment: Alignment.bottomLeft,
+                                                      child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
+                                                    
+                                                  ],
+                                                ),
+                                              ) ;
+                                            },
+                                          ),
+                                        ),
+                                        ) ),
                                         ],
-                                      ),
+                                      );
+                                      },
                                     ),
+                                    
                                     Container(
                                       alignment: Alignment.bottomLeft,
-                                      child: const Text(
-                                        "About the event .....",
-                                        style: TextStyle(color: Colors.white),
+                                      padding:const EdgeInsets.all(10),
+                                      child:  Text(
+                                        description,
+                                        style:const TextStyle(color: Colors.white),
                                       ),
                                     )
                                   ],
                                 ),
                               ),
                             ));
-                          },
-                        );
-                        
-                      });
-                })
-          ],
-        ),
-      ),
-    ));
-  }
 }
