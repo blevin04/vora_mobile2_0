@@ -94,7 +94,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
-                  style: TextStyle(color: Colors.white),
+                  style:const TextStyle(color: Colors.white),
                   controller: title_,
                 ),
               ),
@@ -110,7 +110,10 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
-                  style: TextStyle(color: Colors.white),
+                  clipBehavior: Clip.hardEdge,
+                  expands: true,
+                  scrollPhysics: const AlwaysScrollableScrollPhysics(),
+                  style:const TextStyle(color: Colors.white,),
                   controller: decription,
                 ),
               ),
@@ -131,9 +134,9 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                       ListTile(
                           title: Text(
                             drop_val1,
-                            style: TextStyle(color: Colors.white),
+                            style:const TextStyle(color: Colors.white),
                           ),
-                          trailing: Icon(Icons.keyboard_arrow_down_rounded),
+                          trailing:const Icon(Icons.keyboard_arrow_down_rounded),
                           onTap: () {
                             setState(() {
                               comm_drop = !comm_drop;

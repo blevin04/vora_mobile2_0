@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
@@ -264,7 +265,8 @@ class _NewPostState extends State<NewPost> {
                         }
                         if (state == "Success") {
                         //  showsnackbar(context, "Post Added");
-                          Navigator.pushReplacement(context, (MaterialPageRoute(builder: (context)=>const Homepage())));
+                          Navigator.pushReplacement(context, 
+                          (MaterialPageRoute(builder: (context)=> Dedicatedblogpage())));
                           
                         }
                       }

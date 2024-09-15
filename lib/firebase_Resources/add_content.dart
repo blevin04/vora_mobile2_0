@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:vora_mobile/Accounts.dart';
 
 import 'package:vora_mobile/models/models.dart';
 import 'package:uuid/uuid.dart';
@@ -10,13 +11,14 @@ import 'package:uuid/uuid.dart';
 final firestore = FirebaseFirestore.instance;
 final storage = FirebaseStorage.instance.ref();
 User user_ = FirebaseAuth.instance.currentUser!;
-Future<String> addcommunity(
+Future<List<String>> addcommunity(
     {required String name,
     required String lead,
     required Map<String, String> socials,
     required String Email,
     required bool visibility,
     required List<String> categories,
+    required String aboutclub,
     required String cover_pic}) async {
   String state = "some Error occured";
   String communityId = Uuid().v1();
@@ -29,7 +31,8 @@ Future<String> addcommunity(
     numbers: socials,
     uid: communityId,
     visibility: visibility,
-    category: categories
+    category: categories,
+    about: aboutclub,
   );
 
   try {
@@ -40,15 +43,17 @@ Future<String> addcommunity(
     await storage
         .child("/communities/$communityId/cover_picture")
         .putFile(File(cover_pic));
-    state = 'Succes';
+    state = 'Success';
+
+    
   } catch (e) {
     state = e.toString();
   }
-
-  return state;
+  List<String> statuss = [state,communityId];
+  return statuss;
 }
 
-Future<String> AddEvent_(
+Future<List<String>> AddEvent_(
     {required String title,
     required String description,
     required String community,
@@ -57,18 +62,29 @@ Future<String> AddEvent_(
     required String reg_link,
     String rec_link = '',
     List<String> other_img = const []}) async {
+      String communityIdn = "";
+      await store.collection("Communities").where("Name",isEqualTo: community).get().then((onValue){
+        for(var id in onValue.docs){
+          communityIdn = id.id;
+        }
+      });
+
   String state = "Some Error Occured";
   String EventId = const Uuid().v1();
+  Map<String,dynamic> comms = Map();
   eventmodel event = eventmodel(
       title: title,
       description: description,
-      community: community,
+      community: communityIdn,
       cover_image: image_path,
       eventdate: time,
       reg_link: reg_link,
       resorce_link: rec_link,
       other_images: other_img,
-      Uid: EventId);
+      Uid: EventId,
+      Likes: List.empty(growable: true),
+      comments: comms,
+      );
   try {
     await firestore.collection("Events").doc(EventId).set(event.toJson());
     await storage.child("/events/$EventId/cover").putFile(File(image_path));
@@ -82,8 +98,8 @@ Future<String> AddEvent_(
   } catch (e) {
     state = e.toString();
   }
-
-  return state;
+  List<String> statuss = [state,EventId];
+  return statuss;
 }
 
 Future<String> AddAnnouncement({
@@ -136,7 +152,10 @@ Future<String> Addpost({
       images: images,
       postId: postId,
       UserId: user_.uid,
-      posttime: DateTime.now());
+      posttime: DateTime.now(),
+      Likes: List.empty(growable: true),
+      comments_: Map(),
+      );
   try {
     await firestore.collection("posts").doc(postId).set(post.tojson());
     if (images.isNotEmpty) {

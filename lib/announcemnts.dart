@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:vora_mobile/homepage.dart';
+
 import 'package:vora_mobile/utils.dart';
 
 class Announcemnts extends StatefulWidget {
@@ -19,7 +19,7 @@ Future<Map<String,dynamic>> getannouncementData(String anId)async{
 Map<String,dynamic> data = Map();
 String comId = "";
   await firestore.collection("Announcements").doc(anId).get().then((onValue){
-    data = onValue.data()!;
+    data.addAll(onValue.data()!) ;
     comId = onValue.data()!["Community"];
     
   });//voramobile-70ba7.appspot.com/communities/1c743d70-4cbb-11ef-bff1-d967d3b04270
@@ -107,10 +107,10 @@ class _AnnouncemntsState extends State<Announcemnts> {
                   String data_ = snapshot2.data["Description"];
                   String club_ = snapshot2.data["Community"];
                   Uint8List cover_picture = snapshot2.data!["Cover_picture"];
-                  DateTime ttime = snapshot2.data!["Time"].toDate();
+                  DateTime ttime = snapshot2.data!["AnnounceTime"].toDate();
                   return Card(
-                    color: const Color.fromARGB(255, 26, 26, 26),
-                    margin: EdgeInsets.all(10),
+                    color: const Color.fromARGB(134, 38, 37, 37),
+                    margin:const EdgeInsets.all(10),
                     elevation: 10,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -111,6 +111,9 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                 ],
               ),);
             }
+            if (!snapshot.hasData) {
+              return const Center(child: Text("Error occured refresh page"),);
+            }
             
             List<Uint8List> imgsData = snapshot.data!["Images"];
             Uint8List CommImage = snapshot.data!["ComImg"];
@@ -154,7 +157,9 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                decoration: BoxDecoration(color: Colors.transparent,border: Border.all(color: Colors.transparent),
+                                padding:const EdgeInsets.all(8),
+                                decoration: BoxDecoration(color: const Color.fromARGB(135, 0, 0, 0)
+                                ,border: Border.all(color: Colors.transparent),
                                 borderRadius: BorderRadius.circular(10)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -170,7 +175,7 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                                 ),
                               ),
                               Container(
-                                decoration: BoxDecoration(color: Colors.transparent,
+                                decoration: BoxDecoration(color: const Color.fromARGB(135, 0, 0, 0),
                                 border: Border.all(color: const Color.fromARGB(255, 65, 64, 64)),borderRadius: BorderRadius.circular(10)),
                                 padding:const EdgeInsets.all(10),
                                 child: Text(eventTime,style:const TextStyle(color: Colors.white),),
@@ -195,10 +200,11 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                       builder: (BuildContext context, setState_like) {
                         return Column(
                           children: [IconButton(onPressed: (){
-                            setState_like((){
+                            setState_like(()async{
                               liked = !liked;
                               liked? 
                               likes++:likes--;
+                              await likeEvent(widget.eventId);
                             });
                           }, //function to like / unlike the event
                           icon: Icon(Icons.favorite_sharp,color: liked?Colors.red:const Color.fromARGB(255, 74, 73, 73),)),
@@ -241,7 +247,10 @@ class _DedicatedeventpageState extends State<Dedicatedeventpage> {
                       showsnackbar(context, "Ann error occured please try again");
                      }
                      },
-                  child: Container(decoration: BoxDecoration(color: Colors.green,
+                  child: Container(
+                    width: 100,
+                    height: 40,
+                    decoration: BoxDecoration(color: Colors.green,
                   borderRadius: BorderRadius.circular(10)),
                   child:const Center(child:  Text("RSVP",style: TextStyle(color: Colors.white),),),
                   ),

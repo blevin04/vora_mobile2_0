@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +6,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart'hide CarouselController;
 
 import 'package:table_calendar/table_calendar.dart';
+import 'package:vora_mobile/add_pages/new_post.dart';
+
 
 import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
@@ -14,6 +17,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/utils.dart';
+
 
 TextEditingController name_change = TextEditingController();
 TextEditingController nick_change = TextEditingController();
@@ -33,6 +37,16 @@ class Accounts extends StatefulWidget {
 String f_hint = '';
 String n_hint = '';
 var img;
+Future<List<String>> getattendedEventsIds()async{
+  List<String> eventsids = List.empty(growable: true);
+  await firestore_.collection("users").doc(user.uid).get().then((evIds){
+    for(var id in evIds.data()!["Events"]){
+      eventsids.add(id);
+    }
+  });
+  return eventsids;
+}
+
 Future<Map<int,Map<String,dynamic>>> events_ ()async{
   Map<int,Map<String,dynamic>> master_m =Map();
 
@@ -53,9 +67,6 @@ Future<Map<int,Map<String,dynamic>>> events_ ()async{
       });
       await storage_1.child("/events/$even/cover").getData().then((value){
         final imgdata = <String,dynamic>{"Cover":value!};
-        if (value.isNotEmpty){
-          print("bnviubuvbiuwbubwiubauia................");
-        }else{print("noewnn,,,,,,,,,,,");}
         local.addAll(imgdata);
       });
       final adds = <int,Map<String,dynamic>>{number:local};
@@ -63,40 +74,21 @@ Future<Map<int,Map<String,dynamic>>> events_ ()async{
       number++;
     }
   });
-
-
   return master_m;
 }
-
-
-Future<Map<int,Map<String,dynamic>>> clubs_ ()async{
-  Map<int,Map<String,dynamic>> k_map = Map();
-int c_nums= 0;
-print("Starts");
-await store.collection("users").doc(user.uid).get().then((onValue)async{
-  var comms = onValue.data()!["Communities"];
-  print(onValue.data()!.length);
-  for(var com in comms){
-    Map<String,dynamic> datas_ = Map();
-    await store.collection("Communities").doc(com).get().then((onValue1){
-      final name = <String,dynamic>{"Name":onValue1.data()!["Name"]};
-      final id = <String,dynamic>{"ClubId":onValue1.id};
-      datas_.addAll(name);
-      datas_.addAll(id);
-    });
-    await storage_1.child("/communities/$com/cover_picture").getData().then((onValue2){
-      final imgs = <String,dynamic>{"Image":onValue2!};
-      datas_.addAll(imgs);
-    });
-    final master = <int,Map<String,dynamic>>{c_nums:datas_};
-    k_map.addAll(master);
-c_nums++;
-  }
-});
-
-return k_map;
-
+Future<List<String>> getMemberClubs()async{
+  List<String> memberclubs = List.empty(growable: true);
+  
+  await firestore_.collection("users").doc(user.uid).get().then((value) {
+    
+    for(var club in value.data()!["Communities"]){
+      memberclubs.add(club);
+    }
+  },);
+  return memberclubs;
 }
+
+
 Future<List<String>> evIds()async{
   List<String> ids = List.empty(growable: true);
   await store.collection("users").doc(user.uid).get().then((onValue){
@@ -104,43 +96,24 @@ Future<List<String>> evIds()async{
   });
   return ids;
 }
-
-Future<Map<int,Map<String,dynamic>>> posts_ ()async{
-Map<int,Map<String,dynamic>> datas = Map();
-await store.collection("posts").where("UserId", isEqualTo: "TEvmjtmczycxde4b55uK4jJ7wz03"
-).get().then((onValue)async{
-  int num_ = 0;
-  for(var val in onValue.docs){
-    Map<String,dynamic> now = Map();
-    await store.collection("posts").doc(val.id).get().then((onValue1){
-      final post =<String,dynamic>{"post":onValue1.data()!["BlogPost"]};
-      final postid = <String,dynamic>{"postId":onValue1.data()!["PostId"]};
-      final time = <String,dynamic>{"PostTime":onValue1.data()!["PostTime"]};
-      now.addAll(postid);
-      now.addAll(post);
-      now.addAll(time);
-     
-    });
-    await storage_1.child("/posts/${val.id}/images").list().then((onValue2)async{
-     String ok= onValue2.items.first.toString();
-    ok = ok.split(":").last.split(")").first.replaceAll(" ", '');
-     
-      await storage_1.child(ok).getData().then((onValue3){
-        final img = <String,dynamic>{"Image":onValue3!};
-        if (img.isNotEmpty) {
-          print("okkkk");
-        }
-        now.addAll(img);
-      });
-    });
-    final now_ = <int,Map<String,dynamic>>{num_:now};
-    datas.addAll(now_);
-    num_++;
-  }
-});
-
-return datas;
+Future<List<String>> getPostIds()async{
+  List<String> ids = List.empty(growable: true);
+  await store.collection("posts").where("UserId", isEqualTo: user.uid).get().then((pIds){
+    for(var id in pIds.docs){
+      ids.add(id.id);
+    }
+  });
+  return ids;
 }
+Future<Map<String,dynamic>> postDatas(String PostId1)async{
+  Map<String,dynamic> dataspost = {};
+  await store.collection("posts").doc(PostId1).get().then((pdata){
+    dataspost.addAll(pdata.data()!);
+  });
+  return dataspost;
+}
+
+
 class _AccountsState extends State<Accounts> {
   @override
   void initState() {
@@ -152,7 +125,7 @@ class _AccountsState extends State<Accounts> {
   void getImagelnk() async {
     img = await storage.getData();
   }
-List<Widget> _screens = <Widget>[
+final List<Widget> _screens = <Widget>[
 postpage(),clubs(),eventsattended(),mycallender()
 
 ];
@@ -473,8 +446,6 @@ PageController p_controller = PageController();
                 },
               
               ),
-              
-
             ],
           ),
         ),
@@ -485,7 +456,7 @@ PageController p_controller = PageController();
 
 Widget postpage(){
   return FutureBuilder(
-    future: posts_(),
+    future: getPostIds(),
     builder: (BuildContext context, AsyncSnapshot snapshot) {
       
       if (snapshot.connectionState ==ConnectionState.waiting) {
@@ -497,13 +468,28 @@ Widget postpage(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-      return ListView.builder(
+
+      return snapshot.data.isEmpty?  Center(
+        child: TextButton(onPressed: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>const NewPost()));
+        }, child:const Text("No Posts Yet.. \nCreate one now",style: TextStyle(color: Colors.white),),)
+      ): ListView.builder(
         shrinkWrap: true,
         physics:const AlwaysScrollableScrollPhysics(),
         itemCount: snapshot.data.length,
         itemBuilder: (BuildContext context,index){
-          Map<String,dynamic> postdata = snapshot.data[index];
-        return Center(
+          print("Posts ar ${snapshot.data!}");
+          
+          
+        return blogsdata[snapshot.data[index]] == null?
+        FutureBuilder(
+          future: postDatas(snapshot.data[index]), 
+          builder: (context,snapshot1){
+            DateTime PsTime = snapshot1.data!["PostTime"].toDate();
+            String Bpost = snapshot1.data!["BlogPost"];
+            List Plikes = snapshot1.data!["Likes"];
+            Int NumComments = snapshot1.data!["Comments"].length;
+            return Center(
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
              (context)=>const Dedicatedblogpage())),
@@ -516,36 +502,28 @@ Widget postpage(){
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
-                    Text("On ${postdata["PostTime"].toDate().day}",style:const TextStyle(color: Colors.white),),
+                    Text(period(PsTime),style:const TextStyle(color: Colors.white),),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(postdata["post"],style:const TextStyle(color: Colors.white) ,),
+                      child: Text(Bpost,style:const TextStyle(color: Colors.white) ,),
                     ),
-                    Container(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          
-                          children: [
-                            Container(
-                              
-                              child:const Row(
-                                children: [
-                                    Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
-                                     SizedBox(width: 10,),
-                            Text("100",style: TextStyle(color: Colors.white),),
-                                ],
-                              ),
-                            ),
-                            Container(
-                               
-                        child:const Row(children: [    Icon(Icons.comment,color: Colors.white,),
-                        const SizedBox(width: 10,),
-                            Text("20",style: TextStyle(color: Colors.white),)],),
-                            ),
-                        ],
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        
+                        children: [
+                          Row(
+                            children: [
+                               const Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
+                                const SizedBox(width: 10,),
+                                                      Text((Plikes.length - 1).toString(),style: TextStyle(color: Colors.white),),
+                            ],
+                          ),
+                          Row(children: [  const  Icon(Icons.comment,color: Colors.white,),
+                          const SizedBox(width: 10,),
+                              Text(NumComments.toString(),style:const TextStyle(color: Colors.white),)],),
+                      ],
                       ),
                     )
                   ],),
@@ -554,15 +532,68 @@ Widget postpage(){
             ),
           ),
         );
+          }):
+          Builder(builder: (context){
+            
+          Map<String,dynamic> bData=  blogsdata[index]!;
+          DateTime btime = bData["PostTime"].toDate();
+          List likesT = bData["Likes"];
+          int NumComments = bData["Comments"].length;
+            return Center(
+          child: InkWell(
+            onTap: () => Navigator.push(context,MaterialPageRoute(builder:
+             (context)=>const Dedicatedblogpage())),
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color.fromARGB(255, 100, 97, 97))),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Column(children: [
+                    Text(period(btime),style:const TextStyle(color: Colors.white),),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(bData["BlogPost"].toString(),style:const TextStyle(color: Colors.white) ,),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        
+                        children: [
+                          Row(
+                            children: [
+                              const  Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
+                               const  SizedBox(width: 10,),
+                                                      Text((likesT.length - 1).toString(),style:const TextStyle(color: Colors.white),),
+                            ],
+                          ),
+                          Row(children: [   const Icon(Icons.comment,color: Colors.white,),
+                          const SizedBox(width: 10,),
+                              Text(NumComments.toString(),style:const TextStyle(color: Colors.white),)],),
+                      ],
+                      ),
+                    )
+                  ],),
+                ),
+              ),
+            ),
+          ),
+        );
+          })
+          
+          ;
+        
       });
     },
   );
 }
 Widget clubs(){
-  return clubData.isEmpty?
+  return 
    FutureBuilder(
-    future: clubs_(),
-
+    future: getMemberClubs(),
     builder: (BuildContext context, AsyncSnapshot snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator(),);
@@ -573,109 +604,83 @@ Widget clubs(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-      
+        
       return ListView.builder(
         shrinkWrap: true,
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: snapshot.data!.length,
         itemBuilder: (context,index){
-         Map<String,dynamic> all_data = snapshot.data![index];
-         Uint8List c_image_ = all_data["Image"];
-         String name_ = all_data["Name"];
-         String club_id = all_data["ClubId"];
-         
-        return Center(
+        return clubData[snapshot.data![index]] == null?
+        FutureBuilder(
+          future: getclubdatas(snapshot.data![index]),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            Uint8List c_image_ = snapshot.data["Image"];
+            String Clubname = snapshot.data["Name"];
+            List eventsNumber = snapshot.data["events"];
+            return Center(
           child: Padding(padding:const EdgeInsets.all(5),
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=>  Dedicatedcommunitypage(clubId: club_id,))),
+             (context)=>  Dedicatedcommunitypage(clubId: snapshot.data[index],))),
             child: Container(
+              height: 62,
               decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(255, 53, 52, 52)),borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: MemoryImage(c_image_),
-                    ),
-                  ),
-                 const SizedBox(width: 50,),
-                  Text(name_,style:const TextStyle(color: Colors.white),),
-                const  Text("Number of events",style: TextStyle(color: Colors.white),)
-                ],
+              child: ListTile(
+                leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundImage: MemoryImage(c_image_),
+                ),
+              ),
+              title: Text(Clubname,style:const TextStyle(color: Colors.white),),
+              trailing: Text("${eventsNumber.length} events",style:const TextStyle(color: Colors.white),)
+              
               ),
             ),
           ),
           ),
         );
-      });
-    },
-  ):
-  FutureBuilder(
-    future: evIds(),
-    initialData: "shit....",
-    builder: (BuildContext context, AsyncSnapshot snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator(),);
-      }
-      if (!snapshot.hasData) {
-        return const Center(child: Text("You are not a member of any club...",style: TextStyle(color: Colors.white),),);
-      }
-      if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: snapshot.data!.length,
-        itemBuilder: (context,index){
-          String currentCId = snapshot.data![index];
-          Map<String,dynamic> all_data = Map() ;
-          if (clubData[currentCId]!.isNotEmpty) {
-            all_data = clubData[currentCId]! ;
-          }else{
-          all_data = clubData[currentCId]! ;
-          }
-         Uint8List c_image_ = all_data["Image"];
-         String name_ = all_data["Name"];
-         
-        return Center(
+          },
+        ):Builder(builder: (context){
+          Uint8List coverPic = clubData[snapshot.data[index]]!["Image"];
+          String clubName = clubData[snapshot.data[index]]!["Name"];
+          List eventsNumber = clubData[snapshot.data[index]]!["events"];
+          return Center(
           child: Padding(padding:const EdgeInsets.all(5),
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=>  Dedicatedcommunitypage(clubId: currentCId,))),
+             (context)=>  Dedicatedcommunitypage(clubId: snapshot.data[index],))),
             child: Container(
+              height: 62,
               decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(255, 53, 52, 52)),borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: MemoryImage(c_image_),
-                    ),
-                  ),
-                 const SizedBox(width: 50,),
-                  Text(name_,style:const TextStyle(color: Colors.white),),
-                const  Text("Number of events",style: TextStyle(color: Colors.white),)
-                ],
+              child:  ListTile(
+                leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundImage: MemoryImage(coverPic),
+                ),
+              ),
+              title: Text(clubName,style:const TextStyle(color: Colors.white),),
+              trailing: Text("${eventsNumber.length} events",style:const TextStyle(color: Colors.white),)
+              
               ),
             ),
           ),
           ),
         );
+        });
       });
     },
   );
-  
 
 }
+
 Widget eventsattended(){
- bool commented = false;
+
   return FutureBuilder(
-    future: events_(),
-    
+    future: getattendedEventsIds(),
     builder: (BuildContext context, AsyncSnapshot snapshot) {
       if (snapshot.connectionState ==ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator(),);
@@ -686,21 +691,29 @@ Widget eventsattended(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-
+      
       return ListView.builder(
         itemCount: snapshot.data.length,
         itemBuilder: (context,index){
-          bool like= false;
-        Map<String,dynamic> all_events =  snapshot.data![index];
-        String E_title= all_events["Title"];
-        DateTime ttime = all_events["Date"].toDate();
-        String date_s = period(ttime);
-        Uint8List imgdat = all_events["Cover"];
-        String eventid = all_events["EventId"];
-          return Center(
+        
+          return eventData[snapshot.data[index]] == null?
+          FutureBuilder(
+            future: geteventsData(snapshot.data[index]),
+            builder: (BuildContext context, AsyncSnapshot snapshot1) {
+              if (snapshot1.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(),);
+              }
+              Uint8List coverimg = snapshot1.data["Cover_Image"];
+              String eventTitle = snapshot1.data["Title"];
+              DateTime eventDate = snapshot1.data["EventDate"].toDate();
+              int likesTotal = snapshot1.data["Likes"].length;
+              int commentNumber = snapshot1.data["Comments"].length;
+               String aboutEvent = snapshot1.data["Description"];
+               bool liked1 = snapshot1.data["Liked"];
+              return Center(
             child: InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: 
-              (context)=>  Dedicatedeventpage(eventId:eventid))),
+              (context)=>  Dedicatedeventpage(eventId:snapshot.data[index]))),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
@@ -713,14 +726,16 @@ Widget eventsattended(){
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: ListTile(leading: CircleAvatar(radius: 40, 
-                        backgroundImage:imgdat.isNotEmpty? MemoryImage(imgdat):null,), 
+                        child: ListTile(
+                          leading: CircleAvatar(radius: 40, 
+                        backgroundImage:MemoryImage(coverimg)), 
                         onTap: (){},
                         
-                        title: Text(E_title,style:const TextStyle(color: Colors.white),),
-                        trailing:Text(date_s,style:const TextStyle(color: Colors.white),) ,
+                        title: Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                        trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
                         ),
                       ),
+                        Text(aboutEvent,style:const TextStyle(color: Colors.white),softWrap: true,),
                       Center(child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -728,25 +743,41 @@ Widget eventsattended(){
                         StatefulBuilder(
                           builder: (BuildContext context, setStateLike) {
                             
-                            return IconButton(onPressed: (){
-                              setStateLike((){
-                                like = !like;
-                              });
-                            }, 
-                            icon: Icon(Icons.favorite_rounded,
-                            
-                            color:like?Colors.red:const Color.fromARGB(205, 255, 255, 255),));
+                            return Row(
+                              children: [
+                                IconButton(onPressed: ()async{
+                                  String  States = "";
+                                       setStateLike((){
+                                       
+                                            if (liked1) {
+                                            likesTotal-1;
+                                          }else{likesTotal+1;}
+                                           liked1=!liked1;
+                                       });
+                                       States =await likeEvent(snapshot.data[index]);
+                                       if (States=="Success") {
+                                         showsnackbar(context, "nice");
+                                       }
+                                }, 
+                                icon: Icon(Icons.thumb_up,
+                                
+                                color:liked1?Colors.blue:
+                                const Color.fromARGB(205, 255, 255, 255),)),
+                                  Text((likesTotal).toString(),style:const TextStyle(color: Colors.white),)
+                              ],
+                            );
                           },
                         ),
                         StatefulBuilder(
                           builder: (BuildContext context, setStateComment) {
-                            return IconButton(onPressed: (){
-                              setStateComment((){
-                                commented = !commented;
-                              });
-                            }, 
-                            icon:  Icon(Icons.comment,
-                            color:commented?Colors.blue:const Color.fromARGB(139, 225, 222, 222),));
+                            return Row(
+                              children: [
+                                IconButton(onPressed: (){}, 
+                                icon: const Icon(Icons.comment,
+                                color: Color.fromARGB(139, 225, 222, 222),)),
+                                Text(commentNumber.toString(),style:const TextStyle(color: Colors.white),)
+                              ],
+                            );
                           },
                         ),
                       ],),)
@@ -756,6 +787,108 @@ Widget eventsattended(){
               ),
             ),
           );
+            },
+          ):
+          Builder(
+            builder: (context) {
+               Uint8List coverimg = eventData[snapshot.data[index]]!["Cover_Image"];
+              String eventTitle =eventData[snapshot.data[index]]!["Title"];
+              DateTime eventDate = eventData[snapshot.data[index]]!["EventDate"].toDate();
+              int likesTotal = eventData[snapshot.data[index]]!["Likes"].length;
+              int commentNumber = eventData[snapshot.data[index]]!["Comments"].length;
+              bool liked1 = eventData[snapshot.data[index]]!["Liked"];
+              String aboutEvent = eventData[snapshot.data[index]]!["Description"];
+             // bool commented = eventData[snapshot.data[index]]!["Commented"];
+              return Center(
+                child: InkWell(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: 
+                  (context)=>  Dedicatedeventpage(eventId:snapshot.data[index]))),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:const Color.fromARGB(233, 47, 46, 46),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: const Color.fromARGB(141, 0, 0, 0))
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ListTile(
+                              leading: CircleAvatar(radius: 40, 
+                            backgroundImage:MemoryImage(coverimg)), 
+                            onTap: (){},
+                            
+                            title: Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                            trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
+                            ),
+                          ),
+                          Text(aboutEvent,style:const TextStyle(color: Colors.white),softWrap: true,),
+
+                          Center(child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                            StatefulBuilder(
+                              builder: (BuildContext context, setStateLike) {
+                                
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      IconButton(onPressed: ()async{
+                                      String  States = "";
+                                       setStateLike((){
+                                       
+                                            if (liked1) {
+                                            likesTotal-1;
+                                          }else{likesTotal+1;}
+                                           liked1=!liked1;
+                                       });
+                                       States =await likeEvent(snapshot.data[index]);
+                                      if (States=="Success") {
+                                        showsnackbar(context, "nice");
+                                      }
+                                      //  if (States == "Success") {
+                                      //   print(States);
+                                      //    setStateLike((){
+                                      //     liked1 = !liked1;
+                                      
+                                      //    });
+                                      //  }
+                                      }, 
+                                      icon: Icon(Icons.thumb_up,
+                                      
+                                      color:liked1?Colors.blue:
+                                      const Color.fromARGB(205, 255, 255, 255),)),
+                                        Text((likesTotal).toString(),style:const TextStyle(color: Colors.white),)
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  IconButton(onPressed: (){}, 
+                                  icon:const  Icon(Icons.comment,
+                                  color: Color.fromARGB(218, 225, 222, 222),)),
+                                  Text(commentNumber.toString(),style:const TextStyle(color: Colors.white),)
+                                ],
+                              ),
+                            ),
+                          ],),)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+          );
+          
       });
     },
   );

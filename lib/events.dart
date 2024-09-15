@@ -26,7 +26,7 @@ var event_filter = [
   "all",
   "Registered",
   "not Registered",
-  "From all clubs",
+  "my clubs only",
 ];
 void getnewcomments(String evId)async{
   await firestore.collection("Events").doc(evId).get().then((onValue){
@@ -55,14 +55,16 @@ class _EventsState extends State<Events> {
     eventIds.clear();
     await firestore
         .collection("Events")
-        .where("EventDate", isLessThan: Timestamp.now())
+        .where("Title", isNotEqualTo: null)
         .get()
         .then((onValue) {
+          print(onValue.docs.length);
       for (var snaps in onValue.docs) {
         eventIds.add(snaps["Uid"]);
         if (!eventIdsEventspage.contains(snaps["Uid"])) {
           eventIdsEventspage.add(snaps["Uid"]);
         }
+        print(eventIds.length);
         viewComments.add(false);
       }
     });
@@ -81,7 +83,7 @@ class _EventsState extends State<Events> {
       even_m.addAll(onValue.data()!);
       try {
         var comments_ = onValue.data()!["Comments"];
-      Map<String,dynamic>allComents = {"Comments":comments_};
+  
       Map<String,dynamic>commentedalready = Map();
       if (comments_.contains(user.uid)) {
         commentedalready = {"Commented":true};
@@ -190,218 +192,226 @@ class _EventsState extends State<Events> {
               ))
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ListenableBuilder(
-                  listenable: Search_visible_,
-                  builder: (context,child) {
-                    return Visibility(
-                        visible: events_vis,
-                        child: SizedBox(
-                          width: 150,
-                          child: TextField(
-                            controller: _search_events,
-                            decoration: const InputDecoration(
-                                label: Icon(
-                              Icons.search,
-                              color: Colors.white,
-                            )),
-                          ),
-                        ));
-                  }
-                ),
-                const SizedBox(
-                  width: 50,
-                ),
-                Container(
-                  alignment: Alignment.bottomRight,
-                  child: DropdownButton(
-                    dropdownColor: const Color.fromARGB(
-                      255,
-                      29,
-                      36,
-                      45,
-                    ),
-                    // Initial Value
-                    value: event_value,
-
-                    // Down Arrow Icon
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                    ),
-
-                    // Array list of items
-                    items: event_filter.map((String items) {
-                      return DropdownMenuItem(
-                        value: items,
-                        child: Text(
-                          items,
-                          style:const TextStyle(color: Colors.white),
-                        ),
-                      );
-                    }).toList(),
-                    // After selecting the desired option,it will
-                    // change button value to selected value
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        event_value = newValue!;
-                      });
-                    },
+      body: RefreshIndicator(
+        onRefresh: ()async {
+          await getevents();
+          setState(() {
+            
+          });
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ListenableBuilder(
+                    listenable: Search_visible_,
+                    builder: (context,child) {
+                      return Visibility(
+                          visible: events_vis,
+                          child: SizedBox(
+                            width: 150,
+                            child: TextField(
+                              controller: _search_events,
+                              decoration: const InputDecoration(
+                                  label: Icon(
+                                Icons.search,
+                                color: Colors.white,
+                              )),
+                            ),
+                          ));
+                    }
                   ),
-                ),
-              ],
-            ),
-            const Divider(
-              color: Color.fromARGB(
-                255,
-                29,
-                36,
-                45,
+                  const SizedBox(
+                    width: 50,
+                  ),
+                  Container(
+                    alignment: Alignment.bottomRight,
+                    child: DropdownButton(
+                      dropdownColor: const Color.fromARGB(
+                        255,
+                        29,
+                        36,
+                        45,
+                      ),
+                      // Initial Value
+                      value: event_value,
+        
+                      // Down Arrow Icon
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                      ),
+        
+                      // Array list of items
+                      items: event_filter.map((String items) {
+                        return DropdownMenuItem(
+                          value: items,
+                          child: Text(
+                            items,
+                            style:const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      // After selecting the desired option,it will
+                      // change button value to selected value
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          event_value = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),eventIdsEventspage.isEmpty?
-            FutureBuilder(
-                future: getevents(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                  if (viewComments.isEmpty) {
-                    for (var i = 0; i < eventIds.length; i++) {
-                    viewComments.add(false);
-                  }
-                  }
-                  
-                  return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: eventIds.length,
-                      itemBuilder: (context, index2) {
-                        
-                        return eventData.containsKey(eventIds[index2])?
-                        StatefulBuilder(
-                          builder: (BuildContext context, setState_1) {
-                             Uint8List C_image_comm = eventData[eventIds[index2]]!["Cover_Image"];
-                            String Event_title = eventData[eventIds[index2]]!["Title"];
-                            List<dynamic> event_imgs = eventData[eventIds[index2]]!["Images"];
-                            DateTime time = eventData[eventIds[index2]]!["EventDate"].toDate();
-                            String C_name = eventData[eventIds[index2]]!["Club_Name"];
-                            String eventId_ = eventIds[index2];
-                            String description = eventData[eventIds[index2]]!["Description"];
-                            bool liked = eventData[eventIds[index2]]!["Liked"];
-                            Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
-                            bool commented = false;
-                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
-                          },
-                        )
-                        
-                        :
-                        FutureBuilder(
-                          future: get_events(eventIds[index2]),
+              const Divider(
+                color: Color.fromARGB(
+                  255,
+                  29,
+                  36,
+                  45,
+                ),
+              ),eventIdsEventspage.isEmpty?
+              FutureBuilder(
+                  future: getevents(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                    if (viewComments.isEmpty) {
+                      for (var i = 0; i < eventIds.length; i++) {
+                      viewComments.add(false);
+                    }
+                    }
+                    
+                    return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: eventIds.length,
+                        itemBuilder: (context, index2) {
                           
-                          builder: (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return  Center(child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 99, 94, 94),borderRadius: BorderRadius.circular(12)),height: 200,
-                                child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
-                                ),
-                              ),);
-                            }
-                            if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                            if (!snapshot.hasData) {
-                              return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
-                            }
-                            Uint8List C_image_comm = snapshot.data!["Cover_Image"];
-                            String Event_title = snapshot.data!["Title"];
-                            List<dynamic> event_imgs = snapshot.data!["Images"];
-                            DateTime time = snapshot.data!["EventDate"].toDate();
-                            String C_name = snapshot.data!["Club_Name"];
-                            String eventId_ = eventIds[index2];
-                            String description = snapshot.data!["Description"];
-                            bool liked = snapshot.data!["Liked"];
-                            Map<String,dynamic> allComments = snapshot.data!["Comments"];
-                            bool commented = false;
-                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
-                          },
-                        );
-                        
-                      });
-                }):ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: homepageEvents.length,
-                      itemBuilder: (context, index2) {
-                        if (viewComments.isEmpty) {
-                          for (var i = 0; i < homepageEvents.length; i++) {
-                          viewComments.add(false);
-                        }
-                        }
-                        
-                        
-                        return eventData.containsKey(homepageEvents[index2])?
-                        StatefulBuilder(
-                          builder: (BuildContext context, setState_1) {
-                             Uint8List C_image_comm = eventData[homepageEvents[index2]]!["Cover_Image"];
-                            String Event_title = eventData[homepageEvents[index2]]!["Title"];
-                            List<dynamic> event_imgs = eventData[homepageEvents[index2]]!["Images"];
-                            DateTime time = eventData[homepageEvents[index2]]!["EventDate"].toDate();
-                            String C_name = eventData[homepageEvents[index2]]!["Club_Name"];
-                            String eventId_ = homepageEvents[index2];
-                            String description = eventData[homepageEvents[index2]]!["Description"];
-                            bool liked = eventData[homepageEvents[index2]]!["Liked"];
-                            Map<String,dynamic> allComments = eventData[homepageEvents[index2]]!["Comments"];
-                            bool commented = false;
-                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
-                          },
-                        )
-                        
-                        :
-                        FutureBuilder(
-                          future: get_events(homepageEvents[index2]),
+                          return eventData.containsKey(eventIds[index2])?
+                          StatefulBuilder(
+                            builder: (BuildContext context, setState_1) {
+                               Uint8List C_image_comm = eventData[eventIds[index2]]!["Cover_Image"];
+                              String Event_title = eventData[eventIds[index2]]!["Title"];
+                              List<dynamic> event_imgs = eventData[eventIds[index2]]!["Images"];
+                              DateTime time = eventData[eventIds[index2]]!["EventDate"].toDate();
+                              String C_name = eventData[eventIds[index2]]!["Club_Name"];
+                              String eventId_ = eventIds[index2];
+                              String description = eventData[eventIds[index2]]!["Description"];
+                              bool liked = eventData[eventIds[index2]]!["Liked"];
+                              Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
+                              bool commented = false;
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                            },
+                          )
                           
-                          builder: (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return  Center(child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 99, 94, 94),borderRadius: BorderRadius.circular(12)),height: 200,
-                                child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
-                                ),
-                              ),);
-                            }
-                            if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                            if (!snapshot.hasData) {
-                              return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
-                            }
-                            Uint8List C_image_comm = snapshot.data!["Cover_Image"];
-                            String Event_title = snapshot.data!["Title"];
-                            List<dynamic> event_imgs = snapshot.data!["Images"];
-                            DateTime time = snapshot.data!["EventDate"].toDate();
-                            String C_name = snapshot.data!["Club_Name"];
-                            String eventId_ = homepageEvents[index2];
-                            String description = snapshot.data!["Description"];
-                            bool liked = snapshot.data!["Liked"];
-                            Map<String,dynamic> allComments = snapshot.data!["Comments"];
-                            bool commented = false;
-                            return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
-                          },
-                        );
-                        
-                      })
-          ],
+                          :
+                          FutureBuilder(
+                            future: get_events(eventIds[index2]),
+                            
+                            builder: (BuildContext context, AsyncSnapshot snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return  Center(child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 99, 94, 94),borderRadius: BorderRadius.circular(12)),height: 200,
+                                  child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
+                                  ),
+                                ),);
+                              }
+                              if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                              if (!snapshot.hasData) {
+                                return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
+                              }
+                              Uint8List C_image_comm = snapshot.data!["Cover_Image"];
+                              String Event_title = snapshot.data!["Title"];
+                              List<dynamic> event_imgs = snapshot.data!["Images"];
+                              DateTime time = snapshot.data!["EventDate"].toDate();
+                              String C_name = snapshot.data!["Club_Name"];
+                              String eventId_ = eventIds[index2];
+                              String description = snapshot.data!["Description"];
+                              bool liked = snapshot.data!["Liked"];
+                              Map<String,dynamic> allComments = snapshot.data!["Comments"];
+                              bool commented = false;
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                            },
+                          );
+                          
+                        });
+                  }):ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: eventIdsEventspage.length,
+                        itemBuilder: (context, index2) {
+                          if (viewComments.isEmpty) {
+                            for (var i = 0; i < eventIdsEventspage.length; i++) {
+                            viewComments.add(false);
+                          }
+                          }
+                          
+                          
+                          return eventData.containsKey(eventIdsEventspage[index2])?
+                          StatefulBuilder(
+                            builder: (BuildContext context, setState_1) {
+                               Uint8List C_image_comm = eventData[eventIdsEventspage[index2]]!["Cover_Image"];
+                              String Event_title = eventData[eventIdsEventspage[index2]]!["Title"];
+                              List<dynamic> event_imgs = eventData[eventIdsEventspage[index2]]!["Images"];
+                              DateTime time = eventData[eventIdsEventspage[index2]]!["EventDate"].toDate();
+                              String C_name = eventData[eventIdsEventspage[index2]]!["Club_Name"];
+                              String eventId_ = eventIdsEventspage[index2];
+                              String description = eventData[eventIdsEventspage[index2]]!["Description"];
+                              bool liked = eventData[eventIdsEventspage[index2]]!["Liked"];
+                              Map<String,dynamic> allComments = eventData[eventIdsEventspage[index2]]!["Comments"];
+                              bool commented = false;
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                            },
+                          )
+                          
+                          :
+                          FutureBuilder(
+                            future: get_events(eventIdsEventspage[index2]),
+                            
+                            builder: (BuildContext context, AsyncSnapshot snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return  Center(child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 99, 94, 94),borderRadius: BorderRadius.circular(12)),height: 200,
+                                  child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
+                                  ),
+                                ),);
+                              }
+                              if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                              if (!snapshot.hasData) {
+                                return const Center(child: Text("Unable to fetch Events...",style: TextStyle(color: Colors.white),),);
+                              }
+                              Uint8List C_image_comm = snapshot.data!["Cover_Image"];
+                              String Event_title = snapshot.data!["Title"];
+                              List<dynamic> event_imgs = snapshot.data!["Images"];
+                              DateTime time = snapshot.data!["EventDate"].toDate();
+                              String C_name = snapshot.data!["Club_Name"];
+                              String eventId_ = eventIdsEventspage[index2];
+                              String description = snapshot.data!["Description"];
+                              bool liked = snapshot.data!["Liked"];
+                              Map<String,dynamic> allComments = snapshot.data!["Comments"];
+                              bool commented = false;
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width, description,viewComments[index2],allComments);
+                            },
+                          );
+                          
+                        })
+            ],
+          ),
         ),
       ),
     ));
@@ -424,16 +434,20 @@ Widget content(BuildContext context,
   return Padding(
                             padding: const EdgeInsets.all(2),
                             child: Card(
-                              color: const Color.fromARGB(86, 82, 81, 81),
+                              color: const Color.fromARGB(50, 82, 81, 81),
                               elevation: 10,
                               child: InkWell(
+                                enableFeedback: false,
+                                splashColor: Colors.transparent,
                                 onTap:()=> Navigator.push(context,MaterialPageRoute(builder: 
                                 (context)=> Dedicatedeventpage(eventId:eventId_ ,))),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
                                       height: 50,
                                       child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                            Padding(
@@ -446,6 +460,7 @@ Widget content(BuildContext context,
                                             padding: const EdgeInsets.only(
                                                 left: 10.0),
                                             child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   Event_title,
@@ -461,11 +476,8 @@ Widget content(BuildContext context,
                                               ],
                                             ),
                                           ),
-                                         const   SizedBox(width: 30,),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text("by $C_name ",style:const TextStyle(color: Colors.white,fontSize: 12),),
-                                          ),
+                                         const   SizedBox(width: 20,),
+                                          
                                           const SizedBox(width: 50,),
                                           TextButton(onPressed: (){
                                             showDialog(context: context, builder: (context){
@@ -500,18 +512,22 @@ Widget content(BuildContext context,
                                                 ),
                                               );
                                             });
-                                          }, child: Container(decoration: BoxDecoration(color: Colors.blue,
+                                          }, child: Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 24, 23, 23),
                                           borderRadius: BorderRadius.circular(8)
                                           ),
                                           child:const Padding(
                                             padding:  EdgeInsets.all(8.0),
-                                            child: Text("RSVP",style: TextStyle(color: Colors.white,fontSize: 16,fontStyle: FontStyle.italic,),),
+                                            child: Text("RSVP",style: TextStyle(color: Color.fromARGB(255, 3, 20, 200),fontSize: 16,),),
                                           ),
                                           )
                                           )
                                         ],
                                       ),
                                     ),
+                                    Padding(
+                                            padding: const EdgeInsets.only(left: 20.0,top: 5,bottom: 5),
+                                            child: Text("by $C_name ",style:const TextStyle(color: Colors.white,fontSize: 12),softWrap: true,),
+                                          ),
                                     SizedBox(
                                       height: 250,
                                       child: ListView.builder(

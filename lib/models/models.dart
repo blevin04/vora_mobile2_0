@@ -1,11 +1,11 @@
 class UserModel {
   final String fullName;
   final String email;
-
+  final List<String> membercommunities= List.empty(growable: true);
   final String nickname; // Doc, Pharmacist, e.t.c
   final String title;
   final String uid;
-
+  final List<String> attendedevents = List.empty(growable: true);
   UserModel({
     required this.fullName,
     required this.email,
@@ -22,6 +22,8 @@ class UserModel {
         "nickname": nickname,
         "title": title,
         "uid": uid,
+        "Communities":membercommunities,
+        "Events":attendedevents,
       };
 }
 
@@ -35,7 +37,8 @@ class eventmodel {
   final String cover_image;
   final String Uid;
   final List<String> other_images;
-
+  final List Likes;
+  final Map<String,dynamic> comments;
   eventmodel({
     required this.title,
     required this.description,
@@ -46,6 +49,8 @@ class eventmodel {
     required this.resorce_link,
     required this.Uid,
     required this.other_images,
+    required this.Likes,
+    required this.comments,
   });
 
   //to jyson
@@ -58,6 +63,8 @@ class eventmodel {
         "Regestration": reg_link,
         "Resorces": resorce_link,
         "Uid": Uid,
+        "Likes": Likes,
+        "Comments": comments,
       };
 }
 
@@ -97,12 +104,16 @@ class postmodel {
   final String postId;
   final String UserId;
   final DateTime posttime;
+  final List<String> Likes;
+  final Map<String,dynamic> comments_;
   postmodel({
     required this.blog,
     required this.images,
     required this.postId,
     required this.UserId,
     required this.posttime,
+    required this.Likes,
+    required this.comments_
   });
 
   Map<String, dynamic> tojson() => {
@@ -110,6 +121,8 @@ class postmodel {
         "BlogPost": blog,
         "PostId": postId,
         "PostTime": posttime,
+        "Likes": Likes,
+        "Comments":comments_,
       };
 }
 
@@ -122,6 +135,7 @@ class communityModel {
   final String uid;
   final bool visibility;
   final List<String> category ;
+  final String about;
   communityModel({
     required this.Lead,
     required this.eventsId,
@@ -130,7 +144,8 @@ class communityModel {
     required this.numbers,
     required this.uid,
     required this.visibility,
-    required this.category
+    required this.category,
+    required this.about,
   });
 
   //to json
@@ -142,7 +157,8 @@ class communityModel {
         "Numbers": numbers,
         "Uid": uid,
         "Visibility": visibility,
-        "Category":category
+        "Category":category,
+        "About":about,
         
       };
 }

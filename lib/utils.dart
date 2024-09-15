@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'package:vora_mobile/Accounts.dart';
 
 FirebaseFirestore store = FirebaseFirestore.instance;
+final storageref = FirebaseStorage.instance.ref();
 showsnackbar(BuildContext context, String content) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content)));
 }
@@ -140,12 +142,21 @@ Map<String,Map<String,dynamic>> announcementData = Map();
 Map<String,dynamic> more = Map();
 List<String> eventIdsEventspage = List.empty(growable: true);
 List<String> clubIds = List.empty(growable: true);
+
 Map<String,dynamic> userData = Map();
+//This stores the users data like the 
+  ///name
+  ///nickname
+  ///profile picture
+  ///
 List<String> homepageEvents = List.empty(growable: true);
 Map<String,Map<String,dynamic>> blogsdata = Map();
 List<String> blogsPageIds = List.empty(growable: true);
 //caries the blog data with variables like:
 
+
+List<bool> commentsOpenBlogPage = List.empty(growable: true);
+List<bool> commentsOpenEventsPage = List.empty(growable: true);
 
 
 Icon getIcon(String name){
@@ -189,13 +200,13 @@ Future<String> likeEvent (String ContentId)async{
       likes_.add(user.uid);
     }
     else{
-      List lk = List.empty(growable: true);
+    
       if (likes.contains(user.uid)) {
         likes.remove(user.uid);
-        print(likes);
+       
       }else{
         likes.add(user.uid);
-        print(likes);
+      
       }
       for(var id in likes){
         likes_.add(id);
@@ -203,6 +214,12 @@ Future<String> likeEvent (String ContentId)async{
     }
   });
      Map<String,List<String>> data = {"Likes":likes_};
+
+     eventData[ContentId]!.remove("Likes");
+     eventData[ContentId]!.addAll(data);
+    bool lik = eventData[ContentId]!["Liked"];
+    eventData[ContentId]!.remove("Liked");
+    eventData[ContentId]!.addAll({"Liked":!lik});
     await store.collection("Events").doc(ContentId).update(data);
     state = "Success";
   } catch (e) {
@@ -235,6 +252,7 @@ try {
     }
   });
     final acomm =<String,dynamic>{"Comments":commented};
+    eventData[contentId]!.update("Comments", (value){commented;});
     await store.collection("Events").doc(contentId).update(acomm);
     state = "Success";
 } catch (e) {
@@ -244,3 +262,158 @@ try {
   return state;
 }
 
+Future<String> commentpost(String contentId,String comment)async{
+  String state ="Error occured";
+Map<String,dynamic> commented = Map();
+String username = '';
+await store.collection("users").doc(user.uid).get().then((name){
+username = name.data()!["nickname"];
+});
+final com = <String,dynamic>{"UserName":username,"TimeStamp":DateTime.now(),"Comment":comment,"Likes":[]};
+var uuid = Uuid().v1();
+final commentWritten = <String,dynamic>{uuid:com};
+try {
+  await store.collection("posts").doc(contentId).get().then((onValue){
+    var coments = onValue.data()!["Comments"];
+    if (coments == null) {
+      
+      commented.addAll(commentWritten);
+    }
+    else{
+      commented = onValue.data()!["Comments"];
+      commented.addAll(commentWritten);
+    }
+  });
+    final acomm =<String,dynamic>{"Comments":commented};
+    blogsdata[contentId]!.remove("Comments");
+    blogsdata[contentId]!.addAll(acomm);
+    await store.collection("posts").doc(contentId).update(acomm);
+    state = "Success";
+} catch (e) {
+  state = e.toString();
+}
+  return state;
+}
+
+Future<String> likePost (String ContentId)async{
+  String state = "Error Ocured";
+  var likes;
+  List<String> likes_ = List.empty(growable: true);
+  try {
+     await store.collection("posts").doc(ContentId).get().then((onValue)async{
+     likes = onValue.data()!["Likes"];
+     
+    if (likes == null) {
+      
+      likes_.add(user.uid);
+    }
+    else{
+    
+      if (likes.contains(user.uid)) {
+        likes.remove(user.uid);
+        print(likes);
+      }else{
+        likes.add(user.uid);
+        print(likes);
+      }
+      for(var id in likes){
+        likes_.add(id);
+      }
+    }
+  });
+     Map<String,List<String>> data = {"Likes":likes_};
+     blogsdata[ContentId]!.remove("Likes");
+     blogsdata[ContentId]!.addAll(data);
+    bool lik = blogsdata[ContentId]!["Liked"];
+    blogsdata[ContentId]!.remove("Liked");
+    blogsdata[ContentId]!.addAll({"Liked":!lik});
+    await store.collection("posts").doc(ContentId).update(data);
+    state = "Success";
+  } catch (e) {
+    state = e.toString();
+  }
+  return state;
+}
+
+
+Future<Map<String,dynamic>> getclubdatas (String clubId)async{
+  Map<String,dynamic> clubd_ = Map();
+
+  await store.collection("Communities").doc(clubId).get().then((onValue){
+    clubd_.addAll(onValue.data()!);
+  });
+  await storageref.child("/communities/$clubId/cover_picture").getData().then((onValue1){
+    final cover_pic =<String,dynamic>{"Image":onValue1!};
+    clubd_.addAll(cover_pic);
+  });
+  final Sdata = <String,Map<String,dynamic>>{clubId:clubd_};
+  if (!clubData.containsKey(clubId)) {
+    clubData.addAll(Sdata);
+  }
+  return clubd_;
+}
+
+///Get events data from database
+  Future<Map<String,dynamic>> geteventsData(String eventId)async{
+    Map<String,dynamic> even_m = Map();
+    var comm_id;
+    await store.collection("Events").doc(eventId).get().then((onValue){
+      // final title = <String,dynamic>{"Title":onValue.data()!["Title"]};
+     comm_id = onValue.data()!["Community"];
+      // final date = <String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
+       var likes = onValue.data()!["Likes"];
+      // final desc = <String,dynamic>{"Description":onValue.data()!["Description"]};
+      even_m.addAll(onValue.data()!);
+      try {
+       
+     
+      
+      
+      } catch (e) {
+        print(e.toString());
+      }
+      
+      Map<String,dynamic> liked = Map();
+      if (likes.contains(user.uid)){
+        liked = {"Liked":true};
+      }else{liked = {"Liked":false};}
+     // even_m.addAll(title);
+     // even_m.addAll(date);
+      even_m.addAll(liked);
+     // even_m.addAll(desc);
+    });
+    await store.collection("Communities").doc(comm_id).get().then((comN){
+      final comname = <String,dynamic>{"EventClub":comN.data()!["Name"]};
+      even_m.addAll(comname);
+    });
+    await store.collection("Communities").doc(comm_id).get().then((value){
+      final comm_name = <String,dynamic>{"Club_Name":value.data()!["Name"]};
+    even_m.addAll(comm_name);
+    });
+
+    await storageref.child("/communities/$comm_id/cover_picture").getData().then((value1){
+      final c_images = <String,dynamic>{"Cover_Image":value1!};
+      even_m.addAll(c_images);
+    });
+    await storageref.child("/events/$eventId/").list().then((onValue1)async{
+      List<dynamic> imgs_ =List.empty(growable: true);
+      
+      for(var val in onValue1.items){
+        var path = val.toString().split(":").last;
+        path = path.split(")").first;
+        path =path.split(":").last;
+        path = path.split(" ").last;
+       
+         await storageref.child(path).getData().then((onValu){
+          imgs_.add(onValu!);
+        });
+      }
+      final img_paths = <String,dynamic>{"Images":imgs_};
+      even_m.addAll(img_paths);
+    });
+    if (!eventData.containsKey(eventId)) {
+      final curEvent = <String,Map<String,dynamic>>{eventId:even_m};
+      eventData.addAll(curEvent);
+    }
+    return even_m;
+  }

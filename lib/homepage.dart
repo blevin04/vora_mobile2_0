@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide CarouselController;
+import 'package:table_calendar/table_calendar.dart';
 import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/add_pages/add_event.dart';
 import 'package:vora_mobile/add_pages/new_announcement.dart';
@@ -40,20 +41,32 @@ Future<String> userget()async{
   String _name ="";
   await firestore_.collection("users").doc(user_.uid).get().then((onValue)async{
     _name =await onValue.data()!["nickname"];
+    userData.addAll(onValue.data()!);
   });
-  final username = <String,dynamic>{"UserName":_name};
-  userData.addAll(username);
+
+    if (!userData.containsKey("Dp")) {
+
+           await storage_1.child("/profile/${user.uid}/dp.png").getData().then((dp){
+    final dpimg = <String,dynamic>{"Dp":dp!};
+    if (dp!.isNotEmpty) {
+      print("Shit.....");
+    }
+    userData.addAll(dpimg);
+  });
+    }
+   
+    //gs://voramobile-70ba7.appspot.com/profile/k2iu5JK5fOb5jra5644thq9OQ4d2
+
+  
+ 
   return _name;
 }
 
 Future<Map<String,dynamic>> getcontent(String eventId)async{
   Map<String,dynamic> _data =Map();
-  Map<String,dynamic> all = Map(); //find something to do with this 
-  String comnid = " ";
 await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
   var comn = onValue.data()!["Community"];
 
-  comnid = comn.toString();
   
   await firestore_.collection("Communities").doc(comn).get().then((onvalue1){
     final comm = <String,dynamic>{"EventClub":onvalue1.data()!["Name"]};
@@ -206,8 +219,9 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
           ),
           //check if logged in
           actions: [
-            IconButton(
-                onPressed: () {
+            
+                InkWell(
+                  onTap: () {
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -226,8 +240,8 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                 children: [
                                   TextButton(
                                       onPressed: ()async {
-                                       Navigator.pop(context);
-                                        await Navigator.pushReplacement(
+                                       
+                                        await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
@@ -259,10 +273,24 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                         );
                       });
                 },
-                icon: const Icon(
-                  Icons.account_circle_sharp,
-                  color: Colors.white,
-                )),
+                  child: userData["Dp"] == null?
+                    FutureBuilder(
+                      future: userget(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator(),);
+                        }
+                        
+                        Uint8List dpimg = userData["Dp"];
+                        return CircleAvatar(
+                          backgroundImage: MemoryImage(dpimg),
+                        );
+                      },
+                    ):CircleAvatar(
+                          backgroundImage: MemoryImage(userData["Dp"]),
+                        ),
+                ),
+               const SizedBox(width: 40,),
             AnimatedBuilder(
               animation: _drawercontroller,
               builder: (context, child) {
@@ -270,15 +298,16 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   onPressed:() {
                     if (_isDrawerClosed()) {
                         _toggleDrawer();
-                       
                     }
                   },
                   icon: _isDrawerOpen() || _isDrawerOpening()
                       ? const Icon(
+                        size: 32,
                           Icons.clear,
                           color: Colors.white,
                         )
                       : const Icon(
+                        size: 32,
                           Icons.menu,
                           color: Colors.white,
                         ),
@@ -323,10 +352,11 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                               ),
                               child:  Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child:!userData.containsKey("UserName")? FutureBuilder(
+                                child:!userData.containsKey("nickname")? FutureBuilder(
                                   initialData: "User",
                                   future: userget(),
                                   builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                    
                                     if (snapshot.connectionState == ConnectionState.waiting){
                                       return const Text(
                                     "Hello \n welcome to vora",
@@ -348,13 +378,18 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                     ),
                                   );
                                   },
-                                ):Text(
-                                    "Hello ${userData["UserName"]} \n welcome to vora",
-                                    style:const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 21,
-                                    ),
-                                  ),
+                                ):Builder(
+                                  builder: (context) {
+                                    
+                                    return Text(
+                                        "Hello ${userData["nickname"]} \n welcome to vora",
+                                        style:const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 21,
+                                        ),
+                                      );
+                                  }
+                                ),
                               ),
                             ),
                           ),
@@ -498,6 +533,31 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   carosel(_height,_width),
                   
                   const Divider(),
+                  SizedBox(
+                    height: _height/2,
+                    child: TableCalendar(focusedDay: DateTime.now(), 
+                    firstDay: DateTime(2010), lastDay: DateTime(2030),
+                    daysOfWeekStyle: const DaysOfWeekStyle(
+                        weekendStyle: TextStyle(
+                            color: Color.fromARGB(255, 170, 166, 166)),
+                        weekdayStyle: TextStyle(
+                            color: Color.fromARGB(255, 253, 253, 253))),
+                       headerStyle: HeaderStyle(
+                        formatButtonDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: const Color.fromARGB(255, 56, 54, 54))),
+                        formatButtonTextStyle:
+                            const TextStyle(color: Colors.white),
+                        titleTextStyle: const TextStyle(color: Colors.white)),
+                    calendarStyle: const CalendarStyle(
+                      weekendTextStyle: TextStyle(color: Color.fromARGB(183, 255, 255, 255)),
+                      selectedDecoration: BoxDecoration(shape: BoxShape.circle,color: Colors.blue),
+                        defaultTextStyle: TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255)),
+                        outsideTextStyle: TextStyle(color: Color.fromARGB(142, 255, 255, 255))),
+                    )
+                  )
                 ]),
             AnimatedBuilder(
               animation: _drawercontroller,
@@ -827,9 +887,7 @@ Widget carosel(double _height,double _width){
                                   if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-                                  if (eventData.containsKey(item)) {
-                                    print("This should not happen....");
-                                  }
+                                  
                                   Uint8List im = snapshot.data["EventCoverImage"];
                                   String EventTitle = snapshot.data["EventTitle"];
                                   String club = snapshot.data["EventClub"];

@@ -2,6 +2,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:vora_mobile/utils.dart';
@@ -15,6 +16,7 @@ class Newcommunity extends StatefulWidget {
 TextEditingController namecontroller = TextEditingController();
 TextEditingController leadController = TextEditingController();
 TextEditingController emailController = TextEditingController();
+TextEditingController aboutController = TextEditingController();
 String drop_value = " ";
 List<String> socials = [
   "Instagram",
@@ -117,6 +119,25 @@ class _NewcommunityState extends State<Newcommunity> {
                   decoration:const InputDecoration(
                       labelStyle:
                           TextStyle(color: Color.fromARGB(255, 161, 159, 159))),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+             const Text(
+              "About the new club",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
+                    borderRadius: BorderRadius.circular(10)),
+                child: TextField(
+                  controller: aboutController,
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -385,11 +406,14 @@ class _NewcommunityState extends State<Newcommunity> {
                 padding: const EdgeInsets.all(10.0),
                 child: InkWell(
                   onTap: () async {
-                    String state = '';
-                    var fsocials_ = new Map<String, String>();
+                    List<String> state = ['Error occured please try again'];
+                    while(state[0] == 'Error occured please try again'){
+                      showcircleprogress(context);
+                        var fsocials_ =  <String, String>{};
                     if (namecontroller.text.isNotEmpty &&
                         cover_photo != '' &&
                         leadController.text.isNotEmpty &&
+                        aboutController.text.isNotEmpty&&
                         emailController.text.isNotEmpty) {
                       for (var i = 0; i < socials.length; i++) {
                         if (socialsController[i].text.isNotEmpty) {
@@ -403,21 +427,29 @@ class _NewcommunityState extends State<Newcommunity> {
                       List<String> categ = List.empty(growable: true);
                       categ.add(dropdownvalue1);
                       state = await addcommunity(
+                        aboutclub: aboutController.text,
                           name: namecontroller.text,
                           lead: leadController.text,
                           categories: categ,
                           socials: fsocials_,
                           Email: emailController.text,
                           visibility: visibility,
-                          cover_pic: cover_photo);
+                          cover_pic: cover_photo
+                          
+                          );
+                    }else{
+                      state[0] = "Fill all the boxes";
                     }
+                    }
+                    
                     ;
-                    if (state == 'Success') {
+                    if (state[0] == 'Success') {
                       showsnackbar(context, "Community added");
-                      Navigator.pop(
+                     Navigator.pop(context);
+                      Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Homepage()));
+                              builder: (context) =>  Dedicatedcommunitypage(clubId: state.last,)));
                     }
                   },
                   child: Container(

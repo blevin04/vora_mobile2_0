@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:vora_mobile/utils.dart';
@@ -223,7 +224,7 @@ class _AddEventState extends State<AddEvent> {
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Text(
-                          "${week[eventDate.weekday]} - ${eventDate.year} - ${eventDate.month} - ${eventDate.day}",
+                          "${week[eventDate.weekday-1]} - ${eventDate.year} - ${eventDate.month} - ${eventDate.day}",
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),
@@ -465,6 +466,7 @@ class _AddEventState extends State<AddEvent> {
                 shrinkWrap: true,
                 crossAxisCount: 2,
                 children: List.generate(others.length, (index) {
+                  print("grid ${others.length}");
                   return Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Container(
@@ -490,7 +492,7 @@ class _AddEventState extends State<AddEvent> {
               Center(
                 child: InkWell(
                   onTap: () async {
-                    String state = '';
+                   List< String >state =List.empty(growable: true);
                     while (state.isEmpty) {
                       showcircleprogress(context);
                       if (_title.text.isNotEmpty &&
@@ -508,15 +510,15 @@ class _AddEventState extends State<AddEvent> {
                             other_img: others);
                       }
                     }
-                    if (state == "Success") {
+                    if (state.first == "Success") {
                       showsnackbar(context, "Event Added successfully");
                       Navigator.pop(context);
-                      Navigator.pop(
+                      Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Homepage()));
+                              builder: (context) =>  Dedicatedeventpage(eventId: state.last,)));
                     } else {
-                      showsnackbar(context, state);
+                      showsnackbar(context, state.first);
                     }
                   },
                   child: Container(
