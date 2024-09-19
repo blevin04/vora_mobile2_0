@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
@@ -85,17 +86,15 @@ String period(DateTime time){
  sec = sqrt(sec*sec).ceil();
   int min = duration.inMinutes;
   min = sqrt(min*min).ceil();
-  
 bool status = duration.isNegative;
 String retrn = "";
 
- if (hrs> 0 && days<0 ) {
+ if (hrs> 0 && days<=0 ) {
   if (status) {
     retrn = "$hrs h ago";
   }else{
     retrn = "in $hrs h";
   }
-   
  }
  if (days>0 ) {
   if (status) {
@@ -105,7 +104,7 @@ String retrn = "";
     retrn = "in $days days";
    }
  }
- if (sec>0 && min<0 ) {
+ if (sec>0 && min<=0 ) {
   if (status) {
     retrn = "$sec seconds ago";
   }
@@ -113,15 +112,15 @@ String retrn = "";
     retrn = "in $sec seconds";
   }
  }
- if (min>0 && hrs<0) {
+ if (min>0 && hrs<=0) {
   if (status) {
      retrn = "$min minutes ago";
   }else{
     retrn = "in $min minutes ";
   }
  }
-  return retrn;
 
+  return retrn;
 }
 
 Map<String,Map<String,dynamic>> eventData = Map();
@@ -142,7 +141,7 @@ Map<String,Map<String,dynamic>> announcementData = Map();
 Map<String,dynamic> more = Map();
 List<String> eventIdsEventspage = List.empty(growable: true);
 List<String> clubIds = List.empty(growable: true);
-
+List<bool> viewEventComments = List.empty(growable: true);
 Map<String,dynamic> userData = Map();
 //This stores the users data like the 
   ///name
@@ -311,10 +310,10 @@ Future<String> likePost (String ContentId)async{
     
       if (likes.contains(user.uid)) {
         likes.remove(user.uid);
-        print(likes);
+        
       }else{
         likes.add(user.uid);
-        print(likes);
+        
       }
       for(var id in likes){
         likes_.add(id);
@@ -417,3 +416,24 @@ Future<Map<String,dynamic>> getclubdatas (String clubId)async{
     }
     return even_m;
   }
+
+//Focus Image
+PageView showimage(
+  BuildContext context,
+  List<dynamic> imgs,
+  double _height,
+){
+  List<Widget> screens = List.empty(growable: true);
+  for(var image in imgs){
+    Widget screen = Container(
+      height: _height - 200,
+      child: Image(image: MemoryImage(image)),
+    );
+    screens.add(screen);
+  }
+  return PageView(
+    scrollDirection: Axis.horizontal,
+    children: screens
+    
+  );
+}

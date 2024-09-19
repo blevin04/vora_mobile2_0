@@ -34,9 +34,10 @@ String postdata = '';
 
 Future<List<String>> blogId()async{
   List<String> ids = List.empty(growable:true);
-  firestore.collection("posts").where("UserId", isNotEqualTo: null).get().then((onValue){
+ await firestore.collection("posts").where("UserId", isNotEqualTo: null).get().then((onValue){
     for(var id in onValue.docs){
       ids.add(id.id);
+     
       if (!blogsPageIds.contains(id.id)) {
     blogsPageIds.add(id.id);
   }
@@ -203,7 +204,8 @@ class _BlogsState extends State<Blogs> {
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
-    //  double _height = MediaQuery.of(context).size.height;
+      double _height = MediaQuery.of(context).size.height;
+      double clubScale = 0.96;
     return SafeArea(
         child: Scaffold(
       backgroundColor: Colors.black,
@@ -273,7 +275,10 @@ class _BlogsState extends State<Blogs> {
                 future: blogId(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(),);
+                    return  Container(
+                      height: _height-100,
+                        child: const Center(child: CircleAvatar(),),
+                    );
                   }
                   if (!snapshot.hasData) {
                     return const Center(child: Text("An error occured please refresh the page"),);
@@ -287,6 +292,7 @@ class _BlogsState extends State<Blogs> {
                         commentsOpenBlogPage.add(false);
                       }
                     }
+                    
                   return ListView.builder(
                       shrinkWrap: true,
                       itemCount: snapshot.data.length,
@@ -299,7 +305,7 @@ class _BlogsState extends State<Blogs> {
                             (context)=>const Dedicatedblogpage())),
                             child: Container(
                               constraints:const BoxConstraints(minHeight: 200),
-                              child: contents(snapshot.data![postnum],commentsOpenBlogPage[postnum])
+                              child: contents(snapshot.data![postnum],commentsOpenBlogPage[postnum],_height,clubScale)
                             ),
                           ),
                         );
@@ -322,8 +328,9 @@ class _BlogsState extends State<Blogs> {
                             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: 
                             (context)=>const Dedicatedblogpage())),
                             child: Container(
+                              color:  Colors.transparent,
                               constraints:const BoxConstraints(minHeight: 200),
-                              child: contents(blogsPageIds[postnum],commentsOpenBlogPage[postnum])
+                              child: contents(blogsPageIds[postnum],commentsOpenBlogPage[postnum],_height,clubScale)
                             ),
                           ),
                         );
@@ -338,507 +345,535 @@ class _BlogsState extends State<Blogs> {
 
 Widget contents(
   String blodsid,
-  bool commentOpen
+  bool commentOpen,
+  double _height,
+  double clubScale,
 ){
+  
   return 
   blogsdata[blodsid] == null?
   FutureBuilder(
-                              future: getblogdata( blodsid),
-                              builder:
-                                  (BuildContext context, AsyncSnapshot snapshot2) {
-                            
-                                    if (snapshot2.connectionState == ConnectionState.waiting) {
-                                      return const Center(child: CircularProgressIndicator(),);
-                                    }
-                                    if (!snapshot2.hasData) {
-                                      return const Center(child: Text("error"),);
-                                    }
-                                    if (snapshot2.connectionState == ConnectionState.none) {
-                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                    }
-                                   
-                                    String names_ = snapshot2.data["UserName"];
-                                   
-                                    String n_name = snapshot2.data["NickName"];
-                                    print(n_name);
-                                    DateTime postTime = snapshot2.data["PostTime"].toDate();
-                                    
-                                    String blogPost = snapshot2.data["BlogPost"];
-                                    print(blogPost);
-                                    List<dynamic> images_ = snapshot2.data["Images"];
-                                    List document = snapshot2.data["Documents"];
-                                    
-                                    Uint8List UserDp = snapshot2.data["UserDp"];
-                                    
-                                    String time = period(postTime);
-                                    bool liked =  snapshot2.data["Liked"];
-                                    bool commenteD = snapshot2.data["Commented"];
-                                    Map<String,dynamic> AllComments = snapshot2.data["Comments"];
-                                    
-                                return Column(
-                                  children: [
-                                    SizedBox(
-                                      height: 50,
-                                      child: Row(
-                                        children: [
-                                           Padding(
-                                            padding:const EdgeInsets.all(5),
-                                            
-                                            child: CircleAvatar(
-                                              backgroundImage:
-                                                  MemoryImage(UserDp),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 10.0),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  "$n_name @$names_",
-                                                  style: const TextStyle(
-                                                      color: Color.fromARGB(
-                                                          189, 255, 255, 255)),
-                                                ),
-                                                Text(
-                                                   time,
-                                                  style: const TextStyle(
-                                                      color: Color.fromARGB(
-                                                          174, 255, 255, 255)),
-                                                )
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        constraints:const BoxConstraints(maxHeight: 100),
-                                        child: Text(blogPost,style:const TextStyle(color: Colors.white),),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 180,
-                                      child: GridView.count(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        crossAxisSpacing: 0,
-                                        mainAxisSpacing: 1,
-                                        crossAxisCount: 2,
-                                        children: List.generate(images_.length, (imageindex){
-                                          return Center(child: Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                          child: Container(
-                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-                                                    
-                                                    child: GridTile(
-                                                      child: Image.memory(fit: BoxFit.cover,images_[0]))
-                                                  ),
-                                          ),);
-                                        })
-                                      ),
-                                    ),
-                                    StatefulBuilder(
-                                      builder: (BuildContext context, setStateintaractive) {
-                                        return Column(
-                                          children: [
-                                            Container(
-                                              child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child:commentOpen? SizedBox(height: 60,width: 200,
-                                                  child: TextField(
-                                                    onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
-                                                    style: const TextStyle(color: Colors.white),
-                                                    decoration: InputDecoration(
-                                                       enabledBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(color: Colors.grey),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    focusedBorder: OutlineInputBorder(
-                                                      borderSide:  const BorderSide(
-                                                        color: Colors.black,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(15),
-                                                    ),
-                                                    errorBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(
-                                                        color: Colors.red,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                        labelText: "Add comment",
-                                                        labelStyle: const TextStyle(
-                                                            color: Color.fromARGB(255, 161, 159, 159))),
-                                                    controller: BlogcommentText,
-                                                     ),
-                                                ): Text(AllComments.isNotEmpty? AllComments["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
-                                                overflow: TextOverflow.fade,
-                                                ),
-                                              ),
-                                              Visibility(
-                                                visible: commentOpen,
-                                                child: IconButton(onPressed: ()async{
-                                                   String state = "";
-                                                state = await commentpost(blodsid, BlogcommentText.text);
-                                                 if (state == "Success") {
-                                                   BlogcommentText.clear();
-                                                 }
+    future: getblogdata( blodsid),
+    builder:
+        (BuildContext context, AsyncSnapshot snapshot2) {
+         
+          
+          if (snapshot2.connectionState == ConnectionState.waiting) {
+            return   Container(
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(210, 91, 90, 90),
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        height: 180,
+                        child:const Center(child:  CircularProgressIndicator(color: Color.fromARGB(202, 33, 66, 227),)),
+                        );
+          }
+          if (!snapshot2.hasData) {
+            return const Center(child: Text("error"),);
+          }
+          if (snapshot2.connectionState == ConnectionState.none) {
+            return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+          }
+          
+          String names_ = snapshot2.data["UserName"];
+          
+          String n_name = snapshot2.data["NickName"];
+          print(n_name);
+          DateTime postTime = snapshot2.data["PostTime"].toDate();
+          
+          String blogPost = snapshot2.data["BlogPost"];
+          print(blogPost);
+          List<dynamic> images_ = snapshot2.data["Images"];
+          List document = snapshot2.data["Documents"];
+          
+          Uint8List UserDp = snapshot2.data["UserDp"];
+          
+          String time = period(postTime);
+          bool liked =  snapshot2.data["Liked"];
+          bool commenteD = snapshot2.data["Commented"];
+          Map<String,dynamic> AllComments = snapshot2.data["Comments"];
+          int likedNum = snapshot2.data["Likes"].length;
+      return Column(
+        children: [
+          SizedBox(
+            height: 50,
+            child: Row(
+              children: [
+                  Padding(
+                  padding:const EdgeInsets.all(5),
+                  
+                  child: CircleAvatar(
+                    backgroundImage:
+                        MemoryImage(UserDp),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 10.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        "$n_name @$names_",
+                        style: const TextStyle(
+                            color: Color.fromARGB(
+                                189, 255, 255, 255)),
+                      ),
+                      Text(
+                          time,
+                        style: const TextStyle(
+                            color: Color.fromARGB(
+                                174, 255, 255, 255)),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              constraints:const BoxConstraints(maxHeight: 100),
+              child: Text(blogPost,style:const TextStyle(color: Colors.white),),
+            ),
+          ),
+          SizedBox(
+            height: 180,
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 0,
+              mainAxisSpacing: 1,
+              crossAxisCount: 2,
+              children: List.generate(images_.length, (imageindex){
+                return Center(child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                child: Container(
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                          
+                          child: GridTile(
+                            child: InkWell(
+                              onTap: (){
+                                    showDialog(context: context, builder: (context){
+                                      return showimage(context, images_, _height);
+                                    });
+                                  },
+                              child: Image.memory(fit: BoxFit.cover,images_[0])))
+                        ),
+                ),);
+              })
+            ),
+          ),
+          StatefulBuilder(
+            builder: (BuildContext context, setStateintaractive) {
+              return Column(
+                children: [
+                  Container(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child:commentOpen? SizedBox(height: 60,width: 200,
+                        child: TextField(
+                          onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:  const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                              labelText: "Add comment",
+                              labelStyle: const TextStyle(
+                                  color: Color.fromARGB(255, 161, 159, 159))),
+                          controller: BlogcommentText,
+                            ),
+                      ): Text(AllComments.isNotEmpty? AllComments["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
+                      overflow: TextOverflow.fade,
+                      ),
+                    ),
+                    Visibility(
+                      visible: commentOpen,
+                      child: IconButton(onPressed: ()async{
+                          String state = "";
+                      state = await commentpost(blodsid, BlogcommentText.text);
+                        if (state == "Success") {
+                          BlogcommentText.clear();
+                        }
 
-                                                }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
-                                              Row(
-                                                children: [
-                                                  StatefulBuilder(
-                                                    builder: (BuildContext context, setStatelike) {
-                                                      return Row(
-                                                        children: [
-                                                          IconButton(onPressed: ()async{
-                                                            String state= "";
-                                                            state = await likePost(blodsid);
-                                                            if (state == "Success") {
-                                                             setStatelike((){
-                                                              liked = !liked;
-                                                            });
-                                                            }
-                                                            
-                                                          }, 
-                                                          icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
-                                                          Text(((blogsdata[blodsid]!["Likes"].length)).toString(),style:const TextStyle(color: Colors.white),),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                                  
-                                                  Row(
-                                                    children: [
-                                                      IconButton(onPressed: (){
-                                                        setStateintaractive((){
-                                                          commentOpen = !commentOpen;
-                                                        });
-                                                      }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
-                                                      Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),
-                                                    ],
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                            ),
-                                          ),
-                                          Visibility(
-                                        visible: commentOpen,
-                                        child: StreamBuilder(
-                                          stream: firestore.collection("posts").doc(blodsid).snapshots(),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState == ConnectionState.waiting) {
-                                              return const Center(child: CircularProgressIndicator(),);
-                                            }
-                                            Map<String,dynamic> comAll = snapshot.data!["Comments"];
-                                            
-                                            return Container(
-                                              constraints:const BoxConstraints(minHeight: 70,maxHeight: 200),
-                                              child:comAll.isEmpty?const Text("No comments yet",style: TextStyle(color: Colors.white),) : ListView.builder(
-                                              shrinkWrap: true,
-                                              
-                                              itemCount: comAll.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                List commentKeys = comAll.keys.toList();
-                                                String ownerOfComment = comAll[commentKeys[index]]["UserName"];
-                                                DateTime ttime = comAll[commentKeys[index]]["TimeStamp"].toDate();
-                                                String comContent = comAll[commentKeys[index]]["Comment"];
-                                                List LikesCom = comAll[commentKeys[index]]["Likes"];
-                                            
-                                                return Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Container(
-                                                    padding:const EdgeInsets.all(10),
-                                                    decoration: BoxDecoration(
-                                                                                              
-                                                      color: const Color.fromARGB(205, 14, 13, 13),
-                                                      borderRadius: BorderRadius.circular(10)
-                                                    
-                                                    ),
-                                                    child: Column(
-                                                      children: [
-                                                        Row(
-                                                          children: [Text(ownerOfComment,style:const TextStyle(color: Colors.white),),
-                                                          const SizedBox(width: 10,),
-                                                          Text(period(ttime),style:const TextStyle(color: Colors.white),softWrap: true,)],
-                                                        ),
-                                                        Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            Text(comContent,style:const TextStyle(color: Colors.white),),
-                                                            IconButton(onPressed: (){}, icon: Icon(Icons.favorite
-                                                            ,color:LikesCom.contains(user.uid)?Colors.red:const Color.fromARGB(207, 172, 170, 170) ,
-                                                            ))
-                                                          ],
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                                                                    ),
-                                            );
-                                          }
-                                        ),)  
+                      }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
+                    Row(
+                      children: [
+                        StatefulBuilder(
+                          builder: (BuildContext context, setStatelike) {
+                            return Row(
+                              children: [
+                                IconButton(onPressed: ()async{
+                                  String state= "";
 
-                                          ],
-                                        );
-                                      },
-                                      
-                                    ),
-                                     
-                                  ],
-                                );
-                              },
-                            )
-                            :Builder(
-                              builder: (context) {
-                                 String names_ = blogsdata[blodsid]!["UserName"];
-                                    String n_name = blogsdata[blodsid]!["NickName"];
-                                    DateTime postTime = blogsdata[blodsid]!["PostTime"].toDate();
-                                    String blogPost = blogsdata[blodsid]!["BlogPost"];
-                                    List<dynamic> images_ = blogsdata[blodsid]!["Images"];
-                                   List document = blogsdata[blodsid]!["Documents"];
-                                    Uint8List UserDp = blogsdata[blodsid]!["UserDp"];
-                                    bool liked = blogsdata[blodsid]!["Liked"];
-                                    print("......liked $liked");
-                                    bool commenteD = blogsdata[blodsid]!["Commented"];
-                                    print("comm.... $commenteD");
-                                    Map<String,dynamic> AllComments = blogsdata[blodsid]!["Comments"];
-                                    String time = period(postTime);
-                                return Column(
-                                      children: [
-                                        Container(
-                                          height: 50,
-                                          child: Row(
-                                            children: [
-                                               Padding(
-                                                padding:const EdgeInsets.all(5),
-                                                child: CircleAvatar(
-                                                  backgroundImage: MemoryImage(UserDp),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.only(left: 10.0),
-                                                child: Column(
-                                                  children: [
-                                                    Text(
-                                                      "$n_name @$names_",
-                                                      style: const TextStyle(
-                                                          color: Color.fromARGB(
-                                                              189, 255, 255, 255)),
-                                                    ),
-                                                    Text(
-                                                       time,
-                                                      style: const TextStyle(
-                                                          color: Color.fromARGB(
-                                                              174, 255, 255, 255)),
-                                                    )
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Container(
-                                            constraints:const BoxConstraints(maxHeight: 100),
-                                            child: Text(blogPost,style:const TextStyle(color: Colors.white),),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 180,
-                                          child: GridView.count(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            crossAxisSpacing: 1,
-                                            mainAxisSpacing: 1,
-                                            crossAxisCount: 2,
-                                            children: List.generate(images_.length, (imageindex){
-                                              return Center(child: Padding(
-                                                padding: const EdgeInsets.all(5.0),
-                                              child: Container(
-                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-                                                        
-                                                        child: GridTile(
-                                                          child: Image.memory(fit: BoxFit.cover,images_[imageindex]))
-                                                      ),
-                                              ),);
-                                            })
-                                          ),
-                                        ),
-                                        StatefulBuilder(
-                                      builder: (BuildContext context, setStateintaractive) {
-                                        return Column(
-                                          children: [
-                                            Container(
-                                              padding:const EdgeInsets.all(8),
-                                              child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child:commentOpen? SizedBox(height: 60,width: 200,
-                                                  child: TextField(
-                                                    onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
-                                                    style: const TextStyle(color: Colors.white),
-                                                    decoration: InputDecoration(
-                                                       enabledBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(color: Colors.grey),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    focusedBorder: OutlineInputBorder(
-                                                      borderSide:  const BorderSide(
-                                                        color: Colors.black,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(15),
-                                                    ),
-                                                    errorBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(
-                                                        color: Colors.red,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                        labelText: "Add comment",
-                                                        labelStyle: const TextStyle(
-                                                            color: Color.fromARGB(255, 161, 159, 159))),
-                                                    controller: BlogcommentText,
-                                                     ),
-                                                ): Text(AllComments.isNotEmpty? AllComments[AllComments.keys.first]["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
-                                                overflow: TextOverflow.fade,
-                                                ),
-                                              ),
-                                              Visibility(
-                                                visible: commentOpen,
-                                                child: IconButton(onPressed: ()async{
-                                                  String state = "";
-                                                state = await commentpost(blodsid, BlogcommentText.text);
-                                                 if (state == "Success") {
-                                                   BlogcommentText.clear();
-                                                   setStateintaractive((){});
-                                                 }
-                                                }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
-                                              Row(
-                                                children: [
-                                                  StatefulBuilder(
-                                                    builder: (BuildContext context, setStateliked) {
-                                                      return Row(
-                                                        children: [
-                                                          IconButton(onPressed: ()async{
-                                                            String state= "";
-                                                            state = await likePost(blodsid);
-                                                            if (state == "Success") {
-                                                             setStateliked((){
-                                                              liked = !liked;
-                                                            });
-                                                            }
-                                                            
-                                                          }, 
-                                                          icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
-                                                          Text(((blogsdata[blodsid]!["Likes"].length)).toString(),style:const TextStyle(color: Colors.white),),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                                  
-                                                  Row(
-                                                    children: [
-                                                      IconButton(onPressed: (){
-                                                        setStateintaractive((){
-                                                          commentOpen = !commentOpen;
-                                                        });
-                                                      }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
-                                                      Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),
-                                                    ],
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                            ),
-                                          ),
-                                          Visibility(
-                                        visible: commentOpen,
-                                        child: StreamBuilder(
-                                          stream: firestore.collection("posts").doc(blodsid).snapshots(),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState == ConnectionState.waiting) {
-                                              return const Center(child: CircularProgressIndicator(),);
-                                            }
-                                            Map<String,dynamic> comAll = snapshot.data!["Comments"];
-                                            
-                                            return InkWell(
-                                              onTap: (){},
-                                              splashColor: Colors.transparent,
-                                              child: Container(
-                                                constraints:const BoxConstraints(minHeight: 70,maxHeight: 200),
-                                                child:comAll.isEmpty?const Text("No comments yet",style: TextStyle(color: Colors.white),) : ListView.builder(
-                                                shrinkWrap: true,
-                                                
-                                                itemCount: comAll.length,
-                                                itemBuilder: (BuildContext context, int index) {
-                                                  List commentKeys = comAll.keys.toList();
-                                                  String ownerOfComment = comAll[commentKeys[index]]["UserName"];
-                                                  DateTime ttime = comAll[commentKeys[index]]["TimeStamp"].toDate();
-                                                  String comContent = comAll[commentKeys[index]]["Comment"];
-                                                  List LikesCom = comAll[commentKeys[index]]["Likes"];
-                                              
-                                                  return Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Container(
-                                                      padding:const EdgeInsets.all(10),
-                                                      decoration: BoxDecoration(
-                                                                                                
-                                                        color: const Color.fromARGB(205, 14, 13, 13),
-                                                        borderRadius: BorderRadius.circular(10)
-                                                      
-                                                      ),
-                                                      child: Column(
-                                                        children: [
-                                                          Row(
-                                                            children: [Text(ownerOfComment,style:const TextStyle(color: Colors.white),),
-                                                            const SizedBox(width: 10,),
-                                                            Text(period(ttime),style:const TextStyle(color: Colors.white),softWrap: true,)],
-                                                          ),
-                                                          Row(
-                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                            children: [
-                                                              Text(comContent,style:const TextStyle(color: Colors.white),),
-                                                              IconButton(onPressed: (){}, icon: Icon(Icons.favorite
-                                                              ,color:LikesCom.contains(user.uid)?Colors.red:const Color.fromARGB(207, 172, 170, 170) ,
-                                                              ))
-                                                            ],
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                                                      ),
-                                              ),
-                                            );
-                                          }
-                                        ),)  
-
-                                          ],
-                                        );
-                                      },
-                                      
-                                    ),
-                                      
-                                      ],
-                                    );
-                              }
+                                 // state = await likePost(blodsid);
+                                  
+                                   setStatelike((){
+                                    liked = !liked;
+                                    liked?likedNum++:likedNum--;
+                                    likePost(blodsid);
+                                  });
+                                  
+                                }, 
+                                icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
+                                Text(likedNum.toString(),style:const TextStyle(color: Colors.white),),
+                              ],
                             );
+                          },
+                        ),
+                        
+                        Row(
+                          children: [
+                            IconButton(onPressed: (){
+                              setStateintaractive((){
+                                commentOpen = !commentOpen;
+                              });
+                            }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
+                            Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                  ),
+                ),
+                Visibility(
+              visible: commentOpen,
+              child: StreamBuilder(
+                stream: firestore.collection("posts").doc(blodsid).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return  Center(child: Container(),);
+                  }
+                  Map<String,dynamic> comAll = snapshot.data!["Comments"];
+                  
+                  return Container(
+                    constraints:const BoxConstraints(minHeight: 70,maxHeight: 200),
+                    child:comAll.isEmpty?const Text("No comments yet",style: TextStyle(color: Colors.white),) : ListView.builder(
+                    shrinkWrap: true,
+                    
+                    itemCount: comAll.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      List commentKeys = comAll.keys.toList();
+                      String ownerOfComment = comAll[commentKeys[index]]["UserName"];
+                      DateTime ttime = comAll[commentKeys[index]]["TimeStamp"].toDate();
+                      String comContent = comAll[commentKeys[index]]["Comment"];
+                      List LikesCom = comAll[commentKeys[index]]["Likes"];
+                  
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          padding:const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                                                                    
+                            color: const Color.fromARGB(205, 14, 13, 13),
+                            borderRadius: BorderRadius.circular(10)
+                          
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [Text(ownerOfComment,style:const TextStyle(color: Colors.white),),
+                                const SizedBox(width: 10,),
+                                Text(period(ttime),style:const TextStyle(color: Colors.white),softWrap: true,)],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(comContent,style:const TextStyle(color: Colors.white),),
+                                  IconButton(onPressed: (){}, icon: Icon(Icons.favorite
+                                  ,color:LikesCom.contains(user.uid)?Colors.red:const Color.fromARGB(207, 172, 170, 170) ,
+                                  ))
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                                                          ),
+                  );
+                }
+              ),)  
+
+                ],
+              );
+            },
+            
+          ),
+            
+        ],
+      );
+    },
+  )
+  :Builder(
+    builder: (context) {
+        String names_ = blogsdata[blodsid]!["UserName"];
+          String n_name = blogsdata[blodsid]!["NickName"];
+          DateTime postTime = blogsdata[blodsid]!["PostTime"].toDate();
+          String blogPost = blogsdata[blodsid]!["BlogPost"];
+          List<dynamic> images_ = blogsdata[blodsid]!["Images"];
+          List document = blogsdata[blodsid]!["Documents"];
+          Uint8List UserDp = blogsdata[blodsid]!["UserDp"];
+          bool liked = blogsdata[blodsid]!["Liked"];
+          print("......liked $liked");
+          bool commenteD = blogsdata[blodsid]!["Commented"];
+          print("comm.... $commenteD");
+          Map<String,dynamic> AllComments = blogsdata[blodsid]!["Comments"];
+          String time = period(postTime);
+        int likesNum =  blogsdata[blodsid]!["Likes"].length;
+      return Column(
+            children: [
+              Container(
+                height: 50,
+                child: Row(
+                  children: [
+                      Padding(
+                      padding:const EdgeInsets.all(5),
+                      child: CircleAvatar(
+                        backgroundImage: MemoryImage(UserDp),
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(left: 10.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            "$n_name @$names_",
+                            style: const TextStyle(
+                                color: Color.fromARGB(
+                                    189, 255, 255, 255)),
+                          ),
+                          Text(
+                              time,
+                            style: const TextStyle(
+                                color: Color.fromARGB(
+                                    174, 255, 255, 255)),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  constraints:const BoxConstraints(maxHeight: 100),
+                  child: Text(blogPost,style:const TextStyle(color: Colors.white),),
+                ),
+              ),
+              SizedBox(
+                height: 180,
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 1,
+                  mainAxisSpacing: 1,
+                  crossAxisCount: 2,
+                  children: List.generate(images_.length, (imageindex){
+                    return Center(child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                    child: Container(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                              
+                              child: GridTile(
+                                child: InkWell(
+                                  onTap: (){
+                                    showDialog(context: context, builder: (context){
+                                      return showimage(context, images_, _height);
+                                    });
+                                  },
+                                  child: Image.memory(fit: BoxFit.cover,images_[imageindex])))
+                            ),
+                    ),);
+                  })
+                ),
+              ),
+              StatefulBuilder(
+            builder: (BuildContext context, setStateintaractive) {
+              return Column(
+                children: [
+                  Container(
+                    padding:const EdgeInsets.all(8),
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child:commentOpen? SizedBox(height: 60,width: 200,
+                        child: TextField(
+                          onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:  const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                              labelText: "Add comment",
+                              labelStyle: const TextStyle(
+                                  color: Color.fromARGB(255, 161, 159, 159))),
+                          controller: BlogcommentText,
+                            ),
+                      ): Text(AllComments.isNotEmpty? AllComments[AllComments.keys.first]["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
+                      overflow: TextOverflow.fade,
+                      ),
+                    ),
+                    Visibility(
+                      visible: commentOpen,
+                      child: IconButton(onPressed: ()async{
+                        String state = "";
+                      state = await commentpost(blodsid, BlogcommentText.text);
+                        if (state == "Success") {
+                          BlogcommentText.clear();
+                          setStateintaractive((){});
+                        }
+                      }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
+                    Row(
+                      children: [
+                        StatefulBuilder(
+                          builder: (BuildContext context, setStateliked) {
+                            return Row(
+                              children: [
+                                IconButton(onPressed: ()async{
+                                  String state= "";
+
+                                 // state = await likePost(blodsid);
+                                  
+                                   setStateliked((){
+                                    liked = !liked;
+                                    liked?likesNum++:likesNum--;
+                                    likePost(blodsid);
+                                  });
+                                  
+                                }, 
+                                icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
+                                Text(likesNum.toString(),style:const TextStyle(color: Colors.white),),
+                              ],
+                            );
+                          },
+                        ),
+                        
+                        Row(
+                          children: [
+                            IconButton(onPressed: (){
+                              setStateintaractive((){
+                                commentOpen = !commentOpen;
+                              });
+                            }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
+                            Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                  ),
+                ),
+                Visibility(
+              visible: commentOpen,
+              child: StreamBuilder(
+                stream: firestore.collection("posts").doc(blodsid).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(),);
+                  }
+                  Map<String,dynamic> comAll = snapshot.data!["Comments"];
+                  
+                  return InkWell(
+                    onTap: (){},
+                    splashColor: Colors.transparent,
+                    child: Container(
+                      constraints:const BoxConstraints(minHeight: 70,maxHeight: 200),
+                      child:comAll.isEmpty?const Text("No comments yet",style: TextStyle(color: Colors.white),) : ListView.builder(
+                      shrinkWrap: true,
+                      
+                      itemCount: comAll.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        List commentKeys = comAll.keys.toList();
+                        String ownerOfComment = comAll[commentKeys[index]]["UserName"];
+                        DateTime ttime = comAll[commentKeys[index]]["TimeStamp"].toDate();
+                        String comContent = comAll[commentKeys[index]]["Comment"];
+                        List LikesCom = comAll[commentKeys[index]]["Likes"];
+                    
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            padding:const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                                                                      
+                              color: const Color.fromARGB(205, 14, 13, 13),
+                              borderRadius: BorderRadius.circular(10)
+                            
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [Text(ownerOfComment,style:const TextStyle(color: Colors.white),),
+                                  const SizedBox(width: 10,),
+                                  Text(period(ttime),style:const TextStyle(color: Colors.white),softWrap: true,)],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(comContent,style:const TextStyle(color: Colors.white),),
+                                    IconButton(onPressed: (){}, icon: Icon(Icons.favorite
+                                    ,color:LikesCom.contains(user.uid)?Colors.red:const Color.fromARGB(207, 172, 170, 170) ,
+                                    ))
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                                                            ),
+                    ),
+                  );
+                }
+              ),)  
+
+                ],
+              );
+            },
+            
+          ),
+            
+            ],
+          );
+    }
+  );
 }

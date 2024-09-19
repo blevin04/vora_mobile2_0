@@ -181,21 +181,27 @@ class _SignupState extends State<Signup> {
                       padding: const EdgeInsets.all(20.0),
                       child: InkWell(
                         onTap: () async {
-                          print(_email.text);
-                          print(_password.text);
-                          print(_name.text);
-                          print(_nickname.text);
-                          print(_title.text);
-                          String succes = await AuthMethods().createAccount(
+                          String succes ="";
+                          if (email.text.isNotEmpty &&
+                              _password.text.isNotEmpty &&
+                              _name.text.isNotEmpty &&
+                                _title.text.isNotEmpty) {
+                                  while(succes.isEmpty){
+                                    showcircleprogress(context);
+                                    succes = await AuthMethods().createAccount(
                               email: _email.text,
                               password: _password.text,
                               fullName: _name.text,
                               nickname: _nickname.text,
                               title: _title.text);
+                                  }
+                          }
+                           
                           if (succes == 'success') {
                             dispose();
                             showsnackbar(context, 'Welcome');
                             Navigator.of(context).pop();
+                            Navigator.pop(context);
                           } else {
                             showsnackbar(context, succes);
                             print(succes);

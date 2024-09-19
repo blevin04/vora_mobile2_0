@@ -258,8 +258,12 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                         style: TextStyle(color: Colors.white),
                                       )),
                                   TextButton(
-                                      onPressed: () {
+                                      onPressed: ()async {
+                                        var appDir = (await getTemporaryDirectory()).path;
+                                        new Directory(appDir).delete(recursive: true);
                                         FirebaseAuth.instance.signOut();
+                                        
+                                        
                                         Navigator.pop(context);
                                       },
                                       child: const Text(
@@ -278,7 +282,12 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                       future: userget(),
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator(),);
+                          return const Center(child: CircleAvatar(backgroundColor: Colors.white,),);
+                        }
+                        if (!snapshot.hasData) {
+                          return const CircleAvatar(
+                            backgroundImage: AssetImage('lib/assets/dp.jpg'),
+                          );
                         }
                         
                         Uint8List dpimg = userData["Dp"];
@@ -307,7 +316,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                           color: Colors.white,
                         )
                       : const Icon(
-                        size: 32,
+                        size: 28,
                           Icons.menu,
                           color: Colors.white,
                         ),
@@ -352,7 +361,8 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                               ),
                               child:  Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child:!userData.containsKey("nickname")? FutureBuilder(
+                                child:!userData.containsKey("nickname")? 
+                                FutureBuilder(
                                   initialData: "User",
                                   future: userget(),
                                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -369,6 +379,15 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                     if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: 
                                     Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return const Text(
+                                    "Hello \n welcome to vora",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 21,
+                                    ),
+                                  );
                                   }
                                     return Text(
                                     "Hello ${snapshot.data} \n welcome to vora",
@@ -436,7 +455,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                             initialData: 0,
                                             builder: (BuildContext context, AsyncSnapshot snapshot) {
                                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return const Center(child: CircularProgressIndicator(),);
+                                                return  Center(child: Container(),);
                                               }
                                               if (snapshot.connectionState == ConnectionState.none) {
                                       return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
@@ -462,7 +481,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                           Padding(
                             padding: const EdgeInsets.only(top: 5, right: 5),
                             child: InkWell(
-                              onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events())),
+                              onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",))),
                               child: Container(
                                 height: 140,
                                 width: _width / 4,
@@ -499,7 +518,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                             initialData: 0,
                                             builder: (BuildContext context, AsyncSnapshot snapshot) {
                                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return const Center(child: CircularProgressIndicator(),);
+                                                return  Center(child: Container(),);
                                               }
                                               if (snapshot.connectionState == ConnectionState.none) {
                                       return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
@@ -634,7 +653,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                       ),
                                       onTap: () async {
                                       //  Navigator.pop(context);
-                                        await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events()));
+                                        await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",)));
                                       },
                                     ),
                                     ListTile(
@@ -879,10 +898,10 @@ Widget carosel(double _height,double _width){
                                 future: getcontent(item),
                                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                                   if (snapshot.connectionState ==ConnectionState.waiting) {
-                                    return const Center(child: CircularProgressIndicator(),);
+                                    return  Center(child: Container(),);
                                   }
                                   if (!snapshot.hasData) {
-                                    return const Center(child: CircularProgressIndicator(),);
+                                    return const Center(child: Text("Upcoming Events"),);
                                   }
                                   if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);

@@ -114,5 +114,3 @@ Future<void> adddp(
   //File img = await File(path.path).create();
   await _storage.child("/profile/$userId/dp.png").putFile(File(path.path));
 }
-
-Future<void> deleteStaff() async {}

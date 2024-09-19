@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vora_mobile/add_pages/newcommunity.dart';
+import 'package:vora_mobile/announcemnts.dart';
 
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
@@ -20,15 +24,22 @@ FirebaseFirestore store = FirebaseFirestore.instance;
 TextEditingController title_ = TextEditingController();
 TextEditingController decription = TextEditingController();
 TextEditingController community = TextEditingController();
-String image_path = '';
+String image_path = "";
 
 class _NewAnnouncementState extends State<NewAnnouncement> {
   List<String> communities = List.empty(growable: true);
   @override
   void initState() {
     super.initState();
+    
     communities.clear;
     getcommunities();
+  }
+  void clearshit(){
+    title_.clear();
+    decription.clear();
+    community.clear();
+    image_path = "";
   }
 
   bool comm_drop = false;
@@ -75,6 +86,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Center(
                 child: Text(
@@ -106,11 +118,13 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
               Container(
+                constraints: BoxConstraints(minHeight: 60,maxHeight: 160),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
                   clipBehavior: Clip.hardEdge,
+                  maxLines: null,
                   expands: true,
                   scrollPhysics: const AlwaysScrollableScrollPhysics(),
                   style:const TextStyle(color: Colors.white,),
@@ -176,6 +190,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                     radius: const Radius.circular(10),
                     color: Colors.white,
                     child: InkWell(
+                      
                       onTap: () async {
                         await Permission.accessMediaLocation
                             .onDeniedCallback(() async {
@@ -191,33 +206,44 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                             .pickFiles(type: FileType.image));
                         if (result != null) {
                           image_path = result.files.single.path!;
+                          setState(() {
+                            
+                          });
                         }
                         if (result == null) {
                           showsnackbar(context, 'no image chossen');
                         }
                       },
-                      child: const Center(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      child:  Center(
+                        child: Stack(
                           children: [
-                            Icon(
-                              Icons.cloud_upload_sharp,
-                              color: Colors.white,
+                           const Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cloud_upload_sharp,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  "Click to upload...",
+                                  style:
+                                      TextStyle(color: Colors.white, fontSize: 15),
+                                )
+                              ],
                             ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Click to upload...",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 15),
-                            )
+                            Visibility(
+                              visible: image_path.isNotEmpty,
+                              child: Image(image: FileImage(File(image_path))))
                           ],
                         ),
                       ),
                     )),
               ),
+              
               const SizedBox(
                 height: 30,
               ),
@@ -247,11 +273,11 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
 
                     if (state == "success") {
                       showsnackbar(context, "Announcement Added...");
-                      Navigator.pop(context);
-                      Navigator.pop(
+                      clearshit();
+                      Navigator.pushReplacement(
                           context,
                           (MaterialPageRoute(
-                              builder: (context) => const Homepage())));
+                              builder: (context) => const Announcemnts())));
                     } else {
                       showsnackbar(context, state);
                     }

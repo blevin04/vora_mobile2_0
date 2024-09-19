@@ -98,15 +98,24 @@ class _LoginState extends State<Login> {
                               ),
                             ),
                             labelText: "password",
-                            labelStyle: TextStyle(
+                            labelStyle:const TextStyle(
                                 color: Color.fromARGB(255, 161, 159, 159))),
                         controller: password,
                       ),
                     ),
                     InkWell(
                       onTap: () async {
-                        String success = await AuthMethods()
+                        String success ="";
+                        if (email.text.isNotEmpty &&
+                       password.text.isNotEmpty ) {
+                        while(success.isEmpty){
+                          showcircleprogress(context);
+                          success = await AuthMethods()
                             .signIn(email: email.text, password: password.text);
+                        }
+                           
+                        }
+                        
 
                         if (success == "sucess") {
                           email.dispose();

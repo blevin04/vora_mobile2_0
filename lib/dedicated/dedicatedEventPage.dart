@@ -3,8 +3,6 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:vora_mobile/dedicated/DedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/utils.dart';

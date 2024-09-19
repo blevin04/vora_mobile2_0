@@ -7,11 +7,13 @@ import 'package:flutter/material.dart'hide CarouselController;
 
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vora_mobile/add_pages/new_post.dart';
+import 'package:vora_mobile/clubs.dart';
 
 
 import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
+import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -604,6 +606,12 @@ Widget clubs(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
+      if (snapshot.data.isEmpty) {
+        return Center(
+          child: TextButton(onPressed: ()=>Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=>const Clubs())), 
+          child:const Text("Join your first club ",style: TextStyle(color: Colors.white),)),
+        );
+      }
         
       return ListView.builder(
         shrinkWrap: true,
@@ -691,7 +699,14 @@ Widget eventsattended(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-      
+      List n = List.empty(growable: true);
+      if (snapshot.data.isEmpty) {
+        return Center(
+          child: TextButton(onPressed: (){
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const Events(filtername: "all",)));
+          }, child:const Text("View Upcomming Events",style: TextStyle(color: Colors.white),)),
+        );
+      }
       return ListView.builder(
         itemCount: snapshot.data.length,
         itemBuilder: (context,index){

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
+import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -104,6 +105,7 @@ void _visibleChanged(){}
   void initState() {
     super.initState();
     search_visible.addListener(_visibleChanged);
+    clubScale = 0.97;
   }
 
   Future<List<String>> get(String filter) async {
@@ -220,11 +222,13 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
   }
   return clubd_;
 }
+ double clubScale = 0.96;
   bool _search_vis = false;
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
     double _height = MediaQuery.of(context).size.height;
+   
     return SafeArea(
         child: Scaffold(
       backgroundColor: Colors.black,
@@ -321,7 +325,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                       Icons.keyboard_arrow_down,
                       color: Colors.white,
                     ),
-
+      
                     // Array list of items
                     items: filter.map((String items) {
                       return DropdownMenuItem(
@@ -332,7 +336,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                         ),
                       );
                     }).toList(),
-
+      
                     onChanged: (String? newValue) {
                       if (newValue != dropdown_value) {
                         setState(() {
@@ -350,7 +354,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                 future: get(dropdown_value),
                 builder: (context, snpsht) {
                   if (snpsht.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(),);
+                    return  Center(child: SizedBox(
+                      height: _height-100,
+                      child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
+                    ),);
                   }
                   if (snpsht.connectionState == ConnectionState.none) {
                                     return const Center(child: 
@@ -359,33 +366,54 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                   }
                   List<String> data_snap = snpsht.data!;
                   
-                  return ListView.builder(
-                      itemCount: data_snap.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                           height: _height / 4.2,
-                          child:clubData[data_snap[index]]==null?
-                           FutureBuilder(
-                             // initialData: img = AssetImage("lib/assets/dp.png"),
-                              future: clubdata(data_snap[index]),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return const Center(child: CircularProgressIndicator(),);
-                                }
-                                if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                                Uint8List c_image = snapshot.data!["Image"];
-                                String C_name = snapshot.data!["Name"];
-                                String C_about = snapshot.data!["About"];
-
-                                return showcontent(context, data_snap[index], _width, c_image, C_name, C_about);
-                              }):
-                              showcontent(context, data_snap[index], _width, clubData[data_snap[index]]!["Image"], clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"]),
-                        );
+                  return 
+                  RefreshIndicator(
+                    onRefresh: ()async{
+                      await get(dropdown_value);
+                      setState(() {
+                        
                       });
+                    },
+                    child: ListView.builder(
+                        itemCount: data_snap.length,
+                        shrinkWrap: true,
+                     
+                        itemBuilder: (context, index) {
+                          return SizedBox(
+                             height: _height / 4.1,
+                            child:clubData[data_snap[index]]==null?
+                             FutureBuilder(
+                               // initialData: img = AssetImage("lib/assets/dp.png"),
+                                future: clubdata(data_snap[index]),
+                                builder: (context, snapshot) {
+                                  
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    clubScale = 0.95;
+                                    return   Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                              decoration: BoxDecoration(
+                                                color: const Color.fromARGB(210, 91, 90, 90),
+                                                borderRadius: BorderRadius.circular(10)
+                                              ),
+                                              height: 200,
+                                              child: const Center(child: CircularProgressIndicator(),),
+                                              ),
+                                    );
+                                  }
+                                  if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                                  Uint8List c_image = snapshot.data!["Image"];
+                                  String C_name = snapshot.data!["Name"];
+                                  String C_about = snapshot.data!["About"];
+                          
+                                  return showcontent(context, data_snap[index], _width, c_image, C_name, C_about);
+                                }):
+                                showcontent(context, data_snap[index], _width, clubData[data_snap[index]]!["Image"], clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"]),
+                          );
+                        }),
+                  );
                 })
                 
           ],
@@ -404,10 +432,9 @@ Widget showcontent(
 ){
   return Builder(
     builder: (context) {
-      print(" clubid = $clubId");
-      print("Clubname = $Clubname");
-      print("aboutclub = $aboutclub");
       return InkWell(
+        enableFeedback: false,
+        splashColor: Colors.transparent,
                 onTap: () => Navigator.push(context,MaterialPageRoute(builder: 
                 (context)=>  Dedicatedcommunitypage(clubId: clubId,))),
                 child: Padding(
@@ -428,6 +455,7 @@ Widget showcontent(
                       child: Row(
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Center(
                             child: Container(
@@ -445,6 +473,7 @@ Widget showcontent(
                               width: _width / 2,
                               alignment: Alignment.topCenter,
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     Clubname,
@@ -453,7 +482,7 @@ Widget showcontent(
                                         fontSize: 20),
                                   ),
                                     Padding(
-                                    padding:const EdgeInsets.all(8.0),
+                                    padding:const EdgeInsets.only(top: 5.0),
                                     child: Text(
                                       aboutclub,
                                       style:const TextStyle(
@@ -462,9 +491,7 @@ Widget showcontent(
                                       overflow: TextOverflow.fade,
                                     ),
                                   ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
+                                  
                                   InkWell(
                                     onTap: () {
                                       showDialog(
@@ -486,6 +513,7 @@ Widget showcontent(
                                                   height: 120,
                                                   width: 170,
                                                   child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Padding(
                                                         padding: const EdgeInsets
@@ -499,10 +527,7 @@ Widget showcontent(
                                                                   Colors.white),
                                                         ),
                                                       ),
-                                                      const SizedBox(
-                                                        height:
-                                                            20,
-                                                      ),
+                                                     
                                                       Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
@@ -553,7 +578,7 @@ Widget showcontent(
                                                   .circular(10)),
                                       child: const Padding(
                                         padding:
-                                            EdgeInsets.all(8.0),
+                                            EdgeInsets.all(5.0),
                                         child: Text(
                                           "Join Community",
                                           style: TextStyle(
@@ -564,9 +589,11 @@ Widget showcontent(
                                     ),
                                   ),
                                   TextButton(
-                                      onPressed: () {},
-                                      child: const Text(
-                                          "Clubs Events...",style: TextStyle(color: Colors.white),))
+                                      onPressed: ()async {
+                                        await Navigator.push(context, MaterialPageRoute(builder: (context)=>  Events(filtername: Clubname)));
+                                      },
+                                      child:  Text(
+                                          "$Clubname Events...",style:const TextStyle(color: Colors.white),))
                                 ],
                               ))
                         ],

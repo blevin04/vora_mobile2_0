@@ -466,7 +466,7 @@ class _AddEventState extends State<AddEvent> {
                 shrinkWrap: true,
                 crossAxisCount: 2,
                 children: List.generate(others.length, (index) {
-                  print("grid ${others.length}");
+                 
                   return Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Container(
