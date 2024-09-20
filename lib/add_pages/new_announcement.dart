@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 
 import 'package:permission_handler/permission_handler.dart';
-import 'package:vora_mobile/add_pages/newcommunity.dart';
+
 import 'package:vora_mobile/announcemnts.dart';
 
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
@@ -51,7 +53,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
         .get()
         .then((val) {
       for (var snapshot in val.docs) {
-        print("${snapshot.id} => ${snapshot.data()["Numbers"]}");
+        //print("${snapshot.id} => ${snapshot.data()["Numbers"]}");
         communities.add(snapshot.data()["Name"]);
       }
     });
@@ -59,7 +61,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
 
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
+    double windowWidth = MediaQuery.of(context).size.width;
     // double _height = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -118,7 +120,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
               Container(
-                constraints: BoxConstraints(minHeight: 60,maxHeight: 160),
+                constraints:const BoxConstraints(minHeight: 60,maxHeight: 160),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.circular(10)),
@@ -171,7 +173,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                                   },
                                   title: Text(
                                     communities[index],
-                                    style: TextStyle(color: Colors.white),
+                                    style:const TextStyle(color: Colors.white),
                                   ),
                                 );
                               }))
@@ -192,7 +194,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                     child: InkWell(
                       
                       onTap: () async {
-                        await Permission.accessMediaLocation
+                         Permission.accessMediaLocation
                             .onDeniedCallback(() async {
                           Permission.accessMediaLocation.request();
                           if (await Permission.accessMediaLocation.isDenied) {
@@ -285,7 +287,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                   child: Container(
                     padding: const EdgeInsets.all(0),
                     margin: const EdgeInsets.all(0),
-                    width: _width / 2.2,
+                    width: windowWidth / 2.2,
                     decoration: BoxDecoration(
                       border:Border.all(color:Colors.transparent),
                         color: Colors.lightBlue,

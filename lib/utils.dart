@@ -1,4 +1,6 @@
 //snackbar
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,7 +9,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
@@ -29,7 +31,7 @@ showcircleprogress(BuildContext context) {
           child: Container(
             height: 120,
             width: 120,
-            color: Color.fromARGB(84, 50, 50, 50),
+            color:const Color.fromARGB(84, 50, 50, 50),
             child: const Center(
               child: CircularProgressIndicator(
                 backgroundColor: Color.fromARGB(131, 128, 124, 124),
@@ -42,14 +44,14 @@ showcircleprogress(BuildContext context) {
 }
 
 Future<List<String>> getcommunities() async {
-  var communities;
+  List<String> communities = List.empty(growable: true);
   await store
       .collection("Communities")
       .where("Visibility", isEqualTo: true)
       .get()
       .then((val) {
     for (var snapshot in val.docs) {
-      print("${snapshot.id} => ${snapshot.data()["Numbers"]}");
+      // print("${snapshot.id} => ${snapshot.data()["Numbers"]}");
       communities.add(snapshot.data()["Name"]);
     }
   });
@@ -58,7 +60,7 @@ Future<List<String>> getcommunities() async {
 }
 
 Future getimage(BuildContext context, bool multiple) async {
-  await Permission.accessMediaLocation.onDeniedCallback(() async {
+   Permission.accessMediaLocation.onDeniedCallback(() async {
     Permission.accessMediaLocation.request();
     if (await Permission.accessMediaLocation.isDenied) {
       showsnackbar(context, "Permission denied");
@@ -123,33 +125,33 @@ String retrn = "";
   return retrn;
 }
 
-Map<String,Map<String,dynamic>> eventData = Map();
+Map<String,Map<String,dynamic>> eventData = {};
 //values include but not limited to :
   //EventCoverImage
   //EventTitle
   //EventClub
   //EventDate
 
-Map<String,Map<String,dynamic>> clubData = Map();
+Map<String,Map<String,dynamic>> clubData = {};
 //values include but not limited to:
   //Club id as the key to the first map
   //Name
   //About
   //Image
 
-Map<String,Map<String,dynamic>> announcementData = Map();
-Map<String,dynamic> more = Map();
+Map<String,Map<String,dynamic>> announcementData = {};
+Map<String,dynamic> more = {};
 List<String> eventIdsEventspage = List.empty(growable: true);
 List<String> clubIds = List.empty(growable: true);
 List<bool> viewEventComments = List.empty(growable: true);
-Map<String,dynamic> userData = Map();
+Map<String,dynamic> userData = {};
 //This stores the users data like the 
   ///name
   ///nickname
   ///profile picture
   ///
 List<String> homepageEvents = List.empty(growable: true);
-Map<String,Map<String,dynamic>> blogsdata = Map();
+Map<String,Map<String,dynamic>> blogsdata = {};
 List<String> blogsPageIds = List.empty(growable: true);
 //caries the blog data with variables like:
 
@@ -159,7 +161,7 @@ List<bool> commentsOpenEventsPage = List.empty(growable: true);
 
 
 Icon getIcon(String name){
-  Icon icon_ = Icon(Icons.group);
+  Icon icon_ =const Icon(Icons.group);
   switch (name) {
     case "Instagram":
       icon_ =const Icon(FontAwesomeIcons.instagram,color:  Color.fromARGB(226, 255, 255, 255),);
@@ -188,13 +190,13 @@ Icon getIcon(String name){
 
 Future<String> likeEvent (String ContentId)async{
   String state = "Error Ocured";
-  var likes;
+  List likes;
   List<String> likes_ = List.empty(growable: true);
   try {
      await store.collection("Events").doc(ContentId).get().then((onValue)async{
      likes = onValue.data()!["Likes"];
      
-    if (likes == null) {
+    if (likes.isEmpty) {
       
       likes_.add(user.uid);
     }
@@ -228,13 +230,13 @@ Future<String> likeEvent (String ContentId)async{
 }
 Future<String> comment_(String contentId,String comment)async{
   String state ="Error occured";
-Map<String,dynamic> commented = Map();
+Map<String,dynamic> commented = {};
 String username = '';
 await store.collection("users").doc(user.uid).get().then((name){
 username = name.data()!["nickname"];
 });
 final com = <String,dynamic>{"UserName":username,"TimeStamp":DateTime.now(),"Comment":comment,"Likes":[]};
-var uuid = Uuid().v1();
+var uuid =const Uuid().v1();
 final commentWritten = <String,dynamic>{uuid:com};
 
 try {
@@ -263,13 +265,13 @@ try {
 
 Future<String> commentpost(String contentId,String comment)async{
   String state ="Error occured";
-Map<String,dynamic> commented = Map();
+Map<String,dynamic> commented = {};
 String username = '';
 await store.collection("users").doc(user.uid).get().then((name){
 username = name.data()!["nickname"];
 });
 final com = <String,dynamic>{"UserName":username,"TimeStamp":DateTime.now(),"Comment":comment,"Likes":[]};
-var uuid = Uuid().v1();
+var uuid =const Uuid().v1();
 final commentWritten = <String,dynamic>{uuid:com};
 try {
   await store.collection("posts").doc(contentId).get().then((onValue){
@@ -296,13 +298,13 @@ try {
 
 Future<String> likePost (String ContentId)async{
   String state = "Error Ocured";
-  var likes;
+  List likes;
   List<String> likes_ = List.empty(growable: true);
   try {
      await store.collection("posts").doc(ContentId).get().then((onValue)async{
      likes = onValue.data()!["Likes"];
      
-    if (likes == null) {
+    if (likes.isEmpty) {
       
       likes_.add(user.uid);
     }
@@ -336,7 +338,7 @@ Future<String> likePost (String ContentId)async{
 
 
 Future<Map<String,dynamic>> getclubdatas (String clubId)async{
-  Map<String,dynamic> clubd_ = Map();
+  Map<String,dynamic> clubd_ = {};
 
   await store.collection("Communities").doc(clubId).get().then((onValue){
     clubd_.addAll(onValue.data()!);
@@ -354,8 +356,8 @@ Future<Map<String,dynamic>> getclubdatas (String clubId)async{
 
 ///Get events data from database
   Future<Map<String,dynamic>> geteventsData(String eventId)async{
-    Map<String,dynamic> even_m = Map();
-    var comm_id;
+    Map<String,dynamic> even_m = {};
+    String comm_id = "";
     await store.collection("Events").doc(eventId).get().then((onValue){
       // final title = <String,dynamic>{"Title":onValue.data()!["Title"]};
      comm_id = onValue.data()!["Community"];
@@ -369,10 +371,10 @@ Future<Map<String,dynamic>> getclubdatas (String clubId)async{
       
       
       } catch (e) {
-        print(e.toString());
+        //print(e.toString());
       }
       
-      Map<String,dynamic> liked = Map();
+      Map<String,dynamic> liked = {};
       if (likes.contains(user.uid)){
         liked = {"Liked":true};
       }else{liked = {"Liked":false};}
@@ -421,14 +423,11 @@ Future<Map<String,dynamic>> getclubdatas (String clubId)async{
 PageView showimage(
   BuildContext context,
   List<dynamic> imgs,
-  double _height,
+  double hhh,
 ){
   List<Widget> screens = List.empty(growable: true);
   for(var image in imgs){
-    Widget screen = Container(
-      height: _height - 200,
-      child: Image(image: MemoryImage(image)),
-    );
+    Widget screen = Image(image: MemoryImage(image));
     screens.add(screen);
   }
   return PageView(

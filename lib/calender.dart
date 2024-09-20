@@ -1,10 +1,10 @@
+// ignore_for_file: sized_box_for_whitespace, non_constant_identifier_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:table_calendar/table_calendar.dart';
-
-import 'package:vora_mobile/homepage.dart';
 
 final store_ = FirebaseStorage.instance.ref();
 final firestore = FirebaseFirestore.instance.collection("Events");
@@ -31,11 +31,11 @@ Future<String> getdata()async{
       });
     }
   });
-print(eventdate);
+//print(eventdate);
   return "ok";
 }
 Future<Map<String,dynamic>> getevent(String eventId)async{
-  Map<String,dynamic> data =Map();
+  Map<String,dynamic> data = {};
 
   await firestore.doc(eventId).get().then((onValue1){
     final title_ = <String,dynamic>{"Title":onValue1.data()!["Title"]} ;
@@ -56,7 +56,7 @@ class _CalenderState extends State<Calender> {
   DateTime selected = DateTime.now();
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
+    double windowwidth = MediaQuery.of(context).size.width;
     //   double _height = MediaQuery.of(context).size.width;
     return SafeArea(
       child: Scaffold(
@@ -129,7 +129,7 @@ class _CalenderState extends State<Calender> {
             Visibility(
                 child: Container(
                   decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(255, 73, 70, 70)),borderRadius: BorderRadius.circular(10)),
-              width: _width,
+              width: windowwidth,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Padding(
@@ -162,16 +162,16 @@ class _CalenderState extends State<Calender> {
                                   }
                           String titles_ = snapshot.data["Title"];
                           String decrip = snapshot.data["Descrip"];
+                         
                           int tim_h = eventdate[d].hour;
                           int tim_m = eventdate[d].minute;
                           return Column(
                         children: [
-                          Container(
-                            child: Text(titles_,style: const TextStyle(color: Colors.white),),
-                          ),
+                          Text(titles_,style: const TextStyle(color: Colors.white),),
                           Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),border: Border.all(color: Colors.white)),child:Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text("From  $tim_h: $tim_m ",style: TextStyle(color: Colors.white),),
+                            child: Text("From  $tim_h: $tim_m ",
+                            style:const TextStyle(color: Colors.white),),
                           ),),
                           Text(decrip,style:const TextStyle(color: Colors.white),)
                          

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -35,12 +37,12 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 User user_ = FirebaseAuth.instance.currentUser!;
-ScrollController _scrollController = ScrollController();
+
 String User_Name = "";
 Future<String> userget()async{
-  String _name ="";
+  String userNickname ="";
   await firestore_.collection("users").doc(user_.uid).get().then((onValue)async{
-    _name =await onValue.data()!["nickname"];
+    userNickname =await onValue.data()!["nickname"];
     userData.addAll(onValue.data()!);
   });
 
@@ -48,8 +50,8 @@ Future<String> userget()async{
 
            await storage_1.child("/profile/${user.uid}/dp.png").getData().then((dp){
     final dpimg = <String,dynamic>{"Dp":dp!};
-    if (dp!.isNotEmpty) {
-      print("Shit.....");
+    if (dp.isNotEmpty) {
+      
     }
     userData.addAll(dpimg);
   });
@@ -59,38 +61,38 @@ Future<String> userget()async{
 
   
  
-  return _name;
+  return userNickname;
 }
 
 Future<Map<String,dynamic>> getcontent(String eventId)async{
-  Map<String,dynamic> _data =Map();
+  Map<String,dynamic> functionData ={};
 await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
   var comn = onValue.data()!["Community"];
 
   
   await firestore_.collection("Communities").doc(comn).get().then((onvalue1){
     final comm = <String,dynamic>{"EventClub":onvalue1.data()!["Name"]};
-    _data.addAll(comm);
+    functionData.addAll(comm);
   });
   
   final evdate =<String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
   final ttle = <String,dynamic>{"EventTitle":onValue.data()!["Title"]};
-  _data.addAll(evdate);
-  _data.addAll(ttle);
+  functionData.addAll(evdate);
+  functionData.addAll(ttle);
 
 });
 
 await store_1.child("/events/$eventId/cover").getData().then((value){
   final imgs = <String,dynamic>{"EventCoverImage":value!};
-  _data.addAll(imgs);
+  functionData.addAll(imgs);
 });
 
 
   
-  return _data;
+  return functionData;
 }
 Future<Map<String,dynamic>> getclubsAndEvents()async{
-Map<String,dynamic> ret = Map();
+Map<String,dynamic> ret = {};
 await firestore_.collection("users").doc(user.uid).get().then((onValue)async{
   List<dynamic> vals = onValue.data()!["Events"];
   List<dynamic> val2 = onValue.data()!["Communities"];
@@ -197,8 +199,8 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
 
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.height;
+    double windowWidth= MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.height;
        
     return SafeArea(
       child: Scaffold(
@@ -260,7 +262,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                   TextButton(
                                       onPressed: ()async {
                                         var appDir = (await getTemporaryDirectory()).path;
-                                        new Directory(appDir).delete(recursive: true);
+                                         Directory(appDir).delete(recursive: true);
                                         FirebaseAuth.instance.signOut();
                                         
                                         
@@ -349,7 +351,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                   top: 8, bottom: 8, left: 8),
                               alignment: Alignment.center,
                               height: 140,
-                              //width: _width / 2,
+                              //width: windowWidth/ 2,
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(
                                   255,
@@ -484,7 +486,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                               onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",))),
                               child: Container(
                                 height: 140,
-                                width: _width / 4,
+                                width: windowWidth/ 4,
                                 decoration: BoxDecoration(
                                     color: const Color.fromARGB(
                                       255,
@@ -549,11 +551,11 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                     )
                   ),
                   const SizedBox(height: 5,),
-                  carosel(_height,_width),
+                  carosel(windowheight,windowWidth),
                   
                   const Divider(),
                   SizedBox(
-                    height: _height/2,
+                    height: windowheight/2,
                     child: TableCalendar(focusedDay: DateTime.now(), 
                     firstDay: DateTime(2010), lastDay: DateTime(2030),
                     daysOfWeekStyle: const DaysOfWeekStyle(
@@ -872,11 +874,11 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
     );
   }
 }
-Widget carosel(double _height,double _width){
+Widget carosel(double windowheight,double windowWidth){
   return StatefulBuilder(
                     builder: (context, st2){
                       return Container(
-                      height: _height / 3.7,
+                      height: windowheight / 3.7,
                       alignment: Alignment.bottomLeft,
                       child:FutureBuilder(
                         future: getevents(),
@@ -916,7 +918,7 @@ Widget carosel(double _height,double _width){
                                     onTap: ()async=>Navigator.push(context,MaterialPageRoute(builder: 
                                     (context)=> Dedicatedeventpage(eventId: item))),
                                     child: Container(
-                                      width: _width,
+                                      width: windowWidth,
                                       height: 20,
                                       decoration: BoxDecoration(
                                           image:
@@ -924,13 +926,13 @@ Widget carosel(double _height,double _width){
                                       child: Column(
                                         children: [
                                           SizedBox(
-                                            height: _height / 6,
+                                            height: windowheight / 6,
                                           ),
                                           Expanded(
                                             child: Container(
                                                 color: const Color.fromARGB(
                                                     250, 32, 33, 36),
-                                                width: _width,
+                                                width: windowWidth,
                                                 child:  Column(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
@@ -984,7 +986,7 @@ Widget carosel(double _height,double _width){
                                     onTap: ()async=>Navigator.push(context,MaterialPageRoute(builder: 
                                     (context)=> Dedicatedeventpage(eventId: item))),
                                     child: Container(
-                                      width: _width,
+                                      width: windowWidth,
                                       height: 20,
                                       decoration: BoxDecoration(
                                           image:
@@ -992,13 +994,13 @@ Widget carosel(double _height,double _width){
                                       child: Column(
                                         children: [
                                           SizedBox(
-                                            height: _height / 6,
+                                            height: windowheight / 6,
                                           ),
                                           Expanded(
                                             child: Container(
                                                 color: const Color.fromARGB(
                                                     250, 32, 33, 36),
-                                                width: _width,
+                                                width: windowWidth,
                                                 child:  Column(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 
 import 'dart:typed_data';
@@ -22,18 +24,20 @@ class Blogs extends StatefulWidget {
   @override
   State<Blogs> createState() => _BlogsState();
 }
- var name;
-                      Duration posttime = Duration();
-                      String name_ = '';
-                      String nick_name = '';
+
+Duration posttime =const Duration();
+String name_ = '';
+String nick_name = '';
 Widget blog_show =const Text("Blogs");
 TextEditingController search_blogs = TextEditingController();
 List<String> blogIds = List.empty(growable: true);
-bool _blogs_visi = false;
+
 String postdata = '';
 
 Future<List<String>> blogId()async{
   List<String> ids = List.empty(growable:true);
+  commentsOpenBlogPage.clear();
+
  await firestore.collection("posts").where("UserId", isNotEqualTo: null).get().then((onValue){
     for(var id in onValue.docs){
       ids.add(id.id);
@@ -43,7 +47,10 @@ Future<List<String>> blogId()async{
   }
     }
   });
-  
+    for (var i = 0; i < ids.length; i++) {
+    commentsOpenBlogPage.add(false);
+    
+  }
   return ids;
 }
 TextEditingController BlogcommentText = TextEditingController();
@@ -203,8 +210,8 @@ ValueNotifier<bool> visible_Search = ValueNotifier(false);
 class _BlogsState extends State<Blogs> {
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-      double _height = MediaQuery.of(context).size.height;
+    double windowWidth = MediaQuery.of(context).size.width;
+      double windowheight = MediaQuery.of(context).size.height;
       double clubScale = 0.96;
     return SafeArea(
         child: Scaffold(
@@ -255,13 +262,19 @@ class _BlogsState extends State<Blogs> {
                   return Visibility(
                     visible: events_vis,
                     child: Container(
-                      width: _width - 100,
+                      width: windowWidth - 100,
                       alignment: Alignment.center,
                       height: 50,
                       child: TextField(
+                        
+                        style:const TextStyle(color: Colors.white),
                         controller: search_blogs,
-                        decoration: const InputDecoration(
-                            label: Icon(
+                        decoration:  InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:const BorderSide(color: Color.fromARGB(151, 255, 255, 255)),
+                            borderRadius: BorderRadius.circular(10)
+                          ) ,
+                            label:const Icon(
                           Icons.search,
                           color: Colors.white,
                         )),
@@ -275,8 +288,8 @@ class _BlogsState extends State<Blogs> {
                 future: blogId(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return  Container(
-                      height: _height-100,
+                    return  SizedBox(
+                      height: windowheight-100,
                         child: const Center(child: CircleAvatar(),),
                     );
                   }
@@ -285,14 +298,7 @@ class _BlogsState extends State<Blogs> {
                   }
                   if (snapshot.connectionState == ConnectionState.none) {
                       return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                    }
-                    if (commentsOpenBlogPage.length != snapshot.data.length) {
-                      commentsOpenBlogPage.clear();
-                      for (var i = 0; i < snapshot.data.length; i++) {
-                        commentsOpenBlogPage.add(false);
-                      }
-                    }
-                    
+                       }
                   return ListView.builder(
                       shrinkWrap: true,
                       itemCount: snapshot.data.length,
@@ -305,7 +311,7 @@ class _BlogsState extends State<Blogs> {
                             (context)=>const Dedicatedblogpage())),
                             child: Container(
                               constraints:const BoxConstraints(minHeight: 200),
-                              child: contents(snapshot.data![postnum],commentsOpenBlogPage[postnum],_height,clubScale)
+                              child: contents(snapshot.data![postnum],commentsOpenBlogPage[postnum],windowheight,clubScale,postnum)
                             ),
                           ),
                         );
@@ -316,12 +322,12 @@ class _BlogsState extends State<Blogs> {
                       itemCount: blogsPageIds.length,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, postnum) {  
-                        if (commentsOpenBlogPage.length != blogsPageIds.length) {
-                          commentsOpenBlogPage.clear();
-                          for (var i = 0; i < blogsPageIds.length; i++) {
-                            commentsOpenBlogPage.add(false);
-                          }
-                        }
+                        // if (commentsOpenBlogPage.length != blogsPageIds.length) {
+                        //   commentsOpenBlogPage.clear();
+                        //   for (var i = 0; i < blogsPageIds.length; i++) {
+                        //     commentsOpenBlogPage.add(false);
+                        //   }
+                        // }
                         return Card(
                           color: const Color.fromARGB(112, 49, 47, 47),
                           child: InkWell(
@@ -330,7 +336,7 @@ class _BlogsState extends State<Blogs> {
                             child: Container(
                               color:  Colors.transparent,
                               constraints:const BoxConstraints(minHeight: 200),
-                              child: contents(blogsPageIds[postnum],commentsOpenBlogPage[postnum],_height,clubScale)
+                              child: contents(blogsPageIds[postnum],commentsOpenBlogPage[postnum],windowheight,clubScale,postnum)
                             ),
                           ),
                         );
@@ -346,8 +352,9 @@ class _BlogsState extends State<Blogs> {
 Widget contents(
   String blodsid,
   bool commentOpen,
-  double _height,
+  double windowheight,
   double clubScale,
+  int index1,
 ){
   
   return 
@@ -378,13 +385,13 @@ Widget contents(
           String names_ = snapshot2.data["UserName"];
           
           String n_name = snapshot2.data["NickName"];
-          print(n_name);
+          
           DateTime postTime = snapshot2.data["PostTime"].toDate();
           
           String blogPost = snapshot2.data["BlogPost"];
-          print(blogPost);
+          
           List<dynamic> images_ = snapshot2.data["Images"];
-          List document = snapshot2.data["Documents"];
+         // List document = snapshot2.data["Documents"];
           
           Uint8List UserDp = snapshot2.data["UserDp"];
           
@@ -455,7 +462,7 @@ Widget contents(
                             child: InkWell(
                               onTap: (){
                                     showDialog(context: context, builder: (context){
-                                      return showimage(context, images_, _height);
+                                      return showimage(context, images_, windowheight);
                                     });
                                   },
                               child: Image.memory(fit: BoxFit.cover,images_[0])))
@@ -468,94 +475,96 @@ Widget contents(
             builder: (BuildContext context, setStateintaractive) {
               return Column(
                 children: [
-                  Container(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child:commentOpen? SizedBox(height: 60,width: 200,
-                        child: TextField(
-                          onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:  const BorderSide(
-                              color: Colors.black,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                              labelText: "Add comment",
-                              labelStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 161, 159, 159))),
-                          controller: BlogcommentText,
-                            ),
-                      ): Text(AllComments.isNotEmpty? AllComments["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
-                      overflow: TextOverflow.fade,
-                      ),
-                    ),
-                    Visibility(
-                      visible: commentOpen,
-                      child: IconButton(onPressed: ()async{
-                          String state = "";
-                      state = await commentpost(blodsid, BlogcommentText.text);
-                        if (state == "Success") {
-                          BlogcommentText.clear();
-                        }
-
-                      }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
-                    Row(
-                      children: [
-                        StatefulBuilder(
-                          builder: (BuildContext context, setStatelike) {
-                            return Row(
-                              children: [
-                                IconButton(onPressed: ()async{
-                                  String state= "";
-
-                                 // state = await likePost(blodsid);
-                                  
-                                   setStatelike((){
-                                    liked = !liked;
-                                    liked?likedNum++:likedNum--;
-                                    likePost(blodsid);
-                                  });
-                                  
-                                }, 
-                                icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
-                                Text(likedNum.toString(),style:const TextStyle(color: Colors.white),),
-                              ],
-                            );
-                          },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child:commentOpen? SizedBox(height: 60,width: 200,
+                      child: TextField(
+                        onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        
-                        Row(
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:  const BorderSide(
+                            color: Colors.black,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.red,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                            labelText: "Add comment",
+                            labelStyle: const TextStyle(
+                                color: Color.fromARGB(255, 161, 159, 159))),
+                        controller: BlogcommentText,
+                          ),
+                    ): Text(AllComments.isNotEmpty? AllComments["Comment"].toString():"Be first to comments",style:const TextStyle(color: Colors.white,),maxLines: 2,
+                    overflow: TextOverflow.fade,
+                    ),
+                  ),
+                  Visibility(
+                    visible: commentOpen,
+                    child: IconButton(onPressed: ()async{
+                        String state = "";
+                    state = await commentpost(blodsid, BlogcommentText.text);
+                      if (state == "Success") {
+                        BlogcommentText.clear();
+                      }
+                  
+                    }, icon:const Icon(Icons.send,color: Color.fromARGB(211, 255, 255, 255),))),
+                  Row(
+                    children: [
+                      StatefulBuilder(
+                        builder: (BuildContext context, setStatelike) {
+                          return Row(
+                            children: [
+                              IconButton(onPressed: ()async{
+                                // String state= "";
+                  
+                               // state = await likePost(blodsid);
+                                
+                                 setStatelike((){
+                                  liked = !liked;
+                                  liked?likedNum++:likedNum--;
+                                  likePost(blodsid);
+                                });
+                                
+                              }, 
+                              icon: Icon(Icons.thumb_up,color:liked? Colors.blue:const Color.fromARGB(149, 255, 255, 255),),),
+                              Text(likedNum.toString(),style:const TextStyle(color: Colors.white),),
+                            ],
+                          );
+                        },
+                      ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.only(right:5.0),
+                        child: Row(
                           children: [
                             IconButton(onPressed: (){
                               setStateintaractive((){
                                 commentOpen = !commentOpen;
+                                commentsOpenBlogPage[index1] = commentOpen;
                               });
                             }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
                             Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),
                           ],
                         ),
-                      ],
-                    )
-                  ],
-                  ),
-                ),
+                      ),
+                    ],
+                  )
+                                    ],
+                                    ),
                 Visibility(
               visible: commentOpen,
               child: StreamBuilder(
@@ -632,18 +641,19 @@ Widget contents(
           DateTime postTime = blogsdata[blodsid]!["PostTime"].toDate();
           String blogPost = blogsdata[blodsid]!["BlogPost"];
           List<dynamic> images_ = blogsdata[blodsid]!["Images"];
-          List document = blogsdata[blodsid]!["Documents"];
+         // List document = blogsdata[blodsid]!["Documents"];
           Uint8List UserDp = blogsdata[blodsid]!["UserDp"];
           bool liked = blogsdata[blodsid]!["Liked"];
-          print("......liked $liked");
+          
           bool commenteD = blogsdata[blodsid]!["Commented"];
-          print("comm.... $commenteD");
+          
           Map<String,dynamic> AllComments = blogsdata[blodsid]!["Comments"];
           String time = period(postTime);
         int likesNum =  blogsdata[blodsid]!["Likes"].length;
+       
       return Column(
             children: [
-              Container(
+              SizedBox(
                 height: 50,
                 child: Row(
                   children: [
@@ -701,7 +711,7 @@ Widget contents(
                                 child: InkWell(
                                   onTap: (){
                                     showDialog(context: context, builder: (context){
-                                      return showimage(context, images_, _height);
+                                      return showimage(context, images_, windowheight);
                                     });
                                   },
                                   child: Image.memory(fit: BoxFit.cover,images_[imageindex])))
@@ -770,7 +780,7 @@ Widget contents(
                             return Row(
                               children: [
                                 IconButton(onPressed: ()async{
-                                  String state= "";
+                                  // String state= "";
 
                                  // state = await likePost(blodsid);
                                   
@@ -793,6 +803,7 @@ Widget contents(
                             IconButton(onPressed: (){
                               setStateintaractive((){
                                 commentOpen = !commentOpen;
+                                commentsOpenBlogPage[index1] = commentOpen;
                               });
                             }, icon: Icon(Icons.comment,color:commenteD?Colors.blue:const Color.fromARGB(184, 255, 255, 255) ,)),
                             Text(AllComments.length.toString(),style:const TextStyle(color: Colors.white),),

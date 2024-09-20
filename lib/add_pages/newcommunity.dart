@@ -1,3 +1,7 @@
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names
+
+import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
+import 'package:vora_mobile/login.dart';
 import 'package:vora_mobile/utils.dart';
 
 class Newcommunity extends StatefulWidget {
@@ -68,6 +73,17 @@ class _NewcommunityState extends State<Newcommunity> {
   String dropdownvalue = "Public";
   String dropdownvalue1 = "All";
   var visible = ["Private", "Public"];
+  
+@override
+void initState(){
+  email.clear();
+  leadController.clear();
+  aboutController.clear();
+  namecontroller.clear();
+  super.initState();
+
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,10 +148,14 @@ class _NewcommunityState extends State<Newcommunity> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
+                constraints:const BoxConstraints(maxHeight: 100),
                 decoration: BoxDecoration(
                     border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
                     borderRadius: BorderRadius.circular(10)),
                 child: TextField(
+                  expands: true,
+                  maxLines: null,
+                  minLines: null,
                   controller: aboutController,
                   style: const TextStyle(color: Colors.white),
                 ),
@@ -243,7 +263,7 @@ class _NewcommunityState extends State<Newcommunity> {
                 radius: const Radius.circular(10),
                 child: InkWell(
                   onTap: () async {
-                    await Permission.accessMediaLocation
+                     Permission.accessMediaLocation
                         .onDeniedCallback(() async {
                       Permission.accessMediaLocation.request();
                       if (await Permission.accessMediaLocation.isDenied) {
@@ -263,22 +283,29 @@ class _NewcommunityState extends State<Newcommunity> {
                       showsnackbar(context, 'no image chossen');
                     }
                   },
-                  child: const Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.cloud_upload_sharp,
-                          color: Colors.white,
+                  child:  Stack(
+                    children: [
+                      Visibility(
+                        visible: cover_photo.isNotEmpty,
+                        child: Image(image: FileImage(File(cover_photo)))),
+                    const Center(
+                       child:  Column(
+                          children: [
+                            Icon(
+                              Icons.cloud_upload_sharp,
+                              color: Colors.white,
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              "Click to upload...",
+                              style: TextStyle(color: Colors.white),
+                            )
+                          ],
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          "Click to upload...",
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
-                    ),
+                     ),
+                    ],
                   ),
                 ),
               ),
@@ -316,7 +343,7 @@ class _NewcommunityState extends State<Newcommunity> {
                                             36,
                                             45,
                                           ),
-                                          child: Container(
+                                          child: SizedBox(
                                             height: 500,
                                             child: ListView.builder(
                                                 itemCount: socials.length,
@@ -370,35 +397,33 @@ class _NewcommunityState extends State<Newcommunity> {
                 itemBuilder: (BuildContext context, index) {
                   return Visibility(
                       visible: active_socials[index],
-                      child: Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0),
-                              child: Text(
-                                socials[index],
-                                style:const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: Text(
+                              socials[index],
+                              style:const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color:const Color.fromARGB(255, 86, 86, 86)),
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: TextField(
-                                  style:const TextStyle(color: Colors.white),
-                                  controller: socialsController[index],
-                                ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color:const Color.fromARGB(255, 86, 86, 86)),
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: TextField(
+                                style:const TextStyle(color: Colors.white),
+                                controller: socialsController[index],
                               ),
-                            )
-                          ],
-                        ),
+                            ),
+                          )
+                        ],
                       ));
                 }),
             Center(
@@ -441,10 +466,9 @@ class _NewcommunityState extends State<Newcommunity> {
                       state[0] = "Fill all the boxes";
                     }
                     }
-                    
-                    ;
                     if (state[0] == 'Success') {
                       showsnackbar(context, "Community added");
+                      
                      Navigator.pop(context);
                       Navigator.pushReplacement(
                           context,

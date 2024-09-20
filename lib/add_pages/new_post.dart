@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -6,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
-import 'package:vora_mobile/homepage.dart';
 import 'package:vora_mobile/utils.dart';
 
 class NewPost extends StatefulWidget {
@@ -39,8 +40,8 @@ class _NewPostState extends State<NewPost> {
 
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.width;
+    double windowWidth = MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -78,7 +79,7 @@ class _NewPostState extends State<NewPost> {
                   height: 20,
                 ),
                 Container(
-                  height: _height / 1.5,
+                  height: windowheight / 1.5,
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.white),
                       borderRadius: BorderRadius.circular(10)),
@@ -86,8 +87,8 @@ class _NewPostState extends State<NewPost> {
                     controller: post,
                     expands: true,
                     maxLines: null,
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(),
+                    style:const TextStyle(color: Colors.white),
+                    decoration:const InputDecoration(),
                   ),
                 ),
                 const SizedBox(
@@ -102,7 +103,7 @@ class _NewPostState extends State<NewPost> {
                             borderRadius: BorderRadius.circular(10)),
                         child: IconButton(
                             onPressed: () async {
-                              await Permission.accessMediaLocation
+                               Permission.accessMediaLocation
                                   .onDeniedCallback(() async {
                                 Permission.accessMediaLocation.request();
                                 if (await Permission
@@ -130,7 +131,7 @@ class _NewPostState extends State<NewPost> {
                                 showsnackbar(context, 'no image chossen');
                               }
                             },
-                            icon: Icon(
+                            icon:const Icon(
                               Icons.add_a_photo_outlined,
                               color: Colors.white,
                             ))),
@@ -143,7 +144,7 @@ class _NewPostState extends State<NewPost> {
                           borderRadius: BorderRadius.circular(10)),
                       child: IconButton(
                           onPressed: () async {
-                            await Permission.accessMediaLocation
+                             Permission.accessMediaLocation
                                 .onDeniedCallback(() async {
                               Permission.accessMediaLocation.request();
                               if (await Permission
@@ -261,12 +262,12 @@ class _NewPostState extends State<NewPost> {
                             state =
                                 await Addpost(desc: post.text, images: imgs);
                           }
-                          print(state);
+                         // print(state);
                         }
                         if (state == "Success") {
                         //  showsnackbar(context, "Post Added");
                           Navigator.pushReplacement(context, 
-                          (MaterialPageRoute(builder: (context)=> Dedicatedblogpage())));
+                          (MaterialPageRoute(builder: (context)=>const Dedicatedblogpage())));
                           
                         }
                       }
@@ -274,7 +275,7 @@ class _NewPostState extends State<NewPost> {
                     child: Container(
                       padding: const EdgeInsets.all(0),
                       margin: const EdgeInsets.all(0),
-                      width: _width / 2.2,
+                      width: windowWidth / 2.2,
                       decoration: BoxDecoration(
                           color: Colors.lightBlue,
                           borderRadius: BorderRadius.circular(10)),

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,26 +15,26 @@ final  String clubId;
  const  Dedicatedcommunitypage({super.key, required this.clubId});
 
 Future<Map<String,dynamic>> clubdata()async{
-  Map<String,dynamic> Cdata = Map();
+  Map<String,dynamic> cData = {};
 
   await firestore_2.collection("Communities").doc(clubId).get().then((onValue){
     final comdata = onValue.data()!;
-    Cdata.addAll(comdata);
+    cData.addAll(comdata);
   });
   await firestorage_2.child("/communities/$clubId/cover_picture").getData().then((cover){
-    final CoverImg = <String,dynamic>{"CoverImg":cover!};
-    Cdata.addAll(CoverImg);
+    final coverImg = <String,dynamic>{"CoverImg":cover!};
+    cData.addAll(coverImg);
   });
 
-return Cdata;
+return cData;
 }
-Future<String> CoName ()async{
-  String Cname = '';
+Future<String> coName ()async{
+  String cName = '';
 
   await firestore_2.collection("Communities").doc(clubId).get().then((onValue){
-    Cname = onValue.data()!["Name"];
+    cName = onValue.data()!["Name"];
   });
-  return Cname;
+  return cName;
 }
 
   @override
@@ -44,14 +46,14 @@ Future<String> CoName ()async{
         leading: IconButton(onPressed: ()=> Navigator.pop(context), 
         icon:const Icon(Icons.arrow_back,color: Colors.white,size: 22,)),
         title:FutureBuilder(
-          future: CoName(),
+          future: coName(),
           initialData: "Club",
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            String ClubName = snapshot.data.toString();
+            String clubName = snapshot.data.toString();
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator(),);
             }
-            return Text(ClubName,style:const TextStyle(color: Colors.white,fontSize: 20),);
+            return Text(clubName,style:const TextStyle(color: Colors.white,fontSize: 20),);
           },
         ),
 

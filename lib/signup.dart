@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,7 +16,7 @@ class Signup extends StatefulWidget {
 
 TextEditingController _email = TextEditingController();
 TextEditingController _password = TextEditingController();
-TextEditingController _con_password = TextEditingController();
+TextEditingController confirmpassword = TextEditingController();
 TextEditingController _title = TextEditingController();
 TextEditingController _name = TextEditingController();
 TextEditingController _nickname = TextEditingController();
@@ -23,10 +25,12 @@ bool password_visible = true;
 bool password_visible2 = true;
 
 class _SignupState extends State<Signup> {
+
+  @override
   void dispose() {
     _email.dispose();
     _password.dispose();
-    _con_password.dispose();
+    confirmpassword.dispose();
     _title.dispose();
     _name.dispose();
     _nickname.dispose();
@@ -36,7 +40,7 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     //   double _height = MediaQuery.of(context).size.height;
-    double _width = MediaQuery.of(context).size.width;
+    double windowWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.black,
       body: DecoratedBox(
@@ -45,7 +49,7 @@ class _SignupState extends State<Signup> {
                 image: AssetImage("lib/assets/sky.png"), fit: BoxFit.cover)),
         child: Center(
           child: Card(
-            margin: EdgeInsets.only(top: 50, bottom: 50),
+            margin:const EdgeInsets.only(top: 50, bottom: 50),
             color: const Color.fromARGB(
               255,
               29,
@@ -59,7 +63,7 @@ class _SignupState extends State<Signup> {
                   BoxDecoration(borderRadius: BorderRadius.circular(10)),
               //height: _height - 200,
               alignment: Alignment.center,
-              width: _width - 100,
+              width: windowWidth - 100,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(2),
                 child: Column(
@@ -79,7 +83,7 @@ class _SignupState extends State<Signup> {
                       style: TextStyle(color: Colors.white),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -91,7 +95,7 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -103,7 +107,7 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -115,7 +119,7 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -127,7 +131,7 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -153,7 +157,7 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
                         style: const TextStyle(color: Colors.white),
@@ -174,7 +178,7 @@ class _SignupState extends State<Signup> {
                             labelText: "Confirm Password",
                             labelStyle: const TextStyle(
                                 color: Color.fromARGB(255, 161, 159, 159))),
-                        controller: _con_password,
+                        controller: confirmpassword,
                       ),
                     ),
                     Padding(
@@ -204,9 +208,8 @@ class _SignupState extends State<Signup> {
                             Navigator.pop(context);
                           } else {
                             showsnackbar(context, succes);
-                            print(succes);
+                            // print(succes);
                           }
-                          ;
                         },
                         child: Container(
                           alignment: Alignment.center,

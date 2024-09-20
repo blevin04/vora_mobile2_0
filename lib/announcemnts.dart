@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,7 +18,7 @@ final store = FirebaseStorage.instance.ref();
 final firestore = FirebaseFirestore.instance;
 
 Future<Map<String,dynamic>> getannouncementData(String anId)async{
-Map<String,dynamic> data = Map();
+Map<String,dynamic> data = {};
 String comId = "";
   await firestore.collection("Announcements").doc(anId).get().then((onValue){
     data.addAll(onValue.data()!) ;
@@ -25,7 +27,7 @@ String comId = "";
   });//voramobile-70ba7.appspot.com/communities/1c743d70-4cbb-11ef-bff1-d967d3b04270
   await firestore.collection("Communities").where("Name", isEqualTo: comId).get().then((onValu){
    for(var dat in onValu.docs){
-    print("object= ${dat.data()}");
+   // print("object= ${dat.data()}");
     comId = dat.id;
    }
   });
@@ -44,7 +46,7 @@ Future<List<String>>getannouncements() async{
  await firestore.collection("Announcements").where("AnnouncementId", isNotEqualTo: null).get().then((onValue){
   for(var val in onValue.docs){
     AnnouncemntsIds.add(val.id);
-    print("vall = $val");
+   // print("vall = $val");
   }
   });
   return AnnouncemntsIds;
@@ -123,7 +125,8 @@ class _AnnouncemntsState extends State<Announcemnts> {
                               CircleAvatar(
                                 backgroundImage: MemoryImage(cover_picture),
                               ),
-                              Padding(padding:const EdgeInsets.only(left: 10),child: Text(club_,style: TextStyle(color: Colors.white,fontSize: 18),),)
+                              Padding(padding:const EdgeInsets.only(left: 10),child: Text(club_,
+                              style:const TextStyle(color: Colors.white,fontSize: 18),),)
                             ],
                           ),
                         ),

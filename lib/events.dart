@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -86,7 +88,7 @@ class _EventsState extends State<Events> {
         .where("Title", isNotEqualTo: null)
         .get()
         .then((onValue) {
-          print(onValue.docs.length);
+          
       for (var snaps in onValue.docs) {
         eventIds.add(snaps["Uid"]);
         if (!eventIdsEventspage.contains(snaps["Uid"])) {
@@ -115,7 +117,7 @@ class _EventsState extends State<Events> {
             rsvped = rsvpd.data()!["Events"];
             for(var vp in rsvped){
               if (eventIdsEventspage.contains(vp)) {
-                print("contains");
+               
                 eventIdsEventspage.remove(vp);
                 eventIds.remove(vp);
               }
@@ -140,7 +142,7 @@ class _EventsState extends State<Events> {
           break;
         
         default:
-        print(filter);
+       
           eventIdsEventspage.clear();
           eventIds.clear();
           await firestore.collection("Communities").where("Name", isEqualTo: filter).get().then((onValue)async{
@@ -158,8 +160,8 @@ class _EventsState extends State<Events> {
     }
   }
   Future<Map<String,dynamic>> get_events(String eventId)async{
-    Map<String,dynamic> even_m = Map();
-    var comm_id;
+    Map<String,dynamic> even_m = {};
+    String comm_id = "";
     await firestore.collection("Events").doc(eventId).get().then((onValue){
       // final title = <String,dynamic>{"Title":onValue.data()!["Title"]};
      comm_id = onValue.data()!["Community"];
@@ -170,7 +172,7 @@ class _EventsState extends State<Events> {
       try {
         var comments_ = onValue.data()!["Comments"];
   
-      Map<String,dynamic>commentedalready = Map();
+      Map<String,dynamic>commentedalready = {};
       if (comments_.contains(user.uid)) {
         commentedalready = {"Commented":true};
       }else{
@@ -179,10 +181,10 @@ class _EventsState extends State<Events> {
             even_m.addAll(commentedalready);
       
       } catch (e) {
-        print(e.toString());
+        showsnackbar(context, e.toString());
       }
       
-      Map<String,dynamic> liked = Map();
+      Map<String,dynamic> liked = {};
       if (likes.contains(user.uid)){
         liked = {"Liked":true};
       }else{liked = {"Liked":false};}
@@ -239,11 +241,43 @@ class _EventsState extends State<Events> {
 
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.height;
+    double windowWidth= MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.height;
     double eventScale = 0.96;
     return SafeArea(
         child: Scaffold(
+          floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(top: 46),
+            child: Container(
+              decoration: BoxDecoration(color: Colors.transparent,
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(10)
+              ),
+              
+              
+              child: ListenableBuilder(
+                    listenable: Search_visible_,
+                    builder: (context,child) {
+                      return Visibility(
+                          visible: events_vis,
+                          child: SizedBox(
+                            width: 150,
+                            height: 45,
+                            child: TextField(
+                              style:const TextStyle(color: Colors.white),
+                              controller: _search_events,
+                              decoration: const InputDecoration(
+                                  label: Icon(
+                                Icons.search,
+                                color: Colors.white,
+                              )),
+                            ),
+                          ));
+                    }
+                  ),
+            ),
+          ),
           resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -296,25 +330,7 @@ class _EventsState extends State<Events> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  ListenableBuilder(
-                    listenable: Search_visible_,
-                    builder: (context,child) {
-                      return Visibility(
-                          visible: events_vis,
-                          child: SizedBox(
-                            width: 150,
-                            child: TextField(
-                              style:const TextStyle(color: Colors.white),
-                              controller: _search_events,
-                              decoration: const InputDecoration(
-                                  label: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                              )),
-                            ),
-                          ));
-                    }
-                  ),
+                  
                   const SizedBox(
                     width: 50,
                   ),
@@ -350,7 +366,7 @@ class _EventsState extends State<Events> {
                       // change button value to selected value
                       onChanged: (String? newValue) async{
                         event_value = newValue!;
-                       await getevents(event_value);
+                       eventIdsEventspage.clear();
                         setState(() {
                         });
                         
@@ -371,8 +387,8 @@ class _EventsState extends State<Events> {
                   future: getevents(event_value),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return  Center(child: Container(
-                        height: _height,
+                      return  Center(child: SizedBox(
+                        height: windowheight ,
                         child: const Center(child: CircularProgressIndicator(),),
                       ));
                     }
@@ -405,7 +421,7 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
                               bool commented = false;
                               int likenum = eventData[eventIds[index2]]!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width,_height, description,viewEventComments[index2],allComments,likenum);
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
                             },
                           )
                           
@@ -424,9 +440,9 @@ class _EventsState extends State<Events> {
                                           setStateev((){
                                              if (eventScale == 1) {
                                             eventScale = 0.9;
-                                            print("ok");
+                                            
                                           }else{
-                                            print("dennn");
+                                            
                                             eventScale = 1;}
                                           });
                                         },
@@ -461,7 +477,7 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = snapshot.data!["Comments"];
                               bool commented = false;
                               int likenum = snapshot.data!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width,_height, description,viewEventComments[index2],allComments,likenum);
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
                             },
                           );
                           
@@ -492,7 +508,7 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = eventData[eventIdsEventspage[index2]]!["Comments"];
                               int likenum = eventData[eventIdsEventspage[index2]]!["Likes"].length;
                               bool commented = false;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width,_height, description,viewEventComments[index2],allComments,likenum);
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
                             },
                           )
                           
@@ -532,7 +548,7 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = snapshot.data!["Comments"];
                               bool commented = false;
                               int likenum = snapshot.data!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, _width,_height, description,viewEventComments[index2],allComments,likenum);
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
                             },
                           );
                           
@@ -553,12 +569,13 @@ Widget content(BuildContext context,
                 List<dynamic> event_imgs,
                 bool liked,
                 bool commented,
-                double _width,
-                double _height,
+                double windowWidth,
+                double windowheight ,
                 String description,
                 bool viewComments,
                 Map<String,dynamic> commentsAll,
                 int likesNum,
+                int index,
                 ){
   return Padding(
                             padding: const EdgeInsets.all(2),
@@ -673,7 +690,7 @@ Widget content(BuildContext context,
                                                     showDialog(context: context, builder: (context){
                                                       return SizedBox(
                                                         
-                                                        child: showimage(context, event_imgs,_height));
+                                                        child: showimage(context, event_imgs,windowheight ));
                                                     });
                                                   },
                                                   child: Container(
@@ -685,161 +702,8 @@ Widget content(BuildContext context,
                                              
                                           }),
                                     ),
-                                    StatefulBuilder(
-                                      builder: (BuildContext context, setStateAll) {
-                                        return Column(
-                                        children: [
-                                          Container(
-                                            height: 50,
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Container(
-                                                  height: 60,
-                                                  padding:const EdgeInsets.all(5),
-                                                  child:viewComments?SizedBox(height: 40,width: _width/2,child:
-                                                  
-                                                  TextField(
-                                                    onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
-                                                    style: const TextStyle(color: Colors.white),
-                                                    decoration: InputDecoration(
-                                                       enabledBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(color: Colors.grey),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    focusedBorder: OutlineInputBorder(
-                                                      borderSide:  const BorderSide(
-                                                        color: Colors.black,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(15),
-                                                    ),
-                                                    errorBorder: OutlineInputBorder(
-                                                      borderSide: const BorderSide(
-                                                        color: Colors.red,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                        labelText: "Add comment",
-                                                        labelStyle: const TextStyle(
-                                                            color: Color.fromARGB(255, 161, 159, 159))),
-                                                    controller: commentText,
-                                                     ),
-                                                  ): 
-                                                  
-                                                   Padding(
-                                                     padding: const EdgeInsets.all(8.0),
-                                                     child: Text(commentsAll.isEmpty?"Be first to leave a comment":commentsAll[commentsAll.keys.first]["Comment"] ,style: TextStyle(color: Colors.white),
-                                                                                                       maxLines: 2,overflow: TextOverflow.fade,),
-                                                   ),
-                                                ),
-                                                Visibility(
-                                                  visible: viewComments,
-                                                  child:IconButton(onPressed: ()async{
-                                                  String  state = "Error occured";
-                                                  state = await comment_(eventId_, commentText.text);
-                                                  if (state == "Success") {
-                                                    print("Comment added");
-                                                    commentText.clear();
-                                                    setStateAll((){
-                                                      getnewcomments(eventId_);
-                                                    });
-
-                                                  }
-                                                  }, icon:
-                                                  const Icon(Icons.send,color: Colors.blueAccent,)) ),
-                                                Row(
-                                                  children: [
-                                                     //like button
-                                                    StatefulBuilder(
-                                                  builder: (BuildContext context, setStateL) {
-                                                    return Row(
-                                                      children: [
-                                                        IconButton(
-                                                          onPressed: ()async {
-                                                           
-                                                              setStateL((){
-                                                                liked = !liked;
-                                                                liked?likesNum++:likesNum--;
-                                                                likeEvent(eventId_);
-                                                              });
-                                                           
-                                                                                                    
-                                                          },
-                                                          icon:  Icon(
-                                                            Icons.thumb_up_alt_outlined,
-                                                            color:liked?Colors.blue :const Color.fromARGB(
-                                                                255, 108, 105, 105),
-                                                          )),
-                                                          Text(likesNum.toString(),style:const TextStyle(color: Colors.white),)
-                                                      ],
-                                                    );
-                                                  },
-                                                ),
-                                                    //comment field
-                                                
-                                                IconButton(
-                                                    onPressed: () async{
-                                                      setStateAll((){
-                                                        viewComments = !viewComments;
-                                                      });
-                                                      
-                                                    },
-                                                    icon:  Icon(
-                                                      Icons.comment,
-                                                      color:commented?Colors.blue:const Color.fromARGB(
-                                                          255, 99, 95, 95),
-                                                    ))
-                                                  ],
-                                                ),
-                                               
-                                              ],
-                                            ),
-                                          ),
-                                          Visibility(
-                                        visible:viewComments,
-                                        child:Padding(padding: EdgeInsets.all(10),
-                                        child: Container(
-                                          constraints:const BoxConstraints(maxHeight: 200,),
-                                          child: ListView.builder(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemCount: commentsAll.length,
-                                            itemBuilder: (BuildContext context, int index) {
-                                              var comId = commentsAll.keys.toList();
-                                             DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
-                                             String comOwner = commentsAll[comId[index]]["UserName"].toString();
-                                             String commentdata = commentsAll[comId[index]]["Comment"];
-                                             List likesall = commentsAll[comId[index]]["Likes"];
-                                              return Container(
-                                                decoration: BoxDecoration(color: const Color.fromARGB(236, 16, 16, 16),borderRadius: BorderRadius.circular(10)),
-                                                child: Column(
-                                                  children: [
-                                                    ListTile(
-                                                      leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
-                                                      title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
-                                                      trailing: Badge(
-                                                        label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
-                                                        child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite))),
-                                                    ),
-                                                    Container(
-                                                      padding: EdgeInsets.all(5),
-                                                      alignment: Alignment.bottomLeft,
-                                                      child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
-                                                    
-                                                  ],
-                                                ),
-                                              ) ;
-                                            },
-                                          ),
-                                        ),
-                                        ) ),
-                                        ],
-                                      );
-                                      },
-                                    ),
-                                    const Divider(color: Color.fromARGB(84, 255, 255, 255),),
+                                    
+                                    
                                     Container(
                                       alignment: Alignment.bottomLeft,
                                       padding:const EdgeInsets.all(10),
@@ -847,7 +711,175 @@ Widget content(BuildContext context,
                                         description,
                                         style:const TextStyle(color: Colors.white),
                                       ),
-                                    )
+                                    ),StatefulBuilder(
+                                      builder: (BuildContext context, setStateAll) {
+                                        return Container(
+                                          decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(187, 107, 104, 104),
+                                          ),
+                                          borderRadius: BorderRadius.circular(10)),
+                                          child: Column(
+                                          children: [
+                                            SizedBox(
+                                              height: 50,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Container(
+                                                    height: 60,
+                                                    padding:const EdgeInsets.all(5),
+                                                    child:viewComments?SizedBox(height: 40,width: windowWidth/2,child:
+                                                    
+                                                    TextField(
+                                                      onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                                                      style: const TextStyle(color: Colors.white),
+                                                      decoration: InputDecoration(
+                                                         enabledBorder: OutlineInputBorder(
+                                                        borderSide: const BorderSide(color: Colors.grey),
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      focusedBorder: OutlineInputBorder(
+                                                        borderSide:  const BorderSide(
+                                                          color: Colors.black,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius: BorderRadius.circular(15),
+                                                      ),
+                                                      errorBorder: OutlineInputBorder(
+                                                        borderSide: const BorderSide(
+                                                          color: Colors.red,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                          labelText: "Add comment",
+                                                          labelStyle: const TextStyle(
+                                                              color: Color.fromARGB(255, 161, 159, 159))),
+                                                      controller: commentText,
+                                                       ),
+                                                    ): 
+                                                    
+                                                     Padding(
+                                                       padding: const EdgeInsets.all(8.0),
+                                                       child: Text(commentsAll.isEmpty?"Be first to leave a comment":commentsAll[commentsAll.keys.first]["Comment"] ,
+                                                       style:const TextStyle(color: Colors.white),
+                                                                                                         maxLines: 2,overflow: TextOverflow.fade,),
+                                                     ),
+                                                  ),
+                                                  Visibility(
+                                                    visible: viewComments,
+                                                    child:IconButton(onPressed: ()async{
+                                                    String  state = "Error occured";
+                                                    state = await comment_(eventId_, commentText.text);
+                                                    if (state == "Success") {
+                                                      
+                                                      commentText.clear();
+                                                      setStateAll((){
+                                                        getnewcomments(eventId_);
+                                                      });
+                                          
+                                                    }
+                                                    }, icon:
+                                                    const Icon(Icons.send,color: Colors.blueAccent,)) ),
+                                                  Row(
+                                                    children: [
+                                                       //like button
+                                                      StatefulBuilder(
+                                                    builder: (BuildContext context, setStateL) {
+                                                      return Row(
+                                                        children: [
+                                                          IconButton(
+                                                            onPressed: ()async {
+                                                             
+                                                                setStateL((){
+                                                                  liked = !liked;
+                                                                  liked?likesNum++:likesNum--;
+                                                                  likeEvent(eventId_);
+                                                                });
+                                                             
+                                                                                                      
+                                                            },
+                                                            icon:  Icon(
+                                                              Icons.thumb_up_alt_outlined,
+                                                              color:liked?Colors.blue :const Color.fromARGB(
+                                                                  255, 108, 105, 105),
+                                                            )),
+                                                            Text(likesNum.toString(),style:const TextStyle(color: Colors.white),)
+                                                        ],
+                                                      );
+                                                    },
+                                                  ),
+                                                      //comment field
+                                                  
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 2.0,right: 8.0),
+                                                    child: Row(
+                                                      children: [
+                                                        IconButton(
+                                                            onPressed: () async{
+                                                              setStateAll((){
+                                                                viewComments = !viewComments;
+                                                                viewEventComments[index] = viewComments;
+                                                              });
+                                                              
+                                                            },
+                                                            icon:  Icon(
+                                                              Icons.comment,
+                                                              color:commented?Colors.blue:const Color.fromARGB(
+                                                                  255, 99, 95, 95),
+                                                            )),
+                                                            Text(commentsAll.length.toString(),style:const TextStyle(color: Colors.white),)
+                                                      ],
+                                                    ),
+                                                  )
+                                                    ],
+                                                  ),
+                                                 
+                                                ],
+                                              ),
+                                            ),
+                                            Visibility(
+                                          visible:viewComments,
+                                          child:Padding(padding:const EdgeInsets.all(10),
+                                          child: Container(
+                                            constraints:const BoxConstraints(maxHeight: 200,),
+                                            child: ListView.builder(
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              itemCount: commentsAll.length,
+                                              itemBuilder: (BuildContext context, int index) {
+                                                var comId = commentsAll.keys.toList();
+                                               DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
+                                               String comOwner = commentsAll[comId[index]]["UserName"].toString();
+                                               String commentdata = commentsAll[comId[index]]["Comment"];
+                                               List likesall = commentsAll[comId[index]]["Likes"];
+                                                return Container(
+                                                  decoration: BoxDecoration(color: const Color.fromARGB(236, 16, 16, 16),borderRadius: BorderRadius.circular(10)),
+                                                  child: Column(
+                                                    children: [
+                                                      ListTile(
+                                                        leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
+                                                        title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
+                                                        trailing: Badge(
+                                                          label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
+                                                          child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite))),
+                                                      ),
+                                                      Container(
+                                                        padding:const EdgeInsets.all(5),
+                                                        alignment: Alignment.bottomLeft,
+                                                        child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
+                                                      
+                                                    ],
+                                                  ),
+                                                ) ;
+                                              },
+                                            ),
+                                          ),
+                                          ) ),
+                                          ],
+                                                                                ),
+                                        );
+                                      },
+                                    ),
                                   ],
                                 ),
                               ),

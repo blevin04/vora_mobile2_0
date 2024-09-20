@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,8 +21,8 @@ bool _password_visible = true;
 class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.height;
+    double windowwidth = MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.black,
       body: DecoratedBox(
@@ -31,15 +33,15 @@ class _LoginState extends State<Login> {
           child: Center(
             child: Card(
               margin:
-                  EdgeInsets.only(top: _height / 3.5, bottom: _height / 4.8),
+                  EdgeInsets.only(top: windowheight / 3.5, bottom: windowheight / 4.8),
               color: const Color.fromARGB(
                 255,
                 29,
                 36,
                 45,
               ),
-              child: Container(
-                height: _height / 2.1,
+              child: SizedBox(
+                height: windowheight / 2.1,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -58,7 +60,7 @@ class _LoginState extends State<Login> {
                     ),
                     Container(
                       padding: const EdgeInsets.only(left: 20, right: 20),
-                      width: _width - 120,
+                      width: windowwidth - 120,
                       height: 50,
                       decoration: BoxDecoration(
                           border: Border.all(color: Colors.transparent)),
@@ -76,7 +78,7 @@ class _LoginState extends State<Login> {
                       height: 20,
                     ),
                     Container(
-                      width: _width - 120,
+                      width: windowwidth - 120,
                       decoration: BoxDecoration(
                           border: Border.all(color: Colors.transparent)),
                       padding: const EdgeInsets.only(left: 20, right: 20),

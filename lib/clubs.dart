@@ -1,13 +1,16 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
-import 'package:vora_mobile/homepage.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:vora_mobile/utils.dart';
 
@@ -126,7 +129,7 @@ void _visibleChanged(){}
       case "Technology":
         await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Technology")
+        .where("Category", arrayContains: "Technology")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -137,7 +140,7 @@ void _visibleChanged(){}
       case "Arts": 
       await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Arts")
+        .where("Category", arrayContains: "Arts")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -148,7 +151,7 @@ void _visibleChanged(){}
       case "Religion":
         await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Religion")
+        .where("Category", arrayContains: "Religion")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -160,7 +163,7 @@ void _visibleChanged(){}
       case "Music":
         await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Music")
+        .where("Category", arrayContains: "Music")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -172,7 +175,7 @@ void _visibleChanged(){}
       case "Travel":
         await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Travel")
+        .where("Category", arrayContains: "Travel")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -184,7 +187,7 @@ void _visibleChanged(){}
       case "Engineering":
         await firestore
         .collection("Communities")
-        .where("Category", isEqualTo: "Engineering")
+        .where("Category", arrayContains: "Engineering")
         .get()
         .then((onValue) {
       for (var snap in onValue.docs) {
@@ -194,10 +197,27 @@ void _visibleChanged(){}
         break;
 
       case "Member":
-        
+        await firestore.collection("users").doc(user.uid).get().then((onValue){
+          for(var com in onValue.data()!["Communities"]){
+            communities_.add(com);
+          }
+        });
         break;
       
       case  "Non-Member":
+        await firestore.collection("users").doc(user.uid).get().then((onValue)async{
+          List membercoms = onValue.data()!["Communities"];
+          await firestore.collection("Communities").where("Visibility", isEqualTo: true).get().then((all){
+            for(var one in all.docs){
+              communities_.add(one.id);
+            }
+          });
+          for (var i = 0; i < membercoms.length; i++) {
+            if (communities_.contains(membercoms[i])) {
+              communities_.remove(membercoms[i]);
+            }
+          }
+        });
 
         break;
     
@@ -207,7 +227,7 @@ void _visibleChanged(){}
     return communities_;
   }
 Future<Map<String,dynamic>> clubdata (String clubId)async{
-  Map<String,dynamic> clubd_ = Map();
+  Map<String,dynamic> clubd_ = {};
 
   await firestore.collection("Communities").doc(clubId).get().then((onValue){
     clubd_.addAll(onValue.data()!);
@@ -226,8 +246,8 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
   bool _search_vis = false;
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.height;
+    double windowWidth= MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.height;
    
     return SafeArea(
         child: Scaffold(
@@ -276,6 +296,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
         ],
       ),
       body: SingleChildScrollView(
+        physics:const AlwaysScrollableScrollPhysics(),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -355,7 +376,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                 builder: (context, snpsht) {
                   if (snpsht.connectionState == ConnectionState.waiting) {
                     return  Center(child: SizedBox(
-                      height: _height-100,
+                      height: windowheight-100,
                       child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
                     ),);
                   }
@@ -377,10 +398,10 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                     child: ListView.builder(
                         itemCount: data_snap.length,
                         shrinkWrap: true,
-                     
+                        physics:const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
                           return SizedBox(
-                             height: _height / 4.1,
+                             height: windowheight / 4.1,
                             child:clubData[data_snap[index]]==null?
                              FutureBuilder(
                                // initialData: img = AssetImage("lib/assets/dp.png"),
@@ -408,9 +429,9 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                   String C_name = snapshot.data!["Name"];
                                   String C_about = snapshot.data!["About"];
                           
-                                  return showcontent(context, data_snap[index], _width, c_image, C_name, C_about);
+                                  return showcontent(context, data_snap[index], windowWidth, c_image, C_name, C_about);
                                 }):
-                                showcontent(context, data_snap[index], _width, clubData[data_snap[index]]!["Image"], clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"]),
+                                showcontent(context, data_snap[index], windowWidth, clubData[data_snap[index]]!["Image"], clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"]),
                           );
                         }),
                   );
@@ -425,7 +446,7 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
 Widget showcontent(
   BuildContext context,
   String clubId,
-  double _width,
+  double windowWidth,
   Uint8List coverImage,
   String Clubname,
   String aboutclub,
@@ -451,7 +472,7 @@ Widget showcontent(
                           border: Border.all(color: const Color.fromARGB(55, 61, 60, 60)),
                           borderRadius:
                               BorderRadius.circular(10)),
-                      width: _width,
+                      width: windowWidth,
                       child: Row(
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
@@ -466,11 +487,11 @@ Widget showcontent(
                                           ),
                                   borderRadius:
                                       BorderRadius.circular(20)),
-                              width: _width / 2.3,
+                              width: windowWidth/ 2.3,
                             ),
                           ),
                           Container(
-                              width: _width / 2,
+                              width: windowWidth/ 2,
                               alignment: Alignment.topCenter,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -540,7 +561,8 @@ Widget showcontent(
                                                                       if (state == "Success") {
                                                                         showsnackbar(context, "Successfully joined $Clubname");
                                                                       }
-                                                                      else{print(state);}
+                                                                      // else{
+                                                                      //   print(state);}
                                                                       Navigator.pop(context);
                                                                   },
                                                               child: Container(
@@ -558,7 +580,8 @@ Widget showcontent(
                                                                     Navigator.pop(context);
                                                                   },
                                                               child:
-                                                                  Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), child: Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
+                                                                  Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), 
+                                                                  child:const Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
                                                         ],
                                                       )
                                                     ],

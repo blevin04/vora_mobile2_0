@@ -10,7 +10,7 @@ import 'package:vora_mobile/models/models.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
-AssetImage img = AssetImage("lib/assets/Default_Profile_Picture.png");
+AssetImage img =const AssetImage("lib/assets/Default_Profile_Picture.png");
 
 Future<File> getLocalFileFromAsset(String assetPath, String fileName) async {
   // Load the asset

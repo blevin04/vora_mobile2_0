@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
@@ -50,13 +52,13 @@ Future<List<String>> getattendedEventsIds()async{
 }
 
 Future<Map<int,Map<String,dynamic>>> events_ ()async{
-  Map<int,Map<String,dynamic>> master_m =Map();
+  Map<int,Map<String,dynamic>> master_m = {};
 
   await firestore_.collection("users").doc(user.uid).get().then((onValue)async{
     var events_att = onValue.data()!["Events"];
     int number = 0;
     for(var even in events_att){
-      Map<String,dynamic> local = Map();
+      Map<String,dynamic> local = {};
       final evId = <String,dynamic>{"EventId":even};
       await store.collection("Events").doc(even).get().then((onValue1){
         final evTitle = <String,dynamic>{"Title":onValue1.data()!["Title"]};
@@ -165,7 +167,7 @@ PageController p_controller = PageController();
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Container(
-                      constraints: BoxConstraints(maxHeight: 200,minHeight: 100),
+                      constraints:const BoxConstraints(maxHeight: 200,minHeight: 100),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -280,7 +282,7 @@ PageController p_controller = PageController();
                   ),IconButton(
                               color: Colors.black,
                               onPressed: () async {
-                                await Permission.accessMediaLocation
+                                 Permission.accessMediaLocation
                                     .onDeniedCallback(() async {
                                   Permission.accessMediaLocation.request();
                                   if (await Permission
@@ -480,7 +482,7 @@ Widget postpage(){
         physics:const AlwaysScrollableScrollPhysics(),
         itemCount: snapshot.data.length,
         itemBuilder: (BuildContext context,index){
-          print("Posts ar ${snapshot.data!}");
+         // print("Posts ar ${snapshot.data!}");
           
           
         return blogsdata[snapshot.data[index]] == null?
@@ -519,7 +521,8 @@ Widget postpage(){
                             children: [
                                const Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
                                 const SizedBox(width: 10,),
-                                                      Text((Plikes.length - 1).toString(),style: TextStyle(color: Colors.white),),
+                                                      Text((Plikes.length - 1).toString(),
+                                                      style:const TextStyle(color: Colors.white),),
                             ],
                           ),
                           Row(children: [  const  Icon(Icons.comment,color: Colors.white,),
@@ -699,7 +702,7 @@ Widget eventsattended(){
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                   }
-      List n = List.empty(growable: true);
+      //List n = List.empty(growable: true);
       if (snapshot.data.isEmpty) {
         return Center(
           child: TextButton(onPressed: (){

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,7 +23,7 @@ Future<List<String>> addcommunity(
     required String aboutclub,
     required String cover_pic}) async {
   String state = "some Error occured";
-  String communityId = Uuid().v1();
+  String communityId =const Uuid().v1();
   List<String> eventsIds = List.empty();
   communityModel community = communityModel(
     Lead: lead,
@@ -71,7 +73,7 @@ Future<List<String>> AddEvent_(
 
   String state = "Some Error Occured";
   String EventId = const Uuid().v1();
-  Map<String,dynamic> comms = Map();
+  Map<String,dynamic> comms ={};
   eventmodel event = eventmodel(
       title: title,
       description: description,
@@ -108,7 +110,7 @@ Future<String> AddAnnouncement({
   required String community,
   String imagepath = '',
 }) async {
-  String announcemntId = Uuid().v1();
+  String announcemntId =const Uuid().v1();
   announcementModel announcement = announcementModel(
       UserId: user_.uid,
       announceTime: DateTime.now(),
@@ -145,7 +147,7 @@ Future<String> Addpost({
   String docs = '',
 }) async {
   String state = "Some Error Occured...";
-  String postId = Uuid().v1();
+  String postId =const Uuid().v1();
 
   postmodel post = postmodel(
       blog: desc,
@@ -154,7 +156,7 @@ Future<String> Addpost({
       UserId: user_.uid,
       posttime: DateTime.now(),
       Likes: List.empty(growable: true),
-      comments_: Map(),
+      comments_: {},
       );
   try {
     await firestore.collection("posts").doc(postId).set(post.tojson());

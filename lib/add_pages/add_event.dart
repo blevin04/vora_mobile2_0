@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -24,8 +26,8 @@ TextEditingController _res_link = TextEditingController();
 DateTime eventDate = DateTime.now();
 List<String> others = List.empty(growable: true);
 String cover_image = '';
-TimeOfDay startTime = TimeOfDay(hour: 0, minute: 0);
-TimeOfDay endTime = TimeOfDay(hour: 0, minute: 0);
+TimeOfDay startTime =const TimeOfDay(hour: 0, minute: 0);
+TimeOfDay endTime =const TimeOfDay(hour: 0, minute: 0);
 bool startSet = false;
 var week = [
   "Monday",
@@ -69,8 +71,8 @@ class _AddEventState extends State<AddEvent> {
 
   @override
   Widget build(BuildContext context) {
-    double _widht = MediaQuery.of(context).size.width;
-    double _height = MediaQuery.of(context).size.height;
+    double windowWidth = MediaQuery.of(context).size.width;
+    double windowheight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -128,7 +130,7 @@ class _AddEventState extends State<AddEvent> {
               ),
               Container(
                 constraints:
-                    BoxConstraints(maxHeight: _height / 1.5, minHeight: 20),
+                    BoxConstraints(maxHeight: windowheight / 1.5, minHeight: 20),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
@@ -294,7 +296,7 @@ class _AddEventState extends State<AddEvent> {
                               : null),
                       child: InkWell(
                         onTap: () async {
-                          await Permission.accessMediaLocation
+                           Permission.accessMediaLocation
                               .onDeniedCallback(() async {
                             Permission.accessMediaLocation.request();
                             if (await Permission.accessMediaLocation.isDenied) {
@@ -522,7 +524,7 @@ class _AddEventState extends State<AddEvent> {
                     }
                   },
                   child: Container(
-                    width: _widht / 2.2,
+                    width: windowWidth / 2.2,
                     decoration: BoxDecoration(
                         color: Colors.lightBlue,
                         borderRadius: BorderRadius.circular(10)),
