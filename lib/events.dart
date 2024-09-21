@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:vora_mobile/Accounts.dart';
 
 import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
@@ -62,6 +63,60 @@ class _EventsState extends State<Events> {
     }
     super.initState(); 
   }
+
+  Future<void>searchfnxn(String value)async{
+    if (value.isEmpty) {
+      getevents("all");
+      setState(() {});
+    }
+    print("vvvvvv = ${value.characters.toList()}");
+    List<String> test = List.empty(growable: true);
+    test.join();
+    for (var i = 0; i < eventIdsEventspage.length; i++) {
+      var evname = eventData[eventIdsEventspage[i]]!["Title"];
+      var eid = eventIdsEventspage[i];
+      print("vvvbbbbbbb = ${evname.split(" ").join().toString().characters.toList()}");
+      if (evname == value) {
+        eventIdsEventspage.clear();
+        eventIdsEventspage.add(eid);
+        setState(() {});
+      }
+    List input =  value.characters.toList();
+    List evntname = evname.split(" ").join().toString().characters.toList();
+    List position = List.empty(growable: true);
+    for (var i = 0; i < input.length; i++) {
+      if (evntname.contains(input[i])) {
+        position.add(evntname.indexOf(input[i]));
+        
+      }
+    }
+    bool answer = true;
+    for (var i = 1; i < position.length; i++) {
+      
+     if (position[i] != position[i-1]+1) {
+      print("not so much");
+      print("${position[i]} not ${position[i+1]}");
+        answer = false;
+      }
+     
+    }
+    if (answer) {
+       eventIdsEventspage.clear();
+      if (!eventIdsEventspage.contains(eid)) {
+       
+        eventIdsEventspage.add(eid);
+        setState(() {
+          
+        });
+      }
+    }
+    }
+    if (eventIdsEventspage.isEmpty) {
+      getevent("all");
+    }
+  }
+
+
 
   Future<void> getevents(String filter) async {
     eventIds.clear();
@@ -243,15 +298,15 @@ class _EventsState extends State<Events> {
   Widget build(BuildContext context) {
     double windowWidth= MediaQuery.of(context).size.width;
     double windowheight = MediaQuery.of(context).size.height;
-    double eventScale = 0.96;
+   // double eventScale = 0.96;
     return SafeArea(
         child: Scaffold(
           floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
           floatingActionButton: Padding(
             padding: const EdgeInsets.only(top: 46),
             child: Container(
-              decoration: BoxDecoration(color: Colors.transparent,
-              border: Border.all(color: Colors.white),
+              decoration: BoxDecoration(color: const Color.fromARGB(210, 0, 0, 0),
+              border: Border.all(width: 2,color: const Color.fromARGB(118, 255, 255, 255)),
               borderRadius: BorderRadius.circular(10)
               ),
               
@@ -262,9 +317,12 @@ class _EventsState extends State<Events> {
                       return Visibility(
                           visible: events_vis,
                           child: SizedBox(
-                            width: 150,
+                            width: 200,
                             height: 45,
                             child: TextField(
+                              onChanged: (value)async {
+                               await searchfnxn(value);
+                              },
                               style:const TextStyle(color: Colors.white),
                               controller: _search_events,
                               decoration: const InputDecoration(
@@ -327,53 +385,47 @@ class _EventsState extends State<Events> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  
-                  const SizedBox(
-                    width: 50,
+              const SizedBox(
+                width: 50,
+              ),
+              Container(
+                alignment: Alignment.bottomRight,
+                child: DropdownButton(
+                  dropdownColor: const Color.fromARGB(
+                    255,
+                    29,
+                    36,
+                    45,
                   ),
-                  Container(
-                    alignment: Alignment.bottomRight,
-                    child: DropdownButton(
-                      dropdownColor: const Color.fromARGB(
-                        255,
-                        29,
-                        36,
-                        45,
-                      ),
-                      // Initial Value
-                      value: event_value,
-        
-                      // Down Arrow Icon
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.white,
-                      ),
-        
-                      // Array list of items
-                      items: event_filter.map((String items) {
-                        return DropdownMenuItem(
-                          value: items,
-                          child: Text(
-                            items,
-                            style:const TextStyle(color: Colors.white),
-                          ),
-                        );
-                      }).toList(),
-                      // After selecting the desired option,it will
-                      // change button value to selected value
-                      onChanged: (String? newValue) async{
-                        event_value = newValue!;
-                       eventIdsEventspage.clear();
-                        setState(() {
-                        });
-                        
-                      },
-                    ),
+                  // Initial Value
+                  value: event_value,
+                      
+                  // Down Arrow Icon
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.white,
                   ),
-                ],
+                      
+                  // Array list of items
+                  items: event_filter.map((String items) {
+                    return DropdownMenuItem(
+                      value: items,
+                      child: Text(
+                        items,
+                        style:const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                  // After selecting the desired option,it will
+                  // change button value to selected value
+                  onChanged: (String? newValue) async{
+                    event_value = newValue!;
+                   eventIdsEventspage.clear();
+                    setState(() {
+                    });
+                    
+                  },
+                ),
               ),
               const Divider(
                 color: Color.fromARGB(
@@ -410,7 +462,8 @@ class _EventsState extends State<Events> {
                           return eventData.containsKey(eventIds[index2])?
                           StatefulBuilder(
                             builder: (BuildContext context, setState_1) {
-                               Uint8List C_image_comm = eventData[eventIds[index2]]!["Cover_Image"];
+                             
+                              Uint8List C_image_comm = eventData[eventIds[index2]]!["Cover_Image"];
                               String Event_title = eventData[eventIds[index2]]!["Title"];
                               List<dynamic> event_imgs = eventData[eventIds[index2]]!["Images"];
                               DateTime time = eventData[eventIds[index2]]!["EventDate"].toDate();
@@ -421,7 +474,11 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
                               bool commented = false;
                               int likenum = eventData[eventIds[index2]]!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
+                             
+                              
+                             return content(context, eventId_, C_image_comm, Event_title, time, C_name, 
+                              event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],
+                              allComments,likenum,index2);
                             },
                           )
                           
@@ -434,28 +491,16 @@ class _EventsState extends State<Events> {
                               if (snapshot.connectionState == ConnectionState.waiting) {
                                 return  StatefulBuilder(
                                       builder: (BuildContext context, setStateev) {
-                                        return AnimatedScale(scale: eventScale, duration:const Duration(milliseconds: 1000),
-                                        onEnd: (){
-                                         
-                                          setStateev((){
-                                             if (eventScale == 1) {
-                                            eventScale = 0.9;
-                                            
-                                          }else{
-                                            
-                                            eventScale = 1;}
-                                          });
-                                        },
-                                         curve: Curves.easeInOut,
-                                        child: Padding(
+                                        return  Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: const Color.fromARGB(210, 91, 90, 90),
                                               borderRadius: BorderRadius.circular(10)
                                             ),
-                                            height: 200),
-                                        ),
+                                            height: 200,
+                                            child: const Center(child: CircularProgressIndicator(),),
+                                            ),
                                         );
                                       },
                                     );
@@ -578,311 +623,346 @@ Widget content(BuildContext context,
                 int index,
                 ){
   return Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: Card(
-                              color: const Color.fromARGB(50, 82, 81, 81),
-                              elevation: 10,
-                              child: InkWell(
-                                enableFeedback: false,
-                                splashColor: Colors.transparent,
-                                onTap:()=> Navigator.push(context,MaterialPageRoute(builder: 
-                                (context)=> Dedicatedeventpage(eventId:eventId_ ,))),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      height: 50,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                           Padding(
-                                            padding:const EdgeInsets.all(5),
-                                            child: CircleAvatar(
-                                              backgroundImage: MemoryImage(C_image_comm)
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  Event_title,
-                                                  style: const TextStyle(
-                                                      color: Colors.blue,fontSize: 18),
-                                                ),
-                                                Text(
-                                                  period(time),
-                                                  style:const TextStyle(
-                                                      color: Color.fromARGB(
-                                                          174, 255, 255, 255)),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                         const   SizedBox(width: 20,),
-                                          
-                                          const SizedBox(width: 50,),
-                                          Visibility(
-                                            visible: time.isAfter(DateTime.now()),
-                                            child: TextButton(onPressed: (){
-                                              showDialog(context: context, builder: (context){
-                                                return Dialog(
-                                                  alignment: Alignment.center,
-                                                  elevation: 10,
-                                                  child: Container(height: 150,width: 100,
-                                                  decoration: BoxDecoration(color:const Color.fromARGB(255, 19, 18, 18),borderRadius: BorderRadius.circular(15)),
-                                                  child:Column(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                    children: [
-                                                      Padding(padding:const EdgeInsets.all(10),child: 
-                                                      Text("RSVP to $Event_title by $C_name ",style:const TextStyle(color: Color.fromARGB(188, 215, 212, 212)),),),
-                                                      Padding(padding:const EdgeInsets.all(10),
-                                                      child:Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                        children: [
-                                                          TextButton(onPressed: ()async{
-                                                          String state = await  rsvp(eventId: eventId_);
-                                                          if (state == "Success") {
-                                                            showsnackbar(context, "Successfully rsvp'd to $Event_title");
-                                                          }
-                                                          Navigator.pop(context);
-                                                          }, child:const Text("YES",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),)),
-                                                          TextButton(onPressed: (){
-                                                            Navigator.pop(context);
-                                                          }, child:const Text("Cancel",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),))
-                                                        ],
-                                                      ) ,)
-                                                    ],
-                                                  ) ,
-                                                  ),
-                                                );
-                                              });
-                                            }, child:
-                                             Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 24, 23, 23),
-                                                borderRadius: BorderRadius.circular(8)
-                                                    ),
-                                                child:const Padding(
-                                                  padding:  EdgeInsets.all(8.0),
-                                                  child: Text("RSVP",style: TextStyle(color: Color.fromARGB(255, 3, 20, 200),fontSize: 16,),),
-                                            ),
-                                            )
-                                            ),
-                                          ),
-                                          IconButton(onPressed: (){}, icon:const Icon(Icons.more_vert,color: Colors.white,))
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                            padding: const EdgeInsets.only(left: 20.0,top: 5,bottom: 5),
-                                            child: Text("by $C_name ",style:const TextStyle(color: Colors.white,fontSize: 12),softWrap: true,),
-                                          ),
-                                    SizedBox(
-                                      height: 250,
-                                      child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: event_imgs.length,
-                                          itemBuilder: (context, imgno) {
-                                           Uint8List E_img = event_imgs[imgno];
-                                                return InkWell(
-                                                  onTap: (){
-                                                    showDialog(context: context, builder: (context){
-                                                      return SizedBox(
-                                                        
-                                                        child: showimage(context, event_imgs,windowheight ));
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                      const  EdgeInsets.all(5),
-                                                   child: Image(image: MemoryImage(E_img)),
-                                                  ),
-                                                );
-                                             
-                                          }),
-                                    ),
-                                    
-                                    
-                                    Container(
-                                      alignment: Alignment.bottomLeft,
-                                      padding:const EdgeInsets.all(10),
-                                      child:  Text(
-                                        description,
-                                        style:const TextStyle(color: Colors.white),
-                                      ),
-                                    ),StatefulBuilder(
-                                      builder: (BuildContext context, setStateAll) {
-                                        return Container(
-                                          decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(187, 107, 104, 104),
-                                          ),
-                                          borderRadius: BorderRadius.circular(10)),
-                                          child: Column(
-                                          children: [
-                                            SizedBox(
-                                              height: 50,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Container(
-                                                    height: 60,
-                                                    padding:const EdgeInsets.all(5),
-                                                    child:viewComments?SizedBox(height: 40,width: windowWidth/2,child:
-                                                    
-                                                    TextField(
-                                                      onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
-                                                      style: const TextStyle(color: Colors.white),
-                                                      decoration: InputDecoration(
-                                                         enabledBorder: OutlineInputBorder(
-                                                        borderSide: const BorderSide(color: Colors.grey),
-                                                        borderRadius: BorderRadius.circular(10),
-                                                      ),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderSide:  const BorderSide(
-                                                          color: Colors.black,
-                                                          width: 2,
-                                                        ),
-                                                        borderRadius: BorderRadius.circular(15),
-                                                      ),
-                                                      errorBorder: OutlineInputBorder(
-                                                        borderSide: const BorderSide(
-                                                          color: Colors.red,
-                                                          width: 2,
-                                                        ),
-                                                        borderRadius: BorderRadius.circular(10),
-                                                      ),
-                                                          labelText: "Add comment",
-                                                          labelStyle: const TextStyle(
-                                                              color: Color.fromARGB(255, 161, 159, 159))),
-                                                      controller: commentText,
-                                                       ),
-                                                    ): 
-                                                    
-                                                     Padding(
-                                                       padding: const EdgeInsets.all(8.0),
-                                                       child: Text(commentsAll.isEmpty?"Be first to leave a comment":commentsAll[commentsAll.keys.first]["Comment"] ,
-                                                       style:const TextStyle(color: Colors.white),
-                                                                                                         maxLines: 2,overflow: TextOverflow.fade,),
-                                                     ),
-                                                  ),
-                                                  Visibility(
-                                                    visible: viewComments,
-                                                    child:IconButton(onPressed: ()async{
-                                                    String  state = "Error occured";
-                                                    state = await comment_(eventId_, commentText.text);
-                                                    if (state == "Success") {
-                                                      
-                                                      commentText.clear();
-                                                      setStateAll((){
-                                                        getnewcomments(eventId_);
-                                                      });
-                                          
-                                                    }
-                                                    }, icon:
-                                                    const Icon(Icons.send,color: Colors.blueAccent,)) ),
-                                                  Row(
-                                                    children: [
-                                                       //like button
-                                                      StatefulBuilder(
-                                                    builder: (BuildContext context, setStateL) {
-                                                      return Row(
-                                                        children: [
-                                                          IconButton(
-                                                            onPressed: ()async {
-                                                             
-                                                                setStateL((){
-                                                                  liked = !liked;
-                                                                  liked?likesNum++:likesNum--;
-                                                                  likeEvent(eventId_);
-                                                                });
-                                                             
-                                                                                                      
-                                                            },
-                                                            icon:  Icon(
-                                                              Icons.thumb_up_alt_outlined,
-                                                              color:liked?Colors.blue :const Color.fromARGB(
-                                                                  255, 108, 105, 105),
-                                                            )),
-                                                            Text(likesNum.toString(),style:const TextStyle(color: Colors.white),)
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                                      //comment field
-                                                  
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(left: 2.0,right: 8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        IconButton(
-                                                            onPressed: () async{
-                                                              setStateAll((){
-                                                                viewComments = !viewComments;
-                                                                viewEventComments[index] = viewComments;
-                                                              });
-                                                              
-                                                            },
-                                                            icon:  Icon(
-                                                              Icons.comment,
-                                                              color:commented?Colors.blue:const Color.fromARGB(
-                                                                  255, 99, 95, 95),
-                                                            )),
-                                                            Text(commentsAll.length.toString(),style:const TextStyle(color: Colors.white),)
-                                                      ],
-                                                    ),
-                                                  )
-                                                    ],
-                                                  ),
-                                                 
-                                                ],
-                                              ),
-                                            ),
-                                            Visibility(
-                                          visible:viewComments,
-                                          child:Padding(padding:const EdgeInsets.all(10),
-                                          child: Container(
-                                            constraints:const BoxConstraints(maxHeight: 200,),
-                                            child: ListView.builder(
-                                              shrinkWrap: true,
-                                              physics: const NeverScrollableScrollPhysics(),
-                                              itemCount: commentsAll.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                var comId = commentsAll.keys.toList();
-                                               DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
-                                               String comOwner = commentsAll[comId[index]]["UserName"].toString();
-                                               String commentdata = commentsAll[comId[index]]["Comment"];
-                                               List likesall = commentsAll[comId[index]]["Likes"];
-                                                return Container(
-                                                  decoration: BoxDecoration(color: const Color.fromARGB(236, 16, 16, 16),borderRadius: BorderRadius.circular(10)),
-                                                  child: Column(
-                                                    children: [
-                                                      ListTile(
-                                                        leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
-                                                        title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
-                                                        trailing: Badge(
-                                                          label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
-                                                          child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite))),
-                                                      ),
-                                                      Container(
-                                                        padding:const EdgeInsets.all(5),
-                                                        alignment: Alignment.bottomLeft,
-                                                        child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
-                                                      
-                                                    ],
-                                                  ),
-                                                ) ;
-                                              },
-                                            ),
-                                          ),
-                                          ) ),
-                                          ],
-                                                                                ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
+  padding: const EdgeInsets.all(2),
+  child: Card(
+    color: const Color.fromARGB(50, 82, 81, 81),
+    elevation: 10,
+    child: InkWell(
+      enableFeedback: false,
+      splashColor: Colors.transparent,
+      onTap:()=> Navigator.push(context,MaterialPageRoute(builder: 
+      (context)=> Dedicatedeventpage(eventId:eventId_ ,))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 50,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                  Padding(
+                  padding:const EdgeInsets.all(5),
+                  child: CircleAvatar(
+                    backgroundImage: MemoryImage(C_image_comm)
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        Event_title,
+                        style: const TextStyle(
+                            color: Colors.blue,fontSize: 18),
+                      ),
+                      Text(
+                        period(time),
+                        style:const TextStyle(
+                            color: Color.fromARGB(
+                                174, 255, 255, 255)),
+                      )
+                    ],
+                  ),
+                ),
+                const   SizedBox(width: 20,),
+                
+                const SizedBox(width: 50,),
+                Visibility(
+                  visible: time.isAfter(DateTime.now()),
+                  child: TextButton(onPressed: (){
+                    showDialog(context: context, builder: (context){
+                      return Dialog(
+                        alignment: Alignment.center,
+                        elevation: 10,
+                        child: Container(height: 150,width: 100,
+                        decoration: BoxDecoration(color:const Color.fromARGB(255, 19, 18, 18),borderRadius: BorderRadius.circular(15)),
+                        child:Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Padding(padding:const EdgeInsets.all(10),child: 
+                            Text("RSVP to $Event_title by $C_name ",style:const TextStyle(color: Color.fromARGB(188, 215, 212, 212)),),),
+                            Padding(padding:const EdgeInsets.all(10),
+                            child:Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                TextButton(onPressed: ()async{
+                                String state = await  rsvp(eventId: eventId_);
+                                if (state == "Success") {
+                                  showsnackbar(context, "Successfully rsvp'd to $Event_title");
+                                }
+                                Navigator.pop(context);
+                                }, child:const Text("YES",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),)),
+                                TextButton(onPressed: (){
+                                  Navigator.pop(context);
+                                }, child:const Text("Cancel",style: TextStyle(color:  Color.fromARGB(144, 255, 255, 255)),))
+                              ],
+                            ) ,)
+                          ],
+                        ) ,
+                        ),
+                      );
+                    });
+                  }, child:
+                    Container(decoration: BoxDecoration(color: const Color.fromARGB(255, 24, 23, 23),
+                      borderRadius: BorderRadius.circular(8)
+                          ),
+                      child:const Padding(
+                        padding:  EdgeInsets.all(8.0),
+                        child: Text("RSVP",style: TextStyle(color: Color.fromARGB(255, 3, 20, 200),fontSize: 16,),),
+                  ),
+                  )
+                  ),
+                ),
+                Builder(
+                  builder: (context) {
+                    bool dottedopen = false;
+                    return StatefulBuilder(
+                      builder: (BuildContext context, setStatedotted) {
+                        return   InkWell(
+                      onTap: () {
+                        setStatedotted((){
+                          dottedopen = !dottedopen;
+                        });
+                        
+                      },
+                      child:  Padding(
+                        padding:const  EdgeInsets.all(8.0),
+                        child: dottedopen?Container(
+                          child: Row(children: [
+                            IconButton(onPressed: (){}, icon:const Icon(Icons.share,color: Colors.white,),),
+                            IconButton(onPressed: (){}, icon: const Icon(Icons.block,color: Colors.white,)),
+                            IconButton(onPressed: (){
+                              setStatedotted((){
+                                dottedopen = !dottedopen;
+                              });
+                            }, icon:const Icon(FontAwesomeIcons.x,size: 18,color: Colors.white,))
+                          ],),
+                        ) :const Icon(Icons.more_vert,color: Colors.white,),
+                      ),
+                    );
+                      },
+                    );
+                  }
+                ),
+              
+                
+              ],
+            ),
+          ),
+          Padding(
+                  padding: const EdgeInsets.only(left: 20.0,top: 5,bottom: 5),
+                  child: Text("by $C_name ",style:const TextStyle(color: Colors.white,fontSize: 12),softWrap: true,),
+                ),
+          SizedBox(
+            height: 250,
+            child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: event_imgs.length,
+                itemBuilder: (context, imgno) {
+                  Uint8List E_img = event_imgs[imgno];
+                      return InkWell(
+                        onTap: (){
+                          showDialog(context: context, builder: (context){
+                            return SizedBox(
+                              
+                              child: showimage(context, event_imgs,windowheight ));
+                          });
+                        },
+                        child: Container(
+                          padding:
+                            const  EdgeInsets.all(5),
+                          child: Image(image: MemoryImage(E_img)),
+                        ),
+                      );
+                    
+                }),
+          ),
+          
+          
+          Container(
+            alignment: Alignment.bottomLeft,
+            padding:const EdgeInsets.all(10),
+            child:  Text(
+              description,
+              style:const TextStyle(color: Colors.white),
+            ),
+          ),StatefulBuilder(
+            builder: (BuildContext context, setStateAll) {
+              return Container(
+                decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(187, 107, 104, 104),
+                ),
+                borderRadius: BorderRadius.circular(10)),
+                child: Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          height: 60,
+                          padding:const EdgeInsets.all(5),
+                          child:viewComments?SizedBox(height: 40,width: windowWidth/2,child:
+                          
+                          TextField(
+                            onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide:  const BorderSide(
+                                color: Colors.black,
+                                width: 2,
                               ),
-                            ));
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.red,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                                labelText: "Add comment",
+                                labelStyle: const TextStyle(
+                                    color: Color.fromARGB(255, 161, 159, 159))),
+                            controller: commentText,
+                              ),
+                          ): 
+                          
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(commentsAll.isEmpty?"Be first to leave a comment":commentsAll[commentsAll.keys.first]["Comment"] ,
+                              style:const TextStyle(color: Colors.white),
+                                                                                maxLines: 2,overflow: TextOverflow.fade,),
+                            ),
+                        ),
+                        Visibility(
+                          visible: viewComments,
+                          child:IconButton(onPressed: ()async{
+                          String  state = "Error occured";
+                          state = await comment_(eventId_, commentText.text);
+                          if (state == "Success") {
+                            
+                            commentText.clear();
+                            setStateAll((){
+                              getnewcomments(eventId_);
+                            });
+                
+                          }
+                          }, icon:
+                          const Icon(Icons.send,color: Colors.blueAccent,)) ),
+                        Row(
+                          children: [
+                              //like button
+                            StatefulBuilder(
+                          builder: (BuildContext context, setStateL) {
+                            return Row(
+                              children: [
+                                IconButton(
+                                  onPressed: ()async {
+                                    //showsnackbar(context, C_name.characters.toList().toString());
+                                      setStateL((){
+                                        liked = !liked;
+                                        liked?likesNum++:likesNum--;
+                                        likeEvent(eventId_);
+                                      });
+                                    
+                                                                            
+                                  },
+                                  icon:  Icon(
+                                    Icons.thumb_up_alt_outlined,
+                                    color:liked?Colors.blue :const Color.fromARGB(
+                                        255, 108, 105, 105),
+                                  )),
+                                  Text(likesNum.toString(),style:const TextStyle(color: Colors.white),)
+                              ],
+                            );
+                          },
+                        ),
+                            //comment field
+                        
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2.0,right: 8.0),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                  onPressed: () async{
+                                    setStateAll((){
+                                      viewComments = !viewComments;
+                                      viewEventComments[index] = viewComments;
+                                    });
+                                    
+                                  },
+                                  icon:  Icon(
+                                    Icons.comment,
+                                    color:commented?Colors.blue:const Color.fromARGB(
+                                        255, 99, 95, 95),
+                                  )),
+                                  Text(commentsAll.length.toString(),style:const TextStyle(color: Colors.white),)
+                            ],
+                          ),
+                        )
+                          ],
+                        ),
+                        
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                visible:viewComments,
+                child:Padding(padding:const EdgeInsets.all(10),
+                child: Container(
+                  constraints:const BoxConstraints(maxHeight: 200,),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: commentsAll.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      var comId = commentsAll.keys.toList();
+                      DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
+                      String comOwner = commentsAll[comId[index]]["UserName"].toString();
+                      String commentdata = commentsAll[comId[index]]["Comment"];
+                      List likesall = commentsAll[comId[index]]["Likes"];
+                      return Container(
+                        decoration: BoxDecoration(color: const Color.fromARGB(164, 65, 65, 66),borderRadius: BorderRadius.circular(10)),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
+                              title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
+                              trailing: Badge(
+                                backgroundColor: Colors.transparent,
+                                offset:const Offset(-5,20),
+                               // alignment: Alignment.bottomRight,
+                                label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
+                                child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite,color: Colors.white,size: 18,))),
+                            ),
+                            Container(
+                              padding:const EdgeInsets.only(left: 10,bottom: 8,right: 10),
+                              alignment: Alignment.bottomLeft,
+                              child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
+                            
+                          ],
+                        ),
+                      ) ;
+                    },
+                  ),
+                ),
+                ) ),
+                ],
+                                                      ),
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  ));
 }

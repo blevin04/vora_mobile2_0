@@ -428,7 +428,28 @@ PageView showimage(
     
   );
 }
-
+//Like comment
+Future<void> likecomment(String content,String contentId,String commentId)async{
+  await store.collection(content).doc(contentId).get().then((onValue)async{
+   Map<String,dynamic> comment = onValue.data()!["Comments"];
+   print(comment);
+   print(commentId);
+   print(comment[commentId]);
+   
+   if (comment[commentId]["Likes"].isNotEmpty) {
+     comment[commentId]["Likes"].contains(user.uid)?
+     comment[commentId]["Likes"].remove(user.uid):
+     comment[commentId]["Likes"].add(user.uid);
+   }else{
+    comment[commentId]["Likes"].add(user.uid);
+   }
+    final comments = <String,dynamic>{"Comments":comment};
+    await store.collection(content).doc(contentId).update(comments);
+    print(comment);
+  });
+  print("success");
+  
+}
 
 ///Launch url
 Future<void> openUrl(Uri _url)async{
@@ -436,3 +457,5 @@ Future<void> openUrl(Uri _url)async{
    throw Exception("Could not launch $_url");
  }
 }
+
+//Share the post
