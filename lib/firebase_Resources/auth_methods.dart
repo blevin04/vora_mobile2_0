@@ -39,7 +39,7 @@ class AuthMethods {
     required String password,
     required String fullName,
     required String nickname,
-    required String title,
+    
   }) async {
     // final root = await getApplicationDocumentsDirectory();
     String res = "Some error occured!";
@@ -47,7 +47,7 @@ class AuthMethods {
       if (email.isNotEmpty &&
           password.isNotEmpty &&
           fullName.isNotEmpty &&
-          title.isNotEmpty &&
+          
           nickname.isNotEmpty) {
         // create a user with email and password
         UserCredential cred = await _auth.createUserWithEmailAndPassword(
@@ -60,7 +60,7 @@ class AuthMethods {
         UserModel user = UserModel(
             fullName: fullName,
             email: email,
-            title: title,
+            
             nickname: nickname,
             uid: userId);
 

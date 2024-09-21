@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
@@ -76,6 +77,15 @@ class _AddEventState extends State<AddEvent> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.only(left: 20.0,bottom: 15,top: 8),
+          child: SvgPicture.asset(
+              'lib/assets/vora.svg',
+              semanticsLabel: 'VORA',
+              height: 40,
+              width: 60,
+            ),
+        ),
         backgroundColor: const Color.fromARGB(
           255,
           29,

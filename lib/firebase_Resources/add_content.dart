@@ -15,7 +15,7 @@ final storage = FirebaseStorage.instance.ref();
 User user_ = FirebaseAuth.instance.currentUser!;
 Future<List<String>> addcommunity(
     {required String name,
-    required String lead,
+    
     required Map<String, String> socials,
     required String Email,
     required bool visibility,
@@ -26,7 +26,7 @@ Future<List<String>> addcommunity(
   String communityId =const Uuid().v1();
   List<String> eventsIds = List.empty();
   communityModel community = communityModel(
-    Lead: lead,
+    Lead: user.uid,
     eventsId: eventsIds,
     name: name,
     Email: Email,

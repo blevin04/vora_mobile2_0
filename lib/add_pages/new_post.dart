@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/DedicatedBlogPage.dart';
 
@@ -60,9 +61,14 @@ class _NewPostState extends State<NewPost> {
               Icons.arrow_back,
               color: Colors.white,
             )),
-        title: const Text(
-          "New Post",
-          style: TextStyle(color: Colors.white),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 20.0,bottom: 15,top: 8),
+          child: SvgPicture.asset(
+              'lib/assets/vora.svg',
+              semanticsLabel: 'VORA',
+              height: 40,
+              width: 60,
+            ),
         ),
       ),
       body: SingleChildScrollView(

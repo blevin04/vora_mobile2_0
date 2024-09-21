@@ -52,6 +52,7 @@ dependencies:
   uuid: ^4.4.2
   font_awesome_flutter: ^10.7.0
   flutter_local_notifications: ^17.2.2
+  url_launcher: ^6.3.0
   
 
 dev_dependencies:

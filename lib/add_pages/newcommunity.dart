@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
@@ -76,10 +77,14 @@ class _NewcommunityState extends State<Newcommunity> {
   
 @override
 void initState(){
-  email.clear();
+  emailController.clear();
   leadController.clear();
   aboutController.clear();
   namecontroller.clear();
+  for (var i = 0; i < socialsController.length; i++) {
+    socialsController[i].clear();
+    active_socials[i]=false;
+  }
   super.initState();
 
 }
@@ -89,6 +94,15 @@ void initState(){
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.only(left: 20.0,bottom: 15,top: 8),
+          child: SvgPicture.asset(
+              'lib/assets/vora.svg',
+              semanticsLabel: 'VORA',
+              height: 40,
+              width: 60,
+            ),
+        ),
         backgroundColor: const Color.fromARGB(
           255,
           29,
@@ -161,25 +175,25 @@ void initState(){
                 ),
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Lead /Chairparson",
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
-                    borderRadius: BorderRadius.circular(10)),
-                child: TextField(
-                  controller: leadController,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
+            // const SizedBox(
+            //   height: 20,
+            // ),
+            // const Text(
+            //   "Lead /Chairparson",
+            //   style: TextStyle(color: Colors.white, fontSize: 18),
+            // ),
+            // Padding(
+            //   padding: const EdgeInsets.all(8.0),
+            //   child: Container(
+            //     decoration: BoxDecoration(
+            //         border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
+            //         borderRadius: BorderRadius.circular(10)),
+            //     child: TextField(
+            //       controller: leadController,
+            //       style: const TextStyle(color: Colors.white),
+            //     ),
+            //   ),
+            // ),
             const SizedBox(
               height: 20,
             ),
@@ -454,7 +468,7 @@ void initState(){
                       state = await addcommunity(
                         aboutclub: aboutController.text,
                           name: namecontroller.text,
-                          lead: leadController.text,
+                          
                           categories: categ,
                           socials: fsocials_,
                           Email: emailController.text,

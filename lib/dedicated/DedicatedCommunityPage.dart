@@ -89,10 +89,13 @@ Future<String> coName ()async{
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context,index){
                     List keys_ = numbers.keys.toList(growable: true);
+                    final Uri _url = Uri.parse(numbers[keys_[index]]);
                    return ListTile(
+                    onTap:()async=> openUrl(_url),
                     contentPadding:const EdgeInsets.all(20),
                     leading: getIcon(keys_[index]),
-                    title: Text(numbers[keys_[index]],style:const TextStyle(color: Colors.white),),
+                    title: Text("Visit ${keys_[index]} page",
+                    style:const TextStyle(color: Colors.white),),
                    );
                 })
 

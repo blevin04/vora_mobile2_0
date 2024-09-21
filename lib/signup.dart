@@ -122,8 +122,10 @@ class _SignupState extends State<Signup> {
                       width: windowWidth - 120,
                       padding: const EdgeInsets.all(5),
                       child: TextField(
+                        keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(color: Colors.white),
                         decoration: const InputDecoration(
+                          
                             labelText: "Email ",
                             labelStyle: TextStyle(
                                 color: Color.fromARGB(255, 161, 159, 159))),
@@ -191,19 +193,19 @@ class _SignupState extends State<Signup> {
                               _name.text.isNotEmpty &&
                                 _title.text.isNotEmpty) {
                                   while(succes.isEmpty){
-                                    showcircleprogress(context);
-                                    succes = await AuthMethods().createAccount(
+                                  showcircleprogress(context);
+                                succes = await AuthMethods().createAccount(
                               email: _email.text,
                               password: _password.text,
                               fullName: _name.text,
                               nickname: _nickname.text,
-                              title: _title.text);
+                             );
                                   }
                           }
                            
                           if (succes == 'success') {
                             dispose();
-                            showsnackbar(context, 'Welcome');
+                            showsnackbar(context, 'Welcome to vora');
                             Navigator.of(context).pop();
                             Navigator.pop(context);
                           } else {

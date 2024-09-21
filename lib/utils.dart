@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:vora_mobile/Accounts.dart';
@@ -435,4 +436,12 @@ PageView showimage(
     children: screens
     
   );
+}
+
+
+///Launch url
+Future<void> openUrl(Uri _url)async{
+ if (! await launchUrl(_url)) {
+   throw Exception("Could not launch $_url");
+ }
 }

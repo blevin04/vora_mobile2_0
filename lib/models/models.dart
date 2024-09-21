@@ -5,14 +5,14 @@ class UserModel {
   final String email;
   final List<String> membercommunities= List.empty(growable: true);
   final String nickname; // Doc, Pharmacist, e.t.c
-  final String title;
+  
   final String uid;
   final List<String> attendedevents = List.empty(growable: true);
   UserModel({
     required this.fullName,
     required this.email,
     required this.nickname,
-    required this.title,
+   
     required this.uid,
   });
 
@@ -22,7 +22,7 @@ class UserModel {
         "fullName": fullName,
         "email": email,
         "nickname": nickname,
-        "title": title,
+        
         "uid": uid,
         "Communities":membercommunities,
         "Events":attendedevents,
