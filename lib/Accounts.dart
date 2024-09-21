@@ -247,210 +247,218 @@ PageController p_controller = PageController();
             }, icon:const Icon(Icons.edit,color: Colors.white,))
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-             const Padding(padding: EdgeInsets.all(10)),
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    radius: 100,
-                    child: FutureBuilder(
-                    future: storage.getData(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      Uint8List data_ = Uint8List(2);
-                      if (snapshot.hasData) {
-                        Uint8List data = snapshot.data;
-                        data_ = data;
-                      }
-                      if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                      return CircleAvatar(
-                        radius: 100,
-                        backgroundColor: Colors.white,
-                        backgroundImage: snapshot.hasData
-                            ? MemoryImage(data_)
-                            : const AssetImage('lib/assets/dp.png'),
-                      );
-                    },
-                  ),
-                  ),IconButton(
-                              color: Colors.black,
-                              onPressed: () async {
-                                 Permission.accessMediaLocation
-                                    .onDeniedCallback(() async {
-                                  Permission.accessMediaLocation.request();
-                                  if (await Permission
-                                      .accessMediaLocation.isDenied) {
-                                    showsnackbar(context, "Permission denied");
-                                  }
-                                  if (await Permission
-                                      .accessMediaLocation.isGranted) {
-                                    showsnackbar(context, 'Granted');
-                                  }
-                                });
-                                FilePickerResult? result = (await FilePicker
-                                    .platform
-                                    .pickFiles(type: FileType.image));
-                                if (result != null) {
-                                  storage.delete();
-                                  storage
-                                      .putFile(File(result.files.single.path!));
-                                  setState(() {});
-                                }
-                                if (result == null) {
-                                  showsnackbar(context, 'no image chossen');
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.camera_alt_sharp,
-                                color: Color.fromARGB(255, 147, 132, 132),
-                                size: 25,
-                              ))
-                ],
-              ),
-              FutureBuilder(
-                future: store.collection('users').doc(user.uid).get(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.data == null) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  Map<String, dynamic> data =
-                      snapshot.data.data() as Map<String, dynamic>;
-                    f_hint = data["fullName"] as String;
-                    n_hint = data["nickname"] as String;
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          data['fullName'],
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 20),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          data['nickname'],
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 18),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Divider(
-                          indent: 30,
-                          endIndent: 30,
-                          color: Color.fromARGB(160, 69, 69, 69),
-                        ),
-
-                      ],
-                    ),
-                  );
-                },
-              ),
-              StatefulBuilder(
-                builder: (context,setstate1){
-                  return Column(
-                    children: [
-                      Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  SizedBox(
-                                    height: 40,
-                                   
-                                    child: TextButton(onPressed: ()async{
-                                      
-                                      p_controller.animateToPage(0, duration:const Duration(milliseconds: 500), curve: Curves.ease);
-                                      setstate1((){});
-                                    },child:Container(
-                                      decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==0?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==0? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
-                                      child:const Padding(
-                                        padding:  EdgeInsets.all(2.0),
-                                        child:  Text("Posts",style: TextStyle(color: Colors.white),),
-                                      )),),
-                                  ),
-                                  SizedBox(
-                                    height: 40,
-                                   
-                                    child: TextButton(onPressed: ()async{
-                                      
-                                      p_controller.animateToPage(1, duration:const Duration(milliseconds: 500), curve: Curves.ease);
-                                      setstate1((){});
-                                    },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==1?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==1? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
-                                      child:const Padding(
-                                        padding:  EdgeInsets.all(2.0),
-                                        child:  Text("Clubs",style: TextStyle(color: Colors.white),),
-                                      )),),
-                                  ),
-                                  SizedBox(
-                                    height: 40,
-                                 
-                                    child: TextButton(onPressed: (){
-                                      p_controller.animateToPage(2, duration:const Duration(milliseconds: 500), curve: Curves.ease);
-                                      setstate1((){});
-                                     
-                                    },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==2?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==2? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
-                                      child:const Padding(
-                                        padding:  EdgeInsets.all(2.0),
-                                        child:  Text("Events",style: TextStyle(color: Colors.white),),
-                                      )),),
-                                  ),
-                                  SizedBox(
-                                    height: 40,
-                                  
-                                    child: TextButton(onPressed: (){
-                                     p_controller.animateToPage(3, duration:const Duration(milliseconds: 500), curve: Curves.ease);
-                                     setstate1((){});
-                                    },child:Container(
-                                       decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==3?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==3? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
-                                      child:const Padding(
-                                        padding:  EdgeInsets.all(2.0),
-                                        child:  Text("My Calender",style: TextStyle(color: Colors.white),),
-                                      )),),
-                                  ),
-                                      
-                                ],
-                              ),
-                              SizedBox(
-               height:400,
-                child: PageView(
-                  scrollDirection: Axis.horizontal,
-                  onPageChanged: (value) {
-                     p_controller.jumpToPage(value);
-                     setstate1((){});
-                  },
-                  controller: p_controller,
-                  children: _screens,
-                )
-              )
-                    ],
-                  );
-                },
+        body: RefreshIndicator(
+          onRefresh: ()async{
+            
+            setState(() {
               
-              ),
-            ],
+            });
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+               const Padding(padding: EdgeInsets.all(10)),
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 100,
+                      child: FutureBuilder(
+                      future: storage.getData(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+                        Uint8List data_ = Uint8List(2);
+                        if (snapshot.hasData) {
+                          Uint8List data = snapshot.data;
+                          data_ = data;
+                        }
+                        if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                        return CircleAvatar(
+                          radius: 100,
+                          backgroundColor: Colors.white,
+                          backgroundImage: snapshot.hasData
+                              ? MemoryImage(data_)
+                              : const AssetImage('lib/assets/dp.png'),
+                        );
+                      },
+                    ),
+                    ),IconButton(
+                                color: Colors.black,
+                                onPressed: () async {
+                                   Permission.accessMediaLocation
+                                      .onDeniedCallback(() async {
+                                    Permission.accessMediaLocation.request();
+                                    if (await Permission
+                                        .accessMediaLocation.isDenied) {
+                                      showsnackbar(context, "Permission denied");
+                                    }
+                                    if (await Permission
+                                        .accessMediaLocation.isGranted) {
+                                      showsnackbar(context, 'Granted');
+                                    }
+                                  });
+                                  FilePickerResult? result = (await FilePicker
+                                      .platform
+                                      .pickFiles(type: FileType.image));
+                                  if (result != null) {
+                                    storage.delete();
+                                    storage
+                                        .putFile(File(result.files.single.path!));
+                                    setState(() {});
+                                  }
+                                  if (result == null) {
+                                    showsnackbar(context, 'no image chossen');
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.camera_alt_sharp,
+                                  color: Color.fromARGB(255, 147, 132, 132),
+                                  size: 25,
+                                ))
+                  ],
+                ),
+                FutureBuilder(
+                  future: store.collection('users').doc(user.uid).get(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.data == null) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    Map<String, dynamic> data =
+                        snapshot.data.data() as Map<String, dynamic>;
+                      f_hint = data["fullName"] as String;
+                      n_hint = data["nickname"] as String;
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    }
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            data['fullName'],
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 20),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            data['nickname'],
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Divider(
+                            indent: 30,
+                            endIndent: 30,
+                            color: Color.fromARGB(160, 69, 69, 69),
+                          ),
+          
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                StatefulBuilder(
+                  builder: (context,setstate1){
+                    return Column(
+                      children: [
+                        Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    SizedBox(
+                                      height: 40,
+                                     
+                                      child: TextButton(onPressed: ()async{
+                                        
+                                        p_controller.animateToPage(0, duration:const Duration(milliseconds: 500), curve: Curves.ease);
+                                        setstate1((){});
+                                      },child:Container(
+                                        decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==0?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==0? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                        child:const Padding(
+                                          padding:  EdgeInsets.all(2.0),
+                                          child:  Text("Posts",style: TextStyle(color: Colors.white),),
+                                        )),),
+                                    ),
+                                    SizedBox(
+                                      height: 40,
+                                     
+                                      child: TextButton(onPressed: ()async{
+                                        
+                                        p_controller.animateToPage(1, duration:const Duration(milliseconds: 500), curve: Curves.ease);
+                                        setstate1((){});
+                                      },child:Container(
+                                         decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==1?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==1? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                        child:const Padding(
+                                          padding:  EdgeInsets.all(2.0),
+                                          child:  Text("Clubs",style: TextStyle(color: Colors.white),),
+                                        )),),
+                                    ),
+                                    SizedBox(
+                                      height: 40,
+                                   
+                                      child: TextButton(onPressed: (){
+                                        p_controller.animateToPage(2, duration:const Duration(milliseconds: 500), curve: Curves.ease);
+                                        setstate1((){});
+                                       
+                                      },child:Container(
+                                         decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==2?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==2? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                        child:const Padding(
+                                          padding:  EdgeInsets.all(2.0),
+                                          child:  Text("Events",style: TextStyle(color: Colors.white),),
+                                        )),),
+                                    ),
+                                    SizedBox(
+                                      height: 40,
+                                    
+                                      child: TextButton(onPressed: (){
+                                       p_controller.animateToPage(3, duration:const Duration(milliseconds: 500), curve: Curves.ease);
+                                       setstate1((){});
+                                      },child:Container(
+                                         decoration:p_controller.positions.isNotEmpty? BoxDecoration(color:p_controller.page==3?const Color.fromARGB(233, 47, 46, 46):Colors.transparent,border: Border.all(color: p_controller.page==3? Colors.white:Colors.transparent),borderRadius: BorderRadius.circular(10)):null,
+                                        child:const Padding(
+                                          padding:  EdgeInsets.all(2.0),
+                                          child:  Text("My Calender",style: TextStyle(color: Colors.white),),
+                                        )),),
+                                    ),
+                                        
+                                  ],
+                                ),
+                                SizedBox(
+                 height:400,
+                  child: PageView(
+                    scrollDirection: Axis.horizontal,
+                    onPageChanged: (value) {
+                       p_controller.jumpToPage(value);
+                       setstate1((){});
+                    },
+                    controller: p_controller,
+                    children: _screens,
+                  )
+                )
+                      ],
+                    );
+                  },
+                
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -484,15 +492,21 @@ Widget postpage(){
         itemBuilder: (BuildContext context,index){
          // print("Posts ar ${snapshot.data!}");
           
-          
         return blogsdata[snapshot.data[index]] == null?
         FutureBuilder(
           future: postDatas(snapshot.data[index]), 
           builder: (context,snapshot1){
-            DateTime PsTime = snapshot1.data!["PostTime"].toDate();
+            
+            if (!snapshot1.hasData) {
+             return const Center(child: Text("Error occured "),);
+            }
+            if (snapshot1.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(),);
+            }
+             DateTime PsTime = snapshot1.data!["PostTime"].toDate();
             String Bpost = snapshot1.data!["BlogPost"];
             List Plikes = snapshot1.data!["Likes"];
-            Int NumComments = snapshot1.data!["Comments"].length;
+            int NumComments = snapshot1.data!["Comments"].length;
             return Center(
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
@@ -736,7 +750,7 @@ Widget eventsattended(){
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color:const Color.fromARGB(233, 47, 46, 46),
+                    color:const Color.fromARGB(96, 47, 46, 46),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: const Color.fromARGB(141, 0, 0, 0))
                   ),

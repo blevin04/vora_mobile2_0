@@ -181,7 +181,7 @@ class _EventsState extends State<Events> {
             even_m.addAll(commentedalready);
       
       } catch (e) {
-        showsnackbar(context, e.toString());
+        print(e.toString());
       }
       
       Map<String,dynamic> liked = {};
@@ -670,7 +670,8 @@ Widget content(BuildContext context,
                                             ),
                                             )
                                             ),
-                                          )
+                                          ),
+                                          IconButton(onPressed: (){}, icon:const Icon(Icons.more_vert,color: Colors.white,))
                                         ],
                                       ),
                                     ),

@@ -366,15 +366,6 @@ Future<Map<String,dynamic>> getclubdatas (String clubId)async{
        var likes = onValue.data()!["Likes"];
       // final desc = <String,dynamic>{"Description":onValue.data()!["Description"]};
       even_m.addAll(onValue.data()!);
-      try {
-       
-     
-      
-      
-      } catch (e) {
-        //print(e.toString());
-      }
-      
       Map<String,dynamic> liked = {};
       if (likes.contains(user.uid)){
         liked = {"Liked":true};
