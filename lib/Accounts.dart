@@ -510,7 +510,7 @@ Widget postpage(){
             return Center(
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=>const Dedicatedblogpage())),
+             (context)=> Dedicatedblogpage(blogId: snapshot.data[index],))),
             child: Padding(
               padding: const EdgeInsets.all(5.0),
               child: Container(
@@ -553,15 +553,15 @@ Widget postpage(){
         );
           }):
           Builder(builder: (context){
-            
-          Map<String,dynamic> bData=  blogsdata[index]!;
+           List blogKeys = blogsdata.keys.toList();
+          Map<String,dynamic> bData=  blogsdata[blogKeys[index]]!;
           DateTime btime = bData["PostTime"].toDate();
           List likesT = bData["Likes"];
           int NumComments = bData["Comments"].length;
             return Center(
           child: InkWell(
             onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=>const Dedicatedblogpage())),
+             (context)=> Dedicatedblogpage(blogId: blogKeys[index],))),
             child: Padding(
               padding: const EdgeInsets.all(5.0),
               child: Container(

@@ -107,14 +107,17 @@ class postmodel {
   final String UserId;
   final DateTime posttime;
   final List<String> Likes;
+  final String title;
   final Map<String,dynamic> comments_;
   postmodel({
+    
     required this.blog,
     required this.images,
     required this.postId,
     required this.UserId,
     required this.posttime,
     required this.Likes,
+    required this.title,
     required this.comments_
   });
 
@@ -125,6 +128,7 @@ class postmodel {
         "PostTime": posttime,
         "Likes": Likes,
         "Comments":comments_,
+        "Title" : title,
       };
 }
 

@@ -141,12 +141,13 @@ Future<String> AddAnnouncement({
   return state;
 }
 
-Future<String> Addpost({
+Future<List> Addpost({
   required String desc,
   List<String> images = const [],
   String docs = '',
+  required String title,
 }) async {
-  String state = "Some Error Occured...";
+  List state = ["Some Error Occured..."];
   String postId =const Uuid().v1();
 
   postmodel post = postmodel(
@@ -155,6 +156,7 @@ Future<String> Addpost({
       postId: postId,
       UserId: user_.uid,
       posttime: DateTime.now(),
+      title: title,
       Likes: List.empty(growable: true),
       comments_: {},
       );
@@ -172,11 +174,11 @@ Future<String> Addpost({
     if (docs.isNotEmpty) {
       await storage.child("/posts/$postId/docs/doc1").putFile(File(docs));
     }
-    state = "Success";
+    state[0] = "Success";
   } catch (e) {
-    state = e.toString();
+    state[0] = e.toString();
   }
-
+  state.add(postId);
   return state;
 }
 

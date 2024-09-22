@@ -1,9 +1,8 @@
 // ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import "package:flutter/services.dart";
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,6 +10,7 @@ import 'package:vora_mobile/Accounts.dart';
 
 import 'package:vora_mobile/dedicated/dedicatedEventPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
+import 'package:vora_mobile/homepage.dart';
 
 import 'package:vora_mobile/utils.dart';
 
@@ -63,61 +63,6 @@ class _EventsState extends State<Events> {
     }
     super.initState(); 
   }
-
-  Future<void>searchfnxn(String value)async{
-    if (value.isEmpty) {
-      getevents("all");
-      setState(() {});
-    }
-    print("vvvvvv = ${value.characters.toList()}");
-    List<String> test = List.empty(growable: true);
-    test.join();
-    for (var i = 0; i < eventIdsEventspage.length; i++) {
-      var evname = eventData[eventIdsEventspage[i]]!["Title"];
-      var eid = eventIdsEventspage[i];
-      print("vvvbbbbbbb = ${evname.split(" ").join().toString().characters.toList()}");
-      if (evname == value) {
-        eventIdsEventspage.clear();
-        eventIdsEventspage.add(eid);
-        setState(() {});
-      }
-    List input =  value.characters.toList();
-    List evntname = evname.split(" ").join().toString().characters.toList();
-    List position = List.empty(growable: true);
-    for (var i = 0; i < input.length; i++) {
-      if (evntname.contains(input[i])) {
-        position.add(evntname.indexOf(input[i]));
-        
-      }
-    }
-    bool answer = true;
-    for (var i = 1; i < position.length; i++) {
-      
-     if (position[i] != position[i-1]+1) {
-      print("not so much");
-      print("${position[i]} not ${position[i+1]}");
-        answer = false;
-      }
-     
-    }
-    if (answer) {
-       eventIdsEventspage.clear();
-      if (!eventIdsEventspage.contains(eid)) {
-       
-        eventIdsEventspage.add(eid);
-        setState(() {
-          
-        });
-      }
-    }
-    }
-    if (eventIdsEventspage.isEmpty) {
-      getevent("all");
-    }
-  }
-
-
-
   Future<void> getevents(String filter) async {
     eventIds.clear();
     await firestore.collection("users").doc(user.uid).get().then((comnum)async{
@@ -301,41 +246,41 @@ class _EventsState extends State<Events> {
    // double eventScale = 0.96;
     return SafeArea(
         child: Scaffold(
-          floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.only(top: 46),
-            child: Container(
-              decoration: BoxDecoration(color: const Color.fromARGB(210, 0, 0, 0),
-              border: Border.all(width: 2,color: const Color.fromARGB(118, 255, 255, 255)),
-              borderRadius: BorderRadius.circular(10)
-              ),
+          // floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
+          // floatingActionButton: Padding(
+          //   padding: const EdgeInsets.only(top: 46),
+          //   child: Container(
+          //     decoration: BoxDecoration(color: const Color.fromARGB(210, 0, 0, 0),
+          //     border: Border.all(width: 2,color: const Color.fromARGB(118, 255, 255, 255)),
+          //     borderRadius: BorderRadius.circular(10)
+          //     ),
               
               
-              child: ListenableBuilder(
-                    listenable: Search_visible_,
-                    builder: (context,child) {
-                      return Visibility(
-                          visible: events_vis,
-                          child: SizedBox(
-                            width: 200,
-                            height: 45,
-                            child: TextField(
-                              onChanged: (value)async {
-                               await searchfnxn(value);
-                              },
-                              style:const TextStyle(color: Colors.white),
-                              controller: _search_events,
-                              decoration: const InputDecoration(
-                                  label: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                              )),
-                            ),
-                          ));
-                    }
-                  ),
-            ),
-          ),
+          //     child: ListenableBuilder(
+          //           listenable: Search_visible_,
+          //           builder: (context,child) {
+          //             return Visibility(
+          //                 visible: events_vis,
+          //                 child: SizedBox(
+          //                   width: 200,
+          //                   height: 45,
+          //                   child: TextField(
+          //                     onChanged: (value)async {
+          //                      await searchfnxn(value);
+          //                     },
+          //                     style:const TextStyle(color: Colors.white),
+          //                     controller: _search_events,
+          //                     decoration: const InputDecoration(
+          //                         label: Icon(
+          //                       Icons.search,
+          //                       color: Colors.white,
+          //                     )),
+          //                   ),
+          //                 ));
+          //           }
+          //         ),
+          //   ),
+          // ),
           resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -362,7 +307,7 @@ class _EventsState extends State<Events> {
         actions: [
           IconButton(
               onPressed: () {
-                
+                showsnackbar(context, "Search events coming soon");
                   events_vis = !events_vis;
                Search_visible_.value = !Search_visible_.value;
               },
@@ -473,12 +418,18 @@ class _EventsState extends State<Events> {
                               bool liked = eventData[eventIds[index2]]!["Liked"];
                               Map<String,dynamic> allComments = eventData[eventIds[index2]]!["Comments"];
                               bool commented = false;
+                              allComments.forEach((key,value){
+                                print(value);
+                                if (value.containsValue(userData["nickname"])) {
+                                  commented = true;
+                                }
+                              });
                               int likenum = eventData[eventIds[index2]]!["Likes"].length;
-                             
+                             String regLink = eventData[eventIds[index2]]!["Regestration"];
                               
                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, 
                               event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],
-                              allComments,likenum,index2);
+                              allComments,likenum,index2,regLink);
                             },
                           )
                           
@@ -521,8 +472,15 @@ class _EventsState extends State<Events> {
                               bool liked = snapshot.data!["Liked"];
                               Map<String,dynamic> allComments = snapshot.data!["Comments"];
                               bool commented = false;
+                              allComments.forEach((key,value){
+                                print(value);
+                                if (value.containsValue(userData["nickname"])) {
+                                  commented = true;
+                                }
+                              });
                               int likenum = snapshot.data!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
+                              String regLink = snapshot.data!["Regestration"];
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2,regLink);
                             },
                           );
                           
@@ -553,7 +511,14 @@ class _EventsState extends State<Events> {
                               Map<String,dynamic> allComments = eventData[eventIdsEventspage[index2]]!["Comments"];
                               int likenum = eventData[eventIdsEventspage[index2]]!["Likes"].length;
                               bool commented = false;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
+                              allComments.forEach((key,value){
+                                print(value);
+                                if (value.containsValue(userData["nickname"])) {
+                                  commented = true;
+                                }
+                              });
+                              String regLink = eventData[eventIdsEventspage[index2]]!["Regestration"];
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2,regLink);
                             },
                           )
                           
@@ -592,8 +557,15 @@ class _EventsState extends State<Events> {
                               bool liked = snapshot.data!["Liked"];
                               Map<String,dynamic> allComments = snapshot.data!["Comments"];
                               bool commented = false;
+                              allComments.forEach((key,value){
+                                print(value);
+                                if (value.containsValue(userData["nickname"])) {
+                                  commented = true;
+                                }
+                              });
                               int likenum = snapshot.data!["Likes"].length;
-                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2);
+                              String regLink = snapshot.data!["Regestration"];
+                              return content(context, eventId_, C_image_comm, Event_title, time, C_name, event_imgs, liked, commented, windowWidth,windowheight , description,viewEventComments[index2],allComments,likenum,index2,regLink);
                             },
                           );
                           
@@ -621,6 +593,7 @@ Widget content(BuildContext context,
                 Map<String,dynamic> commentsAll,
                 int likesNum,
                 int index,
+                String registrationLink
                 ){
   return Padding(
   padding: const EdgeInsets.all(2),
@@ -669,7 +642,6 @@ Widget content(BuildContext context,
                 ),
                 const   SizedBox(width: 20,),
                 
-                const SizedBox(width: 50,),
                 Visibility(
                   visible: time.isAfter(DateTime.now()),
                   child: TextButton(onPressed: (){
@@ -732,7 +704,11 @@ Widget content(BuildContext context,
                         padding:const  EdgeInsets.all(8.0),
                         child: dottedopen?Container(
                           child: Row(children: [
-                            IconButton(onPressed: (){}, icon:const Icon(Icons.share,color: Colors.white,),),
+                            IconButton(onPressed: (){
+                              String copytext = "$User_Name invites you to the event $Event_title hosted by $C_name on the ${time.day}/${time.month}/${time.year} starting at ${time.hour} regester at $registrationLink se you there!!!";
+                              Clipboard.setData(ClipboardData(text: copytext));
+                              showsnackbar(context, "Message copied to clipboard");
+                            }, icon:const Icon(Icons.share,color: Colors.white,),),
                             IconButton(onPressed: (){}, icon: const Icon(Icons.block,color: Colors.white,)),
                             IconButton(onPressed: (){
                               setStatedotted((){
@@ -916,11 +892,21 @@ Widget content(BuildContext context,
                     ),
                   ),
                   Visibility(
-                visible:viewComments,
-                child:Padding(padding:const EdgeInsets.all(10),
-                child: Container(
-                  constraints:const BoxConstraints(maxHeight: 200,),
-                  child: ListView.builder(
+              visible: viewComments,
+              child: StreamBuilder(
+                stream: firestore.collection("Events").doc(eventId_).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(),);
+                  }
+                  Map<String,dynamic> commentsAll = snapshot.data!["Comments"];
+                  
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: 
+                    Container(
+                    constraints:const BoxConstraints(maxHeight: 200,),
+                    child: ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: commentsAll.length,
@@ -930,32 +916,79 @@ Widget content(BuildContext context,
                       String comOwner = commentsAll[comId[index]]["UserName"].toString();
                       String commentdata = commentsAll[comId[index]]["Comment"];
                       List likesall = commentsAll[comId[index]]["Likes"];
-                      return Container(
-                        decoration: BoxDecoration(color: const Color.fromARGB(164, 65, 65, 66),borderRadius: BorderRadius.circular(10)),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
-                              title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
-                              trailing: Badge(
-                                backgroundColor: Colors.transparent,
-                                offset:const Offset(-5,20),
-                               // alignment: Alignment.bottomRight,
-                                label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
-                                child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite,color: Colors.white,size: 18,))),
-                            ),
-                            Container(
-                              padding:const EdgeInsets.only(left: 10,bottom: 8,right: 10),
-                              alignment: Alignment.bottomLeft,
-                              child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
-                            
-                          ],
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Container(
+                          decoration: BoxDecoration(color: const Color.fromARGB(164, 65, 65, 66),borderRadius: BorderRadius.circular(10)),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
+                                title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
+                                trailing: Badge(
+                                  backgroundColor: Colors.transparent,
+                                  offset:const Offset(-5,20),
+                                 // alignment: Alignment.bottomRight,
+                                  label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
+                                  child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite,color: Colors.white,size: 18,))),
+                              ),
+                              Container(
+                                padding:const EdgeInsets.only(left: 10,bottom: 8,right: 10),
+                                alignment: Alignment.bottomLeft,
+                                child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
+                              
+                            ],
+                          ),
                         ),
                       ) ;
                     },
-                  ),
-                ),
-                ) ),
+                                      ),
+                                    ),
+                  );
+                }
+              ),)  ,
+              
+                //   Visibility(
+                // visible:viewComments,
+                // child:Padding(padding:const EdgeInsets.all(10),
+                // child: Container(
+                //   constraints:const BoxConstraints(maxHeight: 200,),
+                //   child: ListView.builder(
+                //     shrinkWrap: true,
+                //     physics: const NeverScrollableScrollPhysics(),
+                //     itemCount: commentsAll.length,
+                //     itemBuilder: (BuildContext context, int index) {
+                //       var comId = commentsAll.keys.toList();
+                //       DateTime tstamp = commentsAll[comId[index]]["TimeStamp"].toDate();
+                //       String comOwner = commentsAll[comId[index]]["UserName"].toString();
+                //       String commentdata = commentsAll[comId[index]]["Comment"];
+                //       List likesall = commentsAll[comId[index]]["Likes"];
+                //       return Container(
+                //         decoration: BoxDecoration(color: const Color.fromARGB(164, 65, 65, 66),borderRadius: BorderRadius.circular(10)),
+                //         child: Column(
+                //           children: [
+                //             ListTile(
+                //               leading: Text(comOwner,style:const TextStyle(color: Colors.white,fontSize: 16),),
+                //               title: Text(period(tstamp),style:const TextStyle(color: Colors.white,fontSize: 10),),
+                //               trailing: Badge(
+                //                 backgroundColor: Colors.transparent,
+                //                 offset:const Offset(-5,20),
+                //                // alignment: Alignment.bottomRight,
+                //                 label: Text(likesall.length.toString(),style:const TextStyle(color: Colors.white),),
+                //                 child: IconButton(onPressed: (){}, icon:const Icon(Icons.favorite,color: Colors.white,size: 18,))),
+                //             ),
+                //             Container(
+                //               padding:const EdgeInsets.only(left: 10,bottom: 8,right: 10),
+                //               alignment: Alignment.bottomLeft,
+                //               child: Text(commentdata,style:const TextStyle(color: Colors.white),)),
+                            
+                //           ],
+                //         ),
+                //       ) ;
+                //     },
+                //   ),
+                // ),
+                // ) ),
                 ],
                                                       ),
               );

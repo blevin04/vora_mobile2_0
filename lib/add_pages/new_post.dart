@@ -19,6 +19,7 @@ class NewPost extends StatefulWidget {
 }
 
 TextEditingController post = TextEditingController();
+TextEditingController postTitleController = TextEditingController();
 List<String> imgs = List.empty(growable: true);
 String doc = '';
 
@@ -84,6 +85,33 @@ class _NewPostState extends State<NewPost> {
                 const SizedBox(
                   height: 20,
                 ),
+              
+               
+               SizedBox(
+                
+                height: 55,
+                child: TextField(
+                  controller: postTitleController,
+                  expands: true,
+                  
+                  minLines: null,
+                  maxLines: null,
+                  style:const TextStyle(color: Colors.white,fontSize: 22),
+                  decoration:const InputDecoration(
+                    focusedBorder:  OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)
+                   ),
+                   // hintText: "text",
+                   enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)
+                   ),
+                   labelStyle: TextStyle(color: Colors.white),
+                    labelText: "Blog Post Title",
+                  ),
+                ),
+               ),
+               const SizedBox(height: 20,),
+               
                 Container(
                   height: windowheight / 1.5,
                   decoration: BoxDecoration(
@@ -94,7 +122,10 @@ class _NewPostState extends State<NewPost> {
                     expands: true,
                     maxLines: null,
                     style:const TextStyle(color: Colors.white),
-                    decoration:const InputDecoration(),
+                    decoration:const InputDecoration(
+                      labelText: "Post Content",
+                      labelStyle: TextStyle(color: Colors.white)
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -248,32 +279,37 @@ class _NewPostState extends State<NewPost> {
                 Center(
                   child: InkWell(
                     onTap: () async {
-                      if (post.text.isEmpty) {
-                        showsnackbar(context, "Post Empty...");
+                      if (post.text.isEmpty && postTitleController.text.isEmpty) {
+                        showsnackbar(context, "Fill all boxes...");
                       } else {
-                        String state = '';
+                        List state = [];
                         while (state.isEmpty) {
                           showcircleprogress(context);
                           if (doc.isNotEmpty && imgs.isNotEmpty) {
                             state = await Addpost(
-                                desc: post.text, images: imgs, docs: doc);
+                                desc: post.text, images: imgs, docs: doc,
+                                title: postTitleController.text);
                           }
                           if (doc.isEmpty && imgs.isEmpty) {
-                            state = await Addpost(desc: post.text);
+                            state = await Addpost(desc: post.text,title: postTitleController.text);
                           }
                           if (doc.isNotEmpty && imgs.isEmpty) {
-                            state = await Addpost(desc: post.text, docs: doc);
+                            state = await Addpost(desc: post.text, docs: doc,
+                            title: postTitleController.text
+                            );
                           }
                           if (imgs.isNotEmpty && doc.isEmpty) {
                             state =
-                                await Addpost(desc: post.text, images: imgs);
+                                await Addpost(desc: post.text, images: imgs,
+                                title: postTitleController.text
+                                );
                           }
                          // print(state);
                         }
-                        if (state == "Success") {
+                        if (state[0] == "Success") {
                         //  showsnackbar(context, "Post Added");
                           Navigator.pushReplacement(context, 
-                          (MaterialPageRoute(builder: (context)=>const Dedicatedblogpage())));
+                          (MaterialPageRoute(builder: (context)=> Dedicatedblogpage(blogId:state.last ,))));
                           
                         }
                       }

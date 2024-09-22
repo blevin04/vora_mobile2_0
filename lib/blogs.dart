@@ -308,7 +308,7 @@ class _BlogsState extends State<Blogs> {
                           color: const Color.fromARGB(112, 49, 47, 47),
                           child: InkWell(
                             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: 
-                            (context)=>const Dedicatedblogpage())),
+                            (context)=> Dedicatedblogpage(blogId:  snapshot.data![postnum]))),
                             child: Container(
                               constraints:const BoxConstraints(minHeight: 200),
                               child: contents(snapshot.data![postnum],commentsOpenBlogPage[postnum],windowheight,clubScale,postnum)
@@ -332,7 +332,7 @@ class _BlogsState extends State<Blogs> {
                           color: const Color.fromARGB(112, 49, 47, 47),
                           child: InkWell(
                             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: 
-                            (context)=>const Dedicatedblogpage())),
+                            (context)=> Dedicatedblogpage(blogId: blogsPageIds[postnum],))),
                             child: Container(
                               color:  Colors.transparent,
                               constraints:const BoxConstraints(minHeight: 200),
