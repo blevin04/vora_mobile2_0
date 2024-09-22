@@ -8,12 +8,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide CarouselController;
-
+import 'package:calendar_day_view/calendar_day_view.dart';
 import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/add_pages/add_event.dart';
 import 'package:vora_mobile/add_pages/new_announcement.dart';
 import 'package:vora_mobile/add_pages/new_post.dart';
-import 'package:calendar_view/calendar_view.dart';
+
 import 'package:vora_mobile/add_pages/newcommunity.dart';
 import 'package:vora_mobile/announcemnts.dart';
 import 'package:vora_mobile/blogs.dart';
@@ -123,7 +123,12 @@ Future<int> getevents()async{
   });
   return eventsno;
 }
-
+List<DayEvent> events = [
+  DayEvent( name: "Art exibition" ,value: "Art Club", start: DateTime(2024,DateTime.now().month,DateTime.now().day,8),end:DateTime(2024,DateTime.now().month,DateTime.now().day,8).add(const Duration(hours: 4))),
+  DayEvent(name: "Drama practice" ,value: "Drama Club", 
+  start: DateTime(2024,DateTime.now().month,DateTime.now().day,14),
+  end: DateTime(2024,DateTime.now().month,DateTime.now().day,16)),
+];
 class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   late AnimationController _drawercontroller;
   late AnimationController _animationController;
@@ -180,7 +185,6 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
         ?{ _animationController.reverse(),blur_=ImageFilter.blur()}
         : {_animationController.forward(),blur_ = ImageFilter.blur(sigmaX: 3.0,sigmaY: 3.0)}; 
   }
-
   // var imglist = [
   //   'lib/assets/1.png',
   //   'lib/assets/2.png',
@@ -391,6 +395,8 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                     ),
                                   );
                                   }
+                                 
+                                 
                                     return Text(
                                     "Hello ${snapshot.data} \n welcome to vora",
                                     style:const TextStyle(
@@ -554,72 +560,33 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   carosel(windowheight,windowWidth),
                   
                   const Divider(),
+                 CalendarDayView.overflow(
+                  renderRowAsListView: true,
+                  dividerColor: const Color.fromARGB(158, 193, 230, 255),
+                  overflowItemBuilder: (context, constraints, itemIndex, event) {
+                    return Container(
+                      decoration: BoxDecoration(color: Colors.lightBlue,
+                      borderRadius: BorderRadius.circular(10)
+                      ),
+                      padding:const EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          Text(event.name.toString()),
+                          Text(event.value.toString()),
+                        ],
+                      ),
+                    );
+                  },
+                  timeTextStyle:const TextStyle(color: Colors.white),
+                  currentTimeLineColor: Colors.blue,
+                  endOfDay:const TimeOfDay(hour: 21,minute: 0),
+                  showCurrentTimeLine: true,
+                  timeGap: 60,
+                  events: events, 
+                  startOfDay:const TimeOfDay(hour: 7, minute: 0),
+                 currentDate: DateTime.now()),
                  
-                 Container(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-                  width: windowWidth,
-                  height: windowheight-500,
-                   child: DayView(
-                    verticalLineOffset: 10,
-                    
-                    headerStyle: HeaderStyle(
-                      decoration: BoxDecoration(color: Colors.red),
-                      rightIcon: Icon(Icons.keyboard_arrow_right_sharp,color: Colors.white,),
-                      leftIcon: Icon(Icons.keyboard_arrow_left_sharp,color: Colors.white,),
-                      headerTextStyle: TextStyle(color: Colors.white,)
-                    ),
-                    dateStringBuilder: (date, {secondaryDate}) {
-                      String title;
-                      title = " ${date.day } of ${date.month}";
-                      return title;
-                    },
-                    timeLineBuilder: (time){
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8.0,bottom: 8),
-                        child: Text(time.hour.toString(),style:const TextStyle(color: Colors.white),),
-                      );
-                         
-                    },
-                    
-                    backgroundColor: const Color.fromARGB(106, 65, 63, 63),
-                    scrollPhysics: const AlwaysScrollableScrollPhysics(),
-                    pageViewPhysics: const NeverScrollableScrollPhysics(),
-                    width: windowWidth-10,
-                      controller: EventController(
-                        
-                      ),
-                      eventTileBuilder: (date, events, boundry, start, end) {
-                          // Return your widget to display as event tile.
-                          return Container();
-                      },
-                      fullDayEventBuilder: (events, date) {
-                          // Return your widget to display full day event view.
-                          return Container();
-                      },
-                      liveTimeIndicatorSettings: LiveTimeIndicatorSettings(
-                        color: Colors.blue
-                      ),
-                      showVerticalLine: true, // To display live time line in day view.
-                      showLiveTimeLineInAllDays: true, // To display live time line in all pages in day view.
-                      minDay: DateTime(1990),
-                      maxDay: DateTime(2050),
-                      initialDay: DateTime.now(),
-                      heightPerMinute: 1, // height occupied by 1 minute time span.
-                      eventArranger: SideEventArranger(), // To define how simultaneous events will be arranged.
-                      onEventTap: (events, date) => print(events),
-                      onEventDoubleTap: (events, date) => print(events),
-                      onEventLongTap: (events, date) => print(events),
-                      onDateLongPress: (date) => print(date),
-                      startHour: 0 ,// To set the first hour displayed (ex: 05:00)
-                      endHour:24, // To set the end hour displayed
-                      // hourLinePainter: (lineColor, lineHeight, offset, minuteHeight, showVerticalLine, verticalLineOffset) {
-                      //     return
-                          
-                      // },
-                      dayTitleBuilder: DayHeader.hidden, // To Hide day header
-                      keepScrollOffset: true, // To maintain scroll offset when the page changes
-                                   ),
-                 )
+                 
                 ]),
             AnimatedBuilder(
               animation: _drawercontroller,
