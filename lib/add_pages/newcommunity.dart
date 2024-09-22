@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/homepage.dart';
-import 'package:vora_mobile/login.dart';
+
 import 'package:vora_mobile/utils.dart';
 
 class Newcommunity extends StatefulWidget {

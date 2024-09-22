@@ -1,6 +1,4 @@
 // ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
-
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';

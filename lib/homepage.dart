@@ -8,12 +8,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide CarouselController;
-import 'package:table_calendar/table_calendar.dart';
+
 import 'package:vora_mobile/Accounts.dart';
 import 'package:vora_mobile/add_pages/add_event.dart';
 import 'package:vora_mobile/add_pages/new_announcement.dart';
 import 'package:vora_mobile/add_pages/new_post.dart';
-
+import 'package:calendar_view/calendar_view.dart';
 import 'package:vora_mobile/add_pages/newcommunity.dart';
 import 'package:vora_mobile/announcemnts.dart';
 import 'package:vora_mobile/blogs.dart';
@@ -554,31 +554,72 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                   carosel(windowheight,windowWidth),
                   
                   const Divider(),
-                  SizedBox(
-                    height: windowheight/2,
-                    child: TableCalendar(focusedDay: DateTime.now(), 
-                    firstDay: DateTime(2010), lastDay: DateTime(2030),
-                    daysOfWeekStyle: const DaysOfWeekStyle(
-                        weekendStyle: TextStyle(
-                            color: Color.fromARGB(255, 170, 166, 166)),
-                        weekdayStyle: TextStyle(
-                            color: Color.fromARGB(255, 253, 253, 253))),
-                       headerStyle: HeaderStyle(
-                        formatButtonDecoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: const Color.fromARGB(255, 56, 54, 54))),
-                        formatButtonTextStyle:
-                            const TextStyle(color: Colors.white),
-                        titleTextStyle: const TextStyle(color: Colors.white)),
-                    calendarStyle: const CalendarStyle(
-                      weekendTextStyle: TextStyle(color: Color.fromARGB(183, 255, 255, 255)),
-                      selectedDecoration: BoxDecoration(shape: BoxShape.circle,color: Colors.blue),
-                        defaultTextStyle: TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255)),
-                        outsideTextStyle: TextStyle(color: Color.fromARGB(142, 255, 255, 255))),
-                    )
-                  )
+                 
+                 Container(
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                  width: windowWidth,
+                  height: windowheight-500,
+                   child: DayView(
+                    verticalLineOffset: 10,
+                    
+                    headerStyle: HeaderStyle(
+                      decoration: BoxDecoration(color: Colors.red),
+                      rightIcon: Icon(Icons.keyboard_arrow_right_sharp,color: Colors.white,),
+                      leftIcon: Icon(Icons.keyboard_arrow_left_sharp,color: Colors.white,),
+                      headerTextStyle: TextStyle(color: Colors.white,)
+                    ),
+                    dateStringBuilder: (date, {secondaryDate}) {
+                      String title;
+                      title = " ${date.day } of ${date.month}";
+                      return title;
+                    },
+                    timeLineBuilder: (time){
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 8.0,bottom: 8),
+                        child: Text(time.hour.toString(),style:const TextStyle(color: Colors.white),),
+                      );
+                         
+                    },
+                    
+                    backgroundColor: const Color.fromARGB(106, 65, 63, 63),
+                    scrollPhysics: const AlwaysScrollableScrollPhysics(),
+                    pageViewPhysics: const NeverScrollableScrollPhysics(),
+                    width: windowWidth-10,
+                      controller: EventController(
+                        
+                      ),
+                      eventTileBuilder: (date, events, boundry, start, end) {
+                          // Return your widget to display as event tile.
+                          return Container();
+                      },
+                      fullDayEventBuilder: (events, date) {
+                          // Return your widget to display full day event view.
+                          return Container();
+                      },
+                      liveTimeIndicatorSettings: LiveTimeIndicatorSettings(
+                        color: Colors.blue
+                      ),
+                      showVerticalLine: true, // To display live time line in day view.
+                      showLiveTimeLineInAllDays: true, // To display live time line in all pages in day view.
+                      minDay: DateTime(1990),
+                      maxDay: DateTime(2050),
+                      initialDay: DateTime.now(),
+                      heightPerMinute: 1, // height occupied by 1 minute time span.
+                      eventArranger: SideEventArranger(), // To define how simultaneous events will be arranged.
+                      onEventTap: (events, date) => print(events),
+                      onEventDoubleTap: (events, date) => print(events),
+                      onEventLongTap: (events, date) => print(events),
+                      onDateLongPress: (date) => print(date),
+                      startHour: 0 ,// To set the first hour displayed (ex: 05:00)
+                      endHour:24, // To set the end hour displayed
+                      // hourLinePainter: (lineColor, lineHeight, offset, minuteHeight, showVerticalLine, verticalLineOffset) {
+                      //     return
+                          
+                      // },
+                      dayTitleBuilder: DayHeader.hidden, // To Hide day header
+                      keepScrollOffset: true, // To maintain scroll offset when the page changes
+                                   ),
+                 )
                 ]),
             AnimatedBuilder(
               animation: _drawercontroller,
