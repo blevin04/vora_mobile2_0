@@ -465,8 +465,9 @@ Widget showcontent(
   String aboutclub,
   bool member,
 ){
-  return Builder(
-    builder: (context) {
+  return StatefulBuilder(
+    builder: (BuildContext context, setState1) {
+      
       return InkWell(
         enableFeedback: false,
         splashColor: Colors.transparent,
@@ -528,7 +529,7 @@ Widget showcontent(
                                   ),
                                   
                                   Visibility(
-                                    visible:member,
+                                    visible:!member,
                                     child: InkWell(
                                       onTap: () {
                                         showDialog(
@@ -573,13 +574,18 @@ Widget showcontent(
                                                             TextButton(
                                                                 onPressed:
                                                                     () async{
+                                                                      showcircleprogress(context);
                                                                     String state=  await join(communId: clubId);
                                                                         if (state == "Success") {
+                                                                          member = true;
                                                                           showsnackbar(context, "Successfully joined $Clubname");
+
                                                                         }
                                                                         // else{
                                                                         //   print(state);}
                                                                         Navigator.pop(context);
+                                                                        Navigator.pop(context);
+                                                                        setState1((){});
                                                                     },
                                                                 child: Container(
                                                                     decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)),

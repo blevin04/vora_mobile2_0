@@ -9,6 +9,7 @@ import 'package:vora_mobile/Accounts.dart';
 
 import 'package:vora_mobile/models/models.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vora_mobile/utils.dart';
 
 final firestore = FirebaseFirestore.instance;
 final storage = FirebaseStorage.instance.ref();
@@ -65,7 +66,7 @@ Future<List<String>> AddEvent_(
     String rec_link = '',
     List<String> other_img = const []}) async {
       String communityIdn = "";
-      await store.collection("Communities").where("Name",isEqualTo: community).get().then((onValue){
+      await firestore.collection("Communities").where("Name",isEqualTo: community).get().then((onValue){
         for(var id in onValue.docs){
           communityIdn = id.id;
         }
@@ -227,9 +228,12 @@ Future<String> join({
     joincomModel joins = joincomModel(comm: origin);
     await firestore.collection("users").doc(user_.uid).update(joins.tojson());
     state = "Success";
+    clubData[communId]!["Member"] = true;
+
   }
   catch(e){
     state = e.toString();
   }
+  print(clubData[communId]!["Member"]);
   return state;
 }

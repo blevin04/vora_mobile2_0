@@ -494,12 +494,11 @@ Widget postpage(){
         FutureBuilder(
           future: postDatas(snapshot.data[index]), 
           builder: (context,snapshot1){
-            
-            if (!snapshot1.hasData) {
-             return const Center(child: Text("Error occured "),);
-            }
             if (snapshot1.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator(),);
+            }
+            if (!snapshot1.hasData) {
+             return const Center(child: Text("Error occured "),);
             }
              DateTime PsTime = snapshot1.data!["PostTime"].toDate();
             String Bpost = snapshot1.data!["BlogPost"];
@@ -642,7 +641,7 @@ Widget clubs(){
                 height: 80,
                 width: MediaQuery.of(context).size.width-80,
                 decoration: BoxDecoration(color: const Color.fromARGB(121, 255, 255, 255),borderRadius: BorderRadius.circular(10)),
-                child:const CircularProgressIndicator(),
+                child:const Center(child: CircularProgressIndicator(),)
               );
             }
             Uint8List c_image_ = snapshot.data["Image"];
@@ -771,10 +770,10 @@ Widget eventsattended(){
                         backgroundImage:MemoryImage(coverimg)), 
                         onTap: (){},
                         
-                        title: Row(
+                        title: Column(
                           children: [
                             Text(eventTitle,style:const TextStyle(color: Colors.white),),
-                            Text("By $eventclub"),
+                            Text("By $eventclub",style:const TextStyle(color: Colors.white),),
                           ],
                         ),
                         trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
@@ -867,10 +866,11 @@ Widget eventsattended(){
                             backgroundImage:MemoryImage(coverimg)), 
                             onTap: (){},
                             
-                            title: Row(
+                            title: Column(
                               children: [
                                 Text(eventTitle,style:const TextStyle(color: Colors.white),),
-                                Text("By $eventclub")
+                                Text("By $eventclub",style:const TextStyle(
+                                color: Colors.white),)
                               ],
                             ),
                             trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,

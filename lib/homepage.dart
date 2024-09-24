@@ -596,9 +596,9 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
               AnimatedBuilder(
                 animation: _drawercontroller,
                 builder: (context, child) {
-                  print(windowWidth);
+                 // print(windowWidth);
                   return FractionalTranslation(
-                    translation: Offset(1.15, -1.0 + _drawercontroller.value),
+                    translation: Offset(1.3, -1.0 + _drawercontroller.value),
                     child: _isDrawerClosed()
                         ? const SizedBox()
                         : BackdropFilter(
@@ -623,7 +623,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                             : Colors.black,
                                         borderRadius: BorderRadius.circular(10)),
                                     //height: 220,
-                                    width: 190,
+                                    width: windowWidth/2.3,
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment: CrossAxisAlignment.center,

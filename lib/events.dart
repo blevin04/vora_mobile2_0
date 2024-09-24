@@ -842,6 +842,7 @@ Widget content(BuildContext context,
                             StatefulBuilder(
                           builder: (BuildContext context, setStateL) {
                             return Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 IconButton(
                                   onPressed: ()async {
@@ -869,6 +870,7 @@ Widget content(BuildContext context,
                         Padding(
                           padding: const EdgeInsets.only(left: 2.0,right: 8.0),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               IconButton(
                                   onPressed: () async{
@@ -876,7 +878,6 @@ Widget content(BuildContext context,
                                       viewComments = !viewComments;
                                       viewEventComments[index] = viewComments;
                                     });
-                                    
                                   },
                                   icon:  Icon(
                                     Icons.comment,

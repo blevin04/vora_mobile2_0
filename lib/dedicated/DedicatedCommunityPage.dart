@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:vora_mobile/firebase_Resources/add_content.dart';
 import 'package:vora_mobile/utils.dart';
 
 
@@ -62,6 +63,24 @@ Future<String> coName ()async{
             return Text(clubName,style:const TextStyle(color: Colors.white,fontSize: 20),);
           },
         ),
+        actions: [
+          Visibility(
+            visible: !clubData[widget.clubId]!["Member"],
+            child:TextButton(onPressed: ()async{
+              // print(widget.clubId);
+              // print(clubData.keys.toList());
+            String state = await join(communId: widget.clubId);
+            if(state == "Success"){
+              showsnackbar(context, "Welcome to ${clubData["Name"]}");
+            }
+            }, 
+            child: Container(
+              padding:const EdgeInsets.all(10),
+              width: 70,
+              decoration: BoxDecoration(color: Colors.lightBlue,borderRadius: BorderRadius.circular(10)),
+              child:const Center(child:  Text("Join",style: TextStyle(color: Colors.white),)),
+            )) )
+        ],
 
       ),
       body: RefreshIndicator(
