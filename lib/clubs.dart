@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:vora_mobile/Accounts.dart';
+import 'package:vora_mobile/announcemnts.dart';
 import 'package:vora_mobile/dedicated/dedicatedCommunityPage.dart';
 import 'package:vora_mobile/events.dart';
 import 'package:vora_mobile/firebase_Resources/add_content.dart';
@@ -228,7 +229,12 @@ void _visibleChanged(){}
   }
 Future<Map<String,dynamic>> clubdata (String clubId)async{
   Map<String,dynamic> clubd_ = {};
-
+  bool member = false;
+  await firestore.collection("users").doc(user.uid).get().then((userd){
+      member = userd.data()!["Communities"].contains(clubId);
+  });
+  final memberstatus = <String,dynamic>{"Member":member};
+  clubd_.addAll(memberstatus);
   await firestore.collection("Communities").doc(clubId).get().then((onValue){
     clubd_.addAll(onValue.data()!);
   });
@@ -285,117 +291,124 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                 color: Colors.white,
               )),
           IconButton(
-              onPressed: () {},
-              icon: const Badge(
-                label: Text("12"),
-                child: Icon(
+              onPressed: ()async {
+                await Navigator.push(context, MaterialPageRoute(builder: (context)=>const Announcemnts()));
+              },
+              icon:  Badge(
+                label: FutureBuilder(
+                  future: getannouncementnumber(),
+                  initialData: 0,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    
+                    return Text(snapshot.data.toString());
+                  },
+                ),
+
+                child:const Icon(
                   Icons.notifications,
                   color: Colors.white,
                 ),
               ))
         ],
       ),
-      body: SingleChildScrollView(
-        physics:const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              alignment: Alignment.topRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  StatefulBuilder(
-                    builder: (context,setstate2) {
-                      return ListenableBuilder(
-                        listenable: search_visible,
-                        builder: (context, child) {
-                          return Visibility(
-                          visible: _search_vis,
-                          child: SizedBox(
-                            width: 120,
-                            child: TextField(
-                              controller: _search,
-                              decoration: const InputDecoration(
-                                  labelText:"Search" ,
-                                  labelStyle: TextStyle(color: Colors.white)
-                                  ),
+      body: RefreshIndicator(
+        onRefresh: ()async{
+          get(dropdown_value);
+        },
+        child: SingleChildScrollView(
+          physics:const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                alignment: Alignment.topRight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    StatefulBuilder(
+                      builder: (context,setstate2) {
+                        return ListenableBuilder(
+                          listenable: search_visible,
+                          builder: (context, child) {
+                            return Visibility(
+                            visible: _search_vis,
+                            child: SizedBox(
+                              width: 120,
+                              child: TextField(
+                                controller: _search,
+                                decoration: const InputDecoration(
+                                    labelText:"Search" ,
+                                    labelStyle: TextStyle(color: Colors.white)
+                                    ),
+                              ),
                             ),
-                          ),
-                                              );
-                        }
-                      );
-                    },
-                    
-                  ),
-                  const SizedBox(
-                    width: 50,
-                  ),
-                  DropdownButton(
-                    borderRadius: BorderRadius.circular(8),
-                    value: dropdown_value,
-                    dropdownColor: const Color.fromARGB(
-                      255,
-                      29,
-                      36,
-                      45,
-                    ),
-                    // Down Arrow Icon
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                    ),
-      
-                    // Array list of items
-                    items: filter.map((String items) {
-                      return DropdownMenuItem(
-                        value: items,
-                        child: Text(
-                          items,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      );
-                    }).toList(),
-      
-                    onChanged: (String? newValue) {
-                      if (newValue != dropdown_value) {
-                        setState(() {
-                        dropdown_value = newValue!;
-                      });
-                      }
+                                                );
+                          }
+                        );
+                      },
                       
-                    },
-                  ),
-                ],
-              ),
-            ),
-            
-            FutureBuilder(
-                future: get(dropdown_value),
-                builder: (context, snpsht) {
-                  if (snpsht.connectionState == ConnectionState.waiting) {
-                    return  Center(child: SizedBox(
-                      height: windowheight-100,
-                      child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
-                    ),);
-                  }
-                  if (snpsht.connectionState == ConnectionState.none) {
-                                    return const Center(child: 
-                                    Column(children: [Icon(Icons.wifi_off_rounded),
-                                    Text("Offline...")],),);
-                                  }
-                  List<String> data_snap = snpsht.data!;
-                  
-                  return 
-                  RefreshIndicator(
-                    onRefresh: ()async{
-                      await get(dropdown_value);
-                      setState(() {
+                    ),
+                    const SizedBox(
+                      width: 50,
+                    ),
+                    DropdownButton(
+                      borderRadius: BorderRadius.circular(8),
+                      value: dropdown_value,
+                      dropdownColor: const Color.fromARGB(
+                        255,
+                        29,
+                        36,
+                        45,
+                      ),
+                      // Down Arrow Icon
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                      ),
+        
+                      // Array list of items
+                      items: filter.map((String items) {
+                        return DropdownMenuItem(
+                          value: items,
+                          child: Text(
+                            items,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+        
+                      onChanged: (String? newValue) {
+                        if (newValue != dropdown_value) {
+                          setState(() {
+                          dropdown_value = newValue!;
+                        });
+                        }
                         
-                      });
-                    },
-                    child: ListView.builder(
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              
+              FutureBuilder(
+                  future: get(dropdown_value),
+                  builder: (context, snpsht) {
+                    if (snpsht.connectionState == ConnectionState.waiting) {
+                      return  Center(child: SizedBox(
+                        height: windowheight-100,
+                        child:const Center(child: CircularProgressIndicator(color: Colors.blue,),),
+                      ),);
+                    }
+                    if (snpsht.connectionState == ConnectionState.none) {
+                                      return const Center(child: 
+                                      Column(children: [Icon(Icons.wifi_off_rounded),
+                                      Text("Offline...")],),);
+                                    }
+                    List<String> data_snap = snpsht.data!;
+                    
+                    return 
+                    ListView.builder(
                         itemCount: data_snap.length,
                         shrinkWrap: true,
                         physics:const NeverScrollableScrollPhysics(),
@@ -428,16 +441,16 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                   Uint8List c_image = snapshot.data!["Image"];
                                   String C_name = snapshot.data!["Name"];
                                   String C_about = snapshot.data!["About"];
-                          
-                                  return showcontent(context, data_snap[index], windowWidth, c_image, C_name, C_about);
+                                  bool memberstatus = snapshot.data!["Member"];
+                                  return showcontent(context, data_snap[index], windowWidth, c_image, C_name, C_about,memberstatus);
                                 }):
-                                showcontent(context, data_snap[index], windowWidth, clubData[data_snap[index]]!["Image"], clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"]),
+                                showcontent(context, data_snap[index], windowWidth, clubData[data_snap[index]]!["Image"], 
+                                clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"],clubData[data_snap[index]]!["Member"]),
                           );
-                        }),
-                  );
-                })
-                
-          ],
+                        });
+                  })
+            ],
+          ),
         ),
       ),
     ));
@@ -450,6 +463,7 @@ Widget showcontent(
   Uint8List coverImage,
   String Clubname,
   String aboutclub,
+  bool member,
 ){
   return Builder(
     builder: (context) {
@@ -513,100 +527,103 @@ Widget showcontent(
                                     ),
                                   ),
                                   
-                                  InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Center(
-                                              child: Dialog(
-                                                insetPadding:
-                                                    const EdgeInsets
-                                                        .all(10),
-                                                backgroundColor:
-                                                    const Color
-                                                        .fromARGB(
-                                                        255,
-                                                        51,
-                                                        52,
-                                                        53),
-                                                child: SizedBox(
-                                                  height: 120,
-                                                  width: 170,
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .all(
-                                                            10.0),
-                                                        child:
-                                                            Text(
-                                                          "Join $Clubname",
-                                                          style: const TextStyle(
-                                                              color:
-                                                                  Colors.white),
+                                  Visibility(
+                                    visible:member,
+                                    child: InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Center(
+                                                child: Dialog(
+                                                  insetPadding:
+                                                      const EdgeInsets
+                                                          .all(10),
+                                                  backgroundColor:
+                                                      const Color
+                                                          .fromARGB(
+                                                          255,
+                                                          51,
+                                                          52,
+                                                          53),
+                                                  child: SizedBox(
+                                                    height: 120,
+                                                    width: 170,
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Padding(
+                                                          padding: const EdgeInsets
+                                                              .all(
+                                                              10.0),
+                                                          child:
+                                                              Text(
+                                                            "Join $Clubname",
+                                                            style: const TextStyle(
+                                                                color:
+                                                                    Colors.white),
+                                                          ),
                                                         ),
-                                                      ),
-                                                     
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceAround,
-                                                        children: [
-                                                          TextButton(
-                                                              onPressed:
-                                                                  () async{
-                                                                  String state=  await join(communId: clubId);
-                                                                      if (state == "Success") {
-                                                                        showsnackbar(context, "Successfully joined $Clubname");
-                                                                      }
-                                                                      // else{
-                                                                      //   print(state);}
+                                                       
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceAround,
+                                                          children: [
+                                                            TextButton(
+                                                                onPressed:
+                                                                    () async{
+                                                                    String state=  await join(communId: clubId);
+                                                                        if (state == "Success") {
+                                                                          showsnackbar(context, "Successfully joined $Clubname");
+                                                                        }
+                                                                        // else{
+                                                                        //   print(state);}
+                                                                        Navigator.pop(context);
+                                                                    },
+                                                                child: Container(
+                                                                    decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                                                                    child: const Padding(
+                                                                      padding: EdgeInsets.all(10.0),
+                                                                      child: Text(
+                                                                        "Yes",
+                                                                        style: TextStyle(color: Colors.white),
+                                                                      ),
+                                                                    ))),
+                                                            TextButton(
+                                                                onPressed:
+                                                                    () {
                                                                       Navigator.pop(context);
-                                                                  },
-                                                              child: Container(
-                                                                  decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                                                                  child: const Padding(
-                                                                    padding: EdgeInsets.all(10.0),
-                                                                    child: Text(
-                                                                      "Yes",
-                                                                      style: TextStyle(color: Colors.white),
-                                                                    ),
-                                                                  ))),
-                                                          TextButton(
-                                                              onPressed:
-                                                                  () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                              child:
-                                                                  Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), 
-                                                                  child:const Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
-                                                        ],
-                                                      )
-                                                    ],
+                                                                    },
+                                                                child:
+                                                                    Container(decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10)), 
+                                                                    child:const Padding(padding: EdgeInsets.all(10), child: Text("Cancel"))))
+                                                          ],
+                                                        )
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            );
-                                          });
-                                    },
-                                    enableFeedback: true,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.blueAccent,
-                                          borderRadius:
-                                              BorderRadius
-                                                  .circular(10)),
-                                      child: const Padding(
-                                        padding:
-                                            EdgeInsets.all(5.0),
-                                        child: Text(
-                                          "Join Community",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.white),
+                                              );
+                                            });
+                                      },
+                                      enableFeedback: true,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color:
+                                                Colors.blueAccent,
+                                            borderRadius:
+                                                BorderRadius
+                                                    .circular(10)),
+                                        child: const Padding(
+                                          padding:
+                                              EdgeInsets.all(5.0),
+                                          child: Text(
+                                            "Join Community",
+                                            style: TextStyle(
+                                                color:
+                                                    Colors.white),
+                                          ),
                                         ),
                                       ),
                                     ),

@@ -115,15 +115,15 @@ class _LoginState extends State<Login> {
                           success = await AuthMethods()
                             .signIn(email: email.text, password: password.text);
                         }
-                           
                         }
-                        
-
-                        if (success == "sucess") {
+                        if (success == "success") {
                           email.dispose();
                           password.dispose();
-                          showsnackbar(context, "Welcome");
                           Navigator.of(context).pop();
+                          showsnackbar(context, "Welcome");
+                          
+                        }else{
+                          showsnackbar(context, success.toString());
                         }
                       },
                       child: Container(

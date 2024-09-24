@@ -97,6 +97,7 @@ class announcementModel {
         "AnnouncementId": AnnouncentId,
         "UserId": UserId,
         "AnnounceTime": announceTime,
+        "Viewed":[]
       };
 }
 

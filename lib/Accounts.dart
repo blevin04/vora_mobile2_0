@@ -637,6 +637,14 @@ Widget clubs(){
         FutureBuilder(
           future: getclubdatas(snapshot.data![index]),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 80,
+                width: MediaQuery.of(context).size.width-80,
+                decoration: BoxDecoration(color: const Color.fromARGB(121, 255, 255, 255),borderRadius: BorderRadius.circular(10)),
+                child:const CircularProgressIndicator(),
+              );
+            }
             Uint8List c_image_ = snapshot.data["Image"];
             String Clubname = snapshot.data["Name"];
             List eventsNumber = snapshot.data["events"];
@@ -740,7 +748,9 @@ Widget eventsattended(){
               int commentNumber = snapshot1.data["Comments"].length;
                String aboutEvent = snapshot1.data["Description"];
                bool liked1 = snapshot1.data["Liked"];
+               String eventclub = snapshot1.data["EventClub"];
               return Center(
+              
             child: InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: 
               (context)=>  Dedicatedeventpage(eventId:snapshot.data[index]))),
@@ -761,7 +771,12 @@ Widget eventsattended(){
                         backgroundImage:MemoryImage(coverimg)), 
                         onTap: (){},
                         
-                        title: Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                        title: Row(
+                          children: [
+                            Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                            Text("By $eventclub"),
+                          ],
+                        ),
                         trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
                         ),
                       ),
@@ -828,14 +843,16 @@ Widget eventsattended(){
               int commentNumber = eventData[snapshot.data[index]]!["Comments"].length;
               bool liked1 = eventData[snapshot.data[index]]!["Liked"];
               String aboutEvent = eventData[snapshot.data[index]]!["Description"];
+              String eventclub = eventData[snapshot.data[index]]!["EventClub"];
              // bool commented = eventData[snapshot.data[index]]!["Commented"];
               return Center(
                 child: InkWell(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: 
                   (context)=>  Dedicatedeventpage(eventId:snapshot.data[index]))),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(5.0),
                     child: Container(
+                      padding:const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
                         color:const Color.fromARGB(233, 47, 46, 46),
                         borderRadius: BorderRadius.circular(15),
@@ -850,7 +867,12 @@ Widget eventsattended(){
                             backgroundImage:MemoryImage(coverimg)), 
                             onTap: (){},
                             
-                            title: Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                            title: Row(
+                              children: [
+                                Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                                Text("By $eventclub")
+                              ],
+                            ),
                             trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
                             ),
                           ),

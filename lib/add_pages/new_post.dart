@@ -87,47 +87,44 @@ class _NewPostState extends State<NewPost> {
                 ),
               
                
-               SizedBox(
-                
-                height: 55,
+               Container(
+                constraints:
+                    BoxConstraints(maxHeight: windowheight / 1.5, minHeight: 20),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 107, 105, 105))),
                 child: TextField(
-                  controller: postTitleController,
-                  expands: true,
-                  
-                  minLines: null,
-                  maxLines: null,
-                  style:const TextStyle(color: Colors.white,fontSize: 22),
                   decoration:const InputDecoration(
-                    focusedBorder:  OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white)
-                   ),
-                   // hintText: "text",
-                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white)
-                   ),
-                   labelStyle: TextStyle(color: Colors.white),
-                    labelText: "Blog Post Title",
+                    labelStyle: TextStyle(color: Colors.white),
+                    labelText: "Post Title"
                   ),
+                  maxLines: null,
+                  // expands: true,
+                  style: const TextStyle(color: Colors.white),
+                  controller: postTitleController,
                 ),
-               ),
+              ),
                const SizedBox(height: 20,),
-               
+              
                 Container(
-                  height: windowheight / 1.5,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: TextField(
-                    controller: post,
-                    expands: true,
-                    maxLines: null,
-                    style:const TextStyle(color: Colors.white),
-                    decoration:const InputDecoration(
-                      labelText: "Post Content",
-                      labelStyle: TextStyle(color: Colors.white)
-                    ),
+                constraints:
+                    BoxConstraints(maxHeight: windowheight / 1.5, minHeight: 20),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 107, 105, 105))),
+                child: TextField(
+                  decoration:const InputDecoration(
+                    labelStyle: TextStyle(color: Colors.white),
+                    labelText: "Post Content"
                   ),
+                  maxLines: null,
+                  // expands: true,
+                  style: const TextStyle(color: Colors.white),
+                  controller: post,
                 ),
+              ),
                 const SizedBox(
                   height: 10,
                 ),

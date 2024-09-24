@@ -206,15 +206,17 @@ class _EventsState extends State<Events> {
       final c_images = <String,dynamic>{"Cover_Image":value1!};
       even_m.addAll(c_images);
     });
+    await store.child("/events/$eventId/cover").getData().then((eventcove){
+      final eventcover = <String,dynamic>{"EventCover":eventcove!};
+      even_m.addAll(eventcover);
+    });
     await store.child("/events/$eventId/").list().then((onValue1)async{
       List<dynamic> imgs_ =List.empty(growable: true);
-      
       for(var val in onValue1.items){
         var path = val.toString().split(":").last;
         path = path.split(")").first;
         path =path.split(":").last;
         path = path.split(" ").last;
-       
          await store.child(path).getData().then((onValu){
           imgs_.add(onValu!);
         });

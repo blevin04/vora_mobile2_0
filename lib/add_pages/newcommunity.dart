@@ -91,6 +91,7 @@ void initState(){
 
   @override
   Widget build(BuildContext context) {
+  double windowheight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -162,16 +163,17 @@ void initState(){
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                constraints:const BoxConstraints(maxHeight: 100),
+                constraints:
+                    BoxConstraints(maxHeight: windowheight / 1.5, minHeight: 20),
                 decoration: BoxDecoration(
-                    border: Border.all(color:const Color.fromARGB(255, 86, 86, 86)),
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 107, 105, 105))),
                 child: TextField(
-                  expands: true,
                   maxLines: null,
-                  minLines: null,
-                  controller: aboutController,
+                  // expands: true,
                   style: const TextStyle(color: Colors.white),
+                  controller: aboutController,
                 ),
               ),
             ),
@@ -451,7 +453,7 @@ void initState(){
                         var fsocials_ =  <String, String>{};
                     if (namecontroller.text.isNotEmpty &&
                         cover_photo != '' &&
-                        leadController.text.isNotEmpty &&
+                        
                         aboutController.text.isNotEmpty&&
                         emailController.text.isNotEmpty) {
                       for (var i = 0; i < socials.length; i++) {

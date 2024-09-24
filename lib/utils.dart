@@ -459,3 +459,67 @@ Future<void> openUrl(Uri _url)async{
 }
 
 //Share the post
+
+//Mark announcement as read
+Future<String>markAsRead([String announcementId = "",bool all = false])async{
+  String state = "";
+  try {
+      if (all) {
+    List announceCommunities = userData["Communities"];
+    List commnames = [];
+    for(var com in announceCommunities){
+      await store.collection("Communities").doc(com).get().then((on){
+        commnames.add(on.data()!["Name"]);
+      });
+    }
+    for(var id in commnames){
+      await store.collection("Announcements").where("Community",isEqualTo: id).get().then((onValue)async{
+        for(var announcement1 in onValue.docs){
+          List viewed = List.empty(growable: true);
+          await store.collection("Announcements").doc(announcement1.id).get().then((announcedata){
+             viewed = announcedata.data()!["Viewed"];
+            viewed.add(user.uid);
+          });
+          await store.collection("Announcements").doc(announcement1.id).update({"Viewed":viewed});
+        }
+      });
+    }
+  }else{
+    List viewed = List.empty(growable: true);
+    await store.collection("Announcements").doc(announcementId).get().then((onValue){
+       viewed = onValue.data()!["Viewed"];
+      viewed.add(user.uid);
+    });
+    await store.collection("Announcements").doc(announcementId).update({"Viewed":viewed});
+  }
+  state = "Success";
+  } catch (e) {
+    state = e.toString();
+  }
+  return state;
+}
+//Get the number of unread announcements
+Future<int>getannouncementnumber()async{
+int announcenum = 0;
+  List commsSubscribed = userData["Communities"];
+  List comnames = List.empty(growable: true);
+  for(var com in commsSubscribed){
+    await store.collection("Communities").doc(com).get().then((onValue){
+      comnames.add(onValue.data()!["Name"]);
+    });
+  }
+  for(var comname in comnames){
+    await store.collection("Announcements").where("Community", isEqualTo: comname).get().then((announcemntss)async{
+
+      for(var ann in announcemntss.docs){
+        await store.collection("Announcements").doc(ann.id).get().then((anndata){
+          if (!anndata.data()!["Viewed"].contains(user.uid)) {
+            announcenum +=1;
+          }
+        });
+      }
+
+    }); 
+  }
+return announcenum;
+}

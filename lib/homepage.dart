@@ -68,27 +68,20 @@ Future<Map<String,dynamic>> getcontent(String eventId)async{
   Map<String,dynamic> functionData ={};
 await firestore_.collection("Events").doc(eventId).get().then((onValue)async{
   var comn = onValue.data()!["Community"];
-
-  
   await firestore_.collection("Communities").doc(comn).get().then((onvalue1){
     final comm = <String,dynamic>{"EventClub":onvalue1.data()!["Name"]};
     functionData.addAll(comm);
   });
-  
   final evdate =<String,dynamic>{"EventDate":onValue.data()!["EventDate"]};
   final ttle = <String,dynamic>{"EventTitle":onValue.data()!["Title"]};
   functionData.addAll(evdate);
   functionData.addAll(ttle);
-
 });
 
 await store_1.child("/events/$eventId/cover").getData().then((value){
   final imgs = <String,dynamic>{"EventCoverImage":value!};
   functionData.addAll(imgs);
 });
-
-
-  
   return functionData;
 }
 Future<Map<String,dynamic>> getclubsAndEvents()async{
@@ -242,7 +235,9 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                             ),
                             child: SizedBox(
                               height: 150,
+                              width: windowWidth-200,
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
                                   TextButton(
                                       onPressed: ()async {
@@ -257,24 +252,29 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                         "Account",
                                         style: TextStyle(color: Colors.white),
                                       )),
-                                  TextButton(
-                                      onPressed: () async {},
-                                      child: const Text(
-                                        "Edit Account",
-                                        style: TextStyle(color: Colors.white),
-                                      )),
+                                  // TextButton(
+                                  //     onPressed: () async {},
+                                  //     child: const Text(
+                                  //       "Delete Account",
+                                  //       style: TextStyle(color: Colors.white),
+                                  //     )),
                                   TextButton(
                                       onPressed: ()async {
                                         var appDir = (await getTemporaryDirectory()).path;
                                          Directory(appDir).delete(recursive: true);
                                         FirebaseAuth.instance.signOut();
-                                        
-                                        
                                         Navigator.pop(context);
                                       },
-                                      child: const Text(
-                                        "Log Out",
-                                        style: TextStyle(color: Colors.white),
+                                      child:const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                           Text(
+                                            "Log Out",
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                          SizedBox(width: 10,),
+                                          Icon(Icons.exit_to_app)
+                                        ],
                                       ))
                                 ],
                               ),
@@ -331,168 +331,106 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Stack(children: [
-            Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  //Padding(padding: EdgeInsets.all(3)),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: StatefulBuilder(
-                      builder: (context,setstate_head){
-                        return  Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 5.0,
-                            ),
-                            child: Container(
+        body: RefreshIndicator(
+          onRefresh: ()async{
+            await userget();
+            await getclubsAndEvents();
+          },
+          child: SingleChildScrollView(
+            child: Stack(children: [
+              Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    //Padding(padding: EdgeInsets.all(3)),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: StatefulBuilder(
+                        builder: (context,setstate_head){
+                          return  Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
                               padding: const EdgeInsets.only(
-                                  top: 8, bottom: 8, left: 8),
-                              alignment: Alignment.center,
-                              height: 140,
-                              //width: windowWidth/ 2,
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(
-                                  255,
-                                  29,
-                                  36,
-                                  45,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
+                                top: 5.0,
                               ),
-                              child:  Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child:!userData.containsKey("nickname")? 
-                                FutureBuilder(
-                                  initialData: "User",
-                                  future: userget(),
-                                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                    
-                                    if (snapshot.connectionState == ConnectionState.waiting){
-                                      return const Text(
-                                    "Hello \n welcome to vora",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 21,
-                                    ),
-                                  );
-                                    }
-                                    if (snapshot.connectionState == ConnectionState.none) {
-                                    return const Center(child: 
-                                    Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
-                                  if (!snapshot.hasData) {
-                                    return const Text(
-                                    "Hello \n welcome to vora",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 21,
-                                    ),
-                                  );
-                                  }
-                                 
-                                 
-                                    return Text(
-                                    "Hello ${snapshot.data} \n welcome to vora",
-                                    style:const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 21,
-                                    ),
-                                  );
-                                  },
-                                ):Builder(
-                                  builder: (context) {
-                                    
-                                    return Text(
-                                        "Hello ${userData["nickname"]} \n welcome to vora",
-                                        style:const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 21,
-                                        ),
-                                      );
-                                  }
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                top: 5.0, bottom: 3.0, right: 5.0, left: 5),
-                            child: Container(
-                              height: 140,
-                              width: 110,
-                              decoration: BoxDecoration(
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    top: 8, bottom: 8, left: 8),
+                                alignment: Alignment.center,
+                                height: 140,
+                                //width: windowWidth/ 2,
+                                decoration: BoxDecoration(
                                   color: const Color.fromARGB(
                                     255,
                                     29,
                                     36,
                                     45,
                                   ),
-                                  borderRadius: BorderRadius.circular(10)),
-                              child:  InkWell(
-                                onTap: ()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Clubs())),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                   const Padding(
-                                      padding: EdgeInsets.only(top: 8.0),
-                                      child:  Column(
-                                        children: [
-                                          Text(
-                                            "CLUBS",
-                                            style: TextStyle(
-                                                color: Colors.white, fontSize: 15),                         
-                                          ),
-                                          Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,)
-                                        ],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child:  Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child:!userData.containsKey("nickname")? 
+                                  FutureBuilder(
+                                    initialData: "User",
+                                    future: userget(),
+                                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                      
+                                      if (snapshot.connectionState == ConnectionState.waiting){
+                                        return const Text(
+                                      "Hello \n welcome to vora",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
                                       ),
-                                    ),
-                                    
-                                    Padding(
-                                      padding:const EdgeInsets.only(bottom: 8.0),
-                                      child: Column(
-                                        children: [
-                                          !userData.containsKey("ClubsAttended")?
-                                          FutureBuilder(
-                                            future: getclubsAndEvents(),
-                                            initialData: 0,
-                                            builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return  Center(child: Container(),);
-                                              }
-                                              if (snapshot.connectionState == ConnectionState.none) {
-                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                    );
+                                      }
+                                      if (snapshot.connectionState == ConnectionState.none) {
+                                      return const Center(child: 
+                                      Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
                                     }
-                                              var c_numb =snapshot.data!["C_num"];
-                                              
-                                              return  Text(
-                                              c_numb==null? "Offline": c_numb.toString(), 
-                                                style:const TextStyle(color: Colors.white,fontSize: 30));
-                                            },
-                                          ):Text(
-                                              userData["ClubsAttended"].length.toString(), 
-                                                style:const TextStyle(color: Colors.white,fontSize: 30)),
-                                        const  Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
-                                        ],
+                                    if (!snapshot.hasData) {
+                                      return const Text(
+                                      "Hello \n welcome to vora",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
                                       ),
-                                    )
-                                  ],
+                                    );
+                                    }
+                                   
+                                   
+                                      return Text(
+                                      "Hello ${snapshot.data} \n welcome to vora",
+                                      style:const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 21,
+                                      ),
+                                    );
+                                    },
+                                  ):Builder(
+                                    builder: (context) {
+                                      
+                                      return Text(
+                                          "Hello ${userData["nickname"]} \n welcome to vora",
+                                          style:const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 21,
+                                          ),
+                                        );
+                                    }
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5, right: 5),
-                            child: InkWell(
-                              onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",))),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 5.0, bottom: 3.0, right: 5.0, left: 5),
                               child: Container(
                                 height: 140,
-                                width: windowWidth/ 4,
+                                width: 110,
                                 decoration: BoxDecoration(
                                     color: const Color.fromARGB(
                                       255,
@@ -501,237 +439,317 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                       45,
                                     ),
                                     borderRadius: BorderRadius.circular(10)),
-                                child:  Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                   const Padding(
-                                      padding: EdgeInsets.only(top: 8.0),
-                                      child: Column(
-                                        children: [
-                                          Text("EVENTS",
-                                              style: TextStyle(color: Colors.white)),
-                                              Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,),
-                                        ],
+                                child:  InkWell(
+                                  onTap: ()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Clubs())),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                     const Padding(
+                                        padding: EdgeInsets.only(top: 8.0),
+                                        child:  Column(
+                                          children: [
+                                            Text(
+                                              "CLUBS",
+                                              style: TextStyle(
+                                                  color: Colors.white, fontSize: 15),                         
+                                            ),
+                                            Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,)
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                        
-                                    Padding(
-                                      padding:const EdgeInsets.only(bottom: 8.0),
-                                      child: Column(
-                                        children: [
-                                          !userData.containsKey("EventsAttended")?
-                                          FutureBuilder(
-                                            future: getclubsAndEvents(),
-                                            initialData: 0,
-                                            builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return  Center(child: Container(),);
-                                              }
-                                              if (snapshot.connectionState == ConnectionState.none) {
-                                      return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                    }
-                                              var E_numb = snapshot.data!["E_num"];
-                                              return Text(
-                                             E_numb==null?"Offline...": E_numb.toString(), 
-                                              style:const TextStyle(color: Colors.white,fontSize: 30)
-                                              );
-                                            },
-                                          ):Text(
-                                             userData["EventsAttended"].length.toString(), 
-                                              style:const TextStyle(color: Colors.white,fontSize: 30)
-                                              ),
-                                         const Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
-                                        ],
-                                      ),
-                                    ),
-                                   // SizedBox(height: 1,)
-                                  ],
+                                      
+                                      Padding(
+                                        padding:const EdgeInsets.only(bottom: 8.0),
+                                        child: Column(
+                                          children: [
+                                            !userData.containsKey("ClubsAttended")?
+                                            FutureBuilder(
+                                              future: getclubsAndEvents(),
+                                              initialData: 0,
+                                              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                                  return  Center(child: Container(),);
+                                                }
+                                                if (snapshot.connectionState == ConnectionState.none) {
+                                        return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                      }
+                                                var c_numb =snapshot.data!["C_num"];
+                                                
+                                                return  Text(
+                                                c_numb==null? "Offline": c_numb.toString(), 
+                                                  style:const TextStyle(color: Colors.white,fontSize: 30));
+                                              },
+                                            ):Text(
+                                                userData["ClubsAttended"].length.toString(), 
+                                                  style:const TextStyle(color: Colors.white,fontSize: 30)),
+                                          const  Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          )
-                        ],
-                      );
-                      },
-                    )
-                  ),
-                  const SizedBox(height: 5,),
-                  carosel(windowheight,windowWidth),
-                  
-                  const Divider(),
-                 CalendarDayView.overflow(
-                  renderRowAsListView: true,
-                  dividerColor: const Color.fromARGB(158, 193, 230, 255),
-                  overflowItemBuilder: (context, constraints, itemIndex, event) {
-                    return Container(
-                      decoration: BoxDecoration(color: Colors.lightBlue,
-                      borderRadius: BorderRadius.circular(10)
-                      ),
-                      padding:const EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          Text(event.name.toString()),
-                          Text(event.value.toString()),
-                        ],
-                      ),
-                    );
-                  },
-                  timeTextStyle:const TextStyle(color: Colors.white),
-                  currentTimeLineColor: Colors.blue,
-                  endOfDay:const TimeOfDay(hour: 21,minute: 0),
-                  showCurrentTimeLine: true,
-                  timeGap: 60,
-                  events: events, 
-                  startOfDay:const TimeOfDay(hour: 7, minute: 0),
-                 currentDate: DateTime.now()),
-                 
-                 
-                ]),
-            AnimatedBuilder(
-              animation: _drawercontroller,
-              builder: (context, child) {
-                return FractionalTranslation(
-                  translation: Offset(1.2, -1.0 + _drawercontroller.value),
-                  child: _isDrawerClosed()
-                      ? const SizedBox()
-                      : BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5.0,sigmaY: 5.0),
-                        
-                        child: StatefulBuilder(
-                          builder: (context, setstate2) {
-                            return TapRegion(
-                            onTapOutside: (tap){
-                              if (_drawercontroller.value == 1) {
-                                setstate2(() {
-                              _toggleDrawer();
-                            });
-                              }
-                              },
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    color: _isDrawerOpen()
-                                        ? const Color.fromARGB(255, 29, 29, 29)
-                                        : Colors.black,
-                                    borderRadius: BorderRadius.circular(10)),
-                                //height: 220,
-                                width: 190,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    ListTile(
-                                      title: Text(
-                                        "Account",
-                                        style: TextStyle(
-                                            color: _isDrawerOpen()
-                                                ? Colors.white
-                                                : Colors.black),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5, right: 5),
+                              child: InkWell(
+                                onTap:()async=>await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",))),
+                                child: Container(
+                                  height: 140,
+                                  width: windowWidth/ 4,
+                                  decoration: BoxDecoration(
+                                      color: const Color.fromARGB(
+                                        255,
+                                        29,
+                                        36,
+                                        45,
                                       ),
-                                      onTap: () async {
-                                       // Navigator.pop(context);
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Accounts()));
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        "clubs & Communities",
-                                        style: TextStyle(
-                                            color: _isDrawerOpen()
-                                                ? Colors.white
-                                                : Colors.black),
-                                      ),
-                                      onTap: () async {
-                                      //  Navigator.pop(context);
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => const Clubs()));
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        "Events",
-                                        style: TextStyle(
-                                            color: _isDrawerOpen()
-                                                ? Colors.white
-                                                : Colors.black),
-                                      ),
-                                      onTap: () async {
-                                      //  Navigator.pop(context);
-                                        await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",)));
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        "Posts & Blogs",
-                                        style: TextStyle(
-                                            color: _isDrawerOpen()
-                                                ? Colors.white
-                                                : Colors.black),
-                                      ),
-                                      onTap: () async {
-                                      //  Navigator.pop(context);
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => const Blogs()));
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Badge(
-                                        label: const Text("9"),
-                                        child: Text(
-                                          "Announcements",
-                                          style: TextStyle(
-                                              color: _isDrawerOpen()
-                                                  ? Colors.white
-                                                  : Colors.black),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child:  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                     const Padding(
+                                        padding: EdgeInsets.only(top: 8.0),
+                                        child: Column(
+                                          children: [
+                                            Text("EVENTS",
+                                                style: TextStyle(color: Colors.white)),
+                                                Divider(thickness: 5,color: Colors.blue,indent: 10,endIndent: 10,),
+                                          ],
                                         ),
                                       ),
-                                      onTap: () async {
-                                       // Navigator.pop(context);
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Announcemnts()));
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        "My Callender",
-                                        style: TextStyle(
-                                            color: _isDrawerOpen()
-                                                ? Colors.white
-                                                : Colors.black),
+                                          
+                                      Padding(
+                                        padding:const EdgeInsets.only(bottom: 8.0),
+                                        child: Column(
+                                          children: [
+                                            !userData.containsKey("EventsAttended")?
+                                            FutureBuilder(
+                                              future: getclubsAndEvents(),
+                                              initialData: 0,
+                                              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                                  return  Center(child: Container(),);
+                                                }
+                                                if (snapshot.connectionState == ConnectionState.none) {
+                                        return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
+                                      }
+                                                var E_numb = snapshot.data!["E_num"];
+                                                return Text(
+                                               E_numb==null?"Offline...": E_numb.toString(), 
+                                                style:const TextStyle(color: Colors.white,fontSize: 30)
+                                                );
+                                              },
+                                            ):Text(
+                                               userData["EventsAttended"].length.toString(), 
+                                                style:const TextStyle(color: Colors.white,fontSize: 30)
+                                                ),
+                                           const Divider(thickness: 5,color: Colors.red,indent: 10,endIndent: 10,)
+                                          ],
+                                        ),
                                       ),
-                                      //takes you to the callender page
-                                      onTap: () async{
-                                      //  Navigator.pop(context);
-                                       await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Calender()));
-                                      },
-                                    ),
-                                  ],
+                                     // SizedBox(height: 1,)
+                                    ],
+                                  ),
                                 ),
                               ),
-                          );
-                          },
-                         
+                            )
+                          ],
+                        );
+                        },
+                      )
+                    ),
+                    const SizedBox(height: 5,),
+                    carosel(windowheight,windowWidth),
+                    
+                    const Divider(),
+                   CalendarDayView.overflow(
+                    renderRowAsListView: true,
+                    dividerColor: const Color.fromARGB(158, 193, 230, 255),
+                    overflowItemBuilder: (context, constraints, itemIndex, event) {
+                      return Container(
+                        decoration: BoxDecoration(color: Colors.lightBlue,
+                        borderRadius: BorderRadius.circular(10)
                         ),
-                      ),
-                );
-              },
-            ),
-          ]),
+                        padding:const EdgeInsets.all(10),
+                        child: Column(
+                          children: [
+                            Text(event.name.toString()),
+                            Text(event.value.toString()),
+                          ],
+                        ),
+                      );
+                    },
+                    timeTextStyle:const TextStyle(color: Colors.white),
+                    currentTimeLineColor: Colors.blue,
+                    endOfDay:const TimeOfDay(hour: 21,minute: 0),
+                    showCurrentTimeLine: true,
+                    timeGap: 60,
+                    events: events, 
+                    startOfDay:const TimeOfDay(hour: 7, minute: 0),
+                   currentDate: DateTime.now()),
+                   
+                   
+                  ]),
+              AnimatedBuilder(
+                animation: _drawercontroller,
+                builder: (context, child) {
+                  print(windowWidth);
+                  return FractionalTranslation(
+                    translation: Offset(1.15, -1.0 + _drawercontroller.value),
+                    child: _isDrawerClosed()
+                        ? const SizedBox()
+                        : BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5.0,sigmaY: 5.0),
+                          
+                          child: StatefulBuilder(
+                            builder: (context, setstate2) {
+                              return TapRegion(
+                              onTapOutside: (tap){
+                                if (_drawercontroller.value == 1) {
+                                  setstate2(() {
+                                _toggleDrawer();
+                              });
+                                }
+                                },
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        color: _isDrawerOpen()
+                                            ? const Color.fromARGB(255, 29, 29, 29)
+                                            : Colors.black,
+                                        borderRadius: BorderRadius.circular(10)),
+                                    //height: 220,
+                                    width: 190,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        ListTile(
+                                          title: Text(
+                                            "Account",
+                                            style: TextStyle(
+                                                color: _isDrawerOpen()
+                                                    ? Colors.white
+                                                    : Colors.black),
+                                          ),
+                                          onTap: () async {
+                                           // Navigator.pop(context);
+                                            await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const Accounts()));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            "clubs & Communities",
+                                            style: TextStyle(
+                                                color: _isDrawerOpen()
+                                                    ? Colors.white
+                                                    : Colors.black),
+                                          ),
+                                          onTap: () async {
+                                          //  Navigator.pop(context);
+                                            await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const Clubs()));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            "Events",
+                                            style: TextStyle(
+                                                color: _isDrawerOpen()
+                                                    ? Colors.white
+                                                    : Colors.black),
+                                          ),
+                                          onTap: () async {
+                                          //  Navigator.pop(context);
+                                            await Navigator.push(context,MaterialPageRoute(builder: (context)=> const Events(filtername: "all",)));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            "Posts & Blogs",
+                                            style: TextStyle(
+                                                color: _isDrawerOpen()
+                                                    ? Colors.white
+                                                    : Colors.black),
+                                          ),
+                                          onTap: () async {
+                                          //  Navigator.pop(context);
+                                            await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const Blogs()));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Badge(
+                                            label: FutureBuilder(
+                                              future: getannouncementnumber(),
+                                              initialData: 0,
+                                              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                                return Text(snapshot.data.toString()) ;
+                                              },
+                                            ),
+                                            backgroundColor: Colors.transparent,
+                                            
+                                            child: Text(
+                                              "Announcements",
+                                              style: TextStyle(
+                                                  color: _isDrawerOpen()
+                                                      ? Colors.white
+                                                      : Colors.black),
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                           // Navigator.pop(context);
+                                            await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const Announcemnts()));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            "My Callender",
+                                            style: TextStyle(
+                                                color: _isDrawerOpen()
+                                                    ? Colors.white
+                                                    : Colors.black),
+                                          ),
+                                          //takes you to the callender page
+                                          onTap: () async{
+                                          //  Navigator.pop(context);
+                                           await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const Calender()));
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ),
+                            );
+                            },
+                           
+                          ),
+                        ),
+                  );
+                },
+              ),
+            ]),
+          ),
         ),
         floatingActionButton: BackdropFilter(
           filter: blur_,
@@ -890,7 +908,6 @@ Widget carosel(double windowheight,double windowWidth){
                       alignment: Alignment.bottomLeft,
                       child:FutureBuilder(
                         future: getevents(),
-                        
                         builder: (BuildContext context, AsyncSnapshot snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const Center(child: CircularProgressIndicator(),);
@@ -998,7 +1015,7 @@ Widget carosel(double windowheight,double windowWidth){
                                       height: 20,
                                       decoration: BoxDecoration(
                                           image:
-                                              DecorationImage(image: MemoryImage(eventData[item]!["Cover_Image"] as Uint8List))),
+                                              DecorationImage(image: MemoryImage(eventData[item]!["EventCover"] as Uint8List))),
                                       child: Column(
                                         children: [
                                           SizedBox(
