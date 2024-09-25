@@ -133,7 +133,6 @@ String usern = "";
   if (!blogsdata.containsKey(blogid)) {
       blogsdata.addAll(blog);
   }
-  
   return blogdata;
 }
 
@@ -480,7 +479,8 @@ Widget contents(
                     children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child:commentOpen? SizedBox(height: 60,width: 200,
+                    child:commentOpen? SizedBox(height: 60,
+                    width: 160,
                       child: TextField(
                         onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
                         style: const TextStyle(color: Colors.white),

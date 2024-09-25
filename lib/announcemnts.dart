@@ -106,12 +106,13 @@ class _AnnouncemntsState extends State<Announcemnts> {
             style: TextStyle(color: Colors.white),),
             actions: [
               IconButton(onPressed: ()async{
+                showcircleprogress(context);
                 String state = await markAsRead("",true);
                 if (state == "Success") {
                   setState(() {
-                    
                   });
                 }
+                Navigator.pop(context);
               },
                icon:const Icon(Icons.checklist_rtl_sharp,color: Colors.white,))
             ],

@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:calendar_day_view/calendar_day_view.dart';
 import 'package:vora_mobile/Accounts.dart';
+import 'package:vora_mobile/about.dart';
 import 'package:vora_mobile/add_pages/add_event.dart';
 import 'package:vora_mobile/add_pages/new_announcement.dart';
 import 'package:vora_mobile/add_pages/new_post.dart';
@@ -252,12 +253,15 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                                         "Account",
                                         style: TextStyle(color: Colors.white),
                                       )),
-                                  // TextButton(
-                                  //     onPressed: () async {},
-                                  //     child: const Text(
-                                  //       "Delete Account",
-                                  //       style: TextStyle(color: Colors.white),
-                                  //     )),
+                                  TextButton(
+                                      onPressed: () async {
+                                        Navigator.pop(context);
+                                        await Navigator.push(context, MaterialPageRoute(builder: (context)=>const About()));
+                                      },
+                                      child: const Text(
+                                        "About vora",
+                                        style: TextStyle(color: Colors.white),
+                                      )),
                                   TextButton(
                                       onPressed: ()async {
                                         var appDir = (await getTemporaryDirectory()).path;
@@ -598,7 +602,7 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                 builder: (context, child) {
                  // print(windowWidth);
                   return FractionalTranslation(
-                    translation: Offset(1.3, -1.0 + _drawercontroller.value),
+                    translation: Offset(1.02, -1.0 + _drawercontroller.value),
                     child: _isDrawerClosed()
                         ? const SizedBox()
                         : BackdropFilter(
@@ -617,13 +621,14 @@ ImageFilter blur_ = ImageFilter.blur(sigmaX: 0,sigmaY: 0);
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Container(
+                                  alignment: Alignment.topRight,
                                     decoration: BoxDecoration(
                                         color: _isDrawerOpen()
                                             ? const Color.fromARGB(255, 29, 29, 29)
                                             : Colors.black,
                                         borderRadius: BorderRadius.circular(10)),
                                     //height: 220,
-                                    width: windowWidth/2.3,
+                                    width: windowWidth/2.0,
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment: CrossAxisAlignment.center,

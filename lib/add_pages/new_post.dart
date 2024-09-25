@@ -301,42 +301,41 @@ class _NewPostState extends State<NewPost> {
                                 title: postTitleController.text
                                 );
                           }
-                         // print(state);
+                          print(state);
                         }
                         if (state[0] == "Success") {
-                        //  showsnackbar(context, "Post Added");
+                          postTitleController.clear();
+                          post.clear();
+                          doc = "";
+                          imgs.clear();
                           Navigator.pushReplacement(context, 
                           (MaterialPageRoute(builder: (context)=> Dedicatedblogpage(blogId:state.last ,))));
-                          
-                        }
+                          }
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(0),
-                      margin: const EdgeInsets.all(0),
+                      padding: const EdgeInsets.all(10),
+                      //margin: const EdgeInsets.all(5),
                       width: windowWidth / 2.2,
                       decoration: BoxDecoration(
                           color: Colors.lightBlue,
                           borderRadius: BorderRadius.circular(10)),
-                      child: const OutlinedButton(
-                        onPressed: null,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.publish,
-                              color: Colors.white,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Publish",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 15),
-                            )
-                          ],
-                        ),
+                      child:const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.publish,
+                            color: Colors.white,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Publish",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 15),
+                          )
+                        ],
                       ),
                     ),
                   ),

@@ -314,6 +314,9 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
       body: RefreshIndicator(
         onRefresh: ()async{
           get(dropdown_value);
+          setState(() {
+            
+          });
         },
         child: SingleChildScrollView(
           physics:const AlwaysScrollableScrollPhysics(),
@@ -445,7 +448,8 @@ Future<Map<String,dynamic>> clubdata (String clubId)async{
                                   return showcontent(context, data_snap[index], windowWidth, c_image, C_name, C_about,memberstatus);
                                 }):
                                 showcontent(context, data_snap[index], windowWidth, clubData[data_snap[index]]!["Image"], 
-                                clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"],clubData[data_snap[index]]!["Member"]),
+                                clubData[data_snap[index]]!["Name"], clubData[data_snap[index]]!["About"],clubData[data_snap[index]]!["Member"]) ,
+                                
                           );
                         });
                   })
@@ -575,7 +579,7 @@ Widget showcontent(
                                                                 onPressed:
                                                                     () async{
                                                                       showcircleprogress(context);
-                                                                    String state=  await join(communId: clubId);
+                                                                    String state=  await joinleave(communId: clubId);
                                                                         if (state == "Success") {
                                                                           member = true;
                                                                           showsnackbar(context, "Successfully joined $Clubname");

@@ -16,26 +16,49 @@ class Dedicatedblogpage extends StatefulWidget {
 }
 
 class _DedicatedblogpageState extends State<Dedicatedblogpage> {
+ Future<Map<String,dynamic>> updateblog()async{
+  if (blogsdata[widget.blogId] == null) {
+    return await getblogdatautil(widget.blogId);
+  }else{
+    return blogsdata[widget.blogId]!;
+  }
+   
+ }
   @override
   Widget build(BuildContext context) {
-    TextEditingController blogcommentcontroller = TextEditingController();
-    String blogTitle = blogsdata[widget.blogId]!["Title"];
+ TextEditingController blogcommentcontroller = TextEditingController();
+    return SafeArea(
+      child:FutureBuilder(
+        future: updateblog(),
+        
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return  Container(
+              height: 200,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color:const Color.fromARGB(141, 98, 91, 91)),
+                child:const Center(child: CircularProgressIndicator(),),
+            );
+            
+          }
+               String blogTitle = blogsdata[widget.blogId]!["Title"];
    // String userFullName = blogsdata[blogId]!["UserName"];
-    String userNick = blogsdata[widget.blogId]!["NickName"];
-    DateTime postTimes = blogsdata[widget.blogId]!["PostTime"].toDate();
-    String blogpostcontent = blogsdata[widget.blogId]!["BlogPost"];
-    List<dynamic> postImgs = blogsdata[widget.blogId]!["Images"];
-    Map<String,dynamic> postComments = blogsdata[widget.blogId]!["Comments"];
-    List PostLikes = blogsdata[widget.blogId]!["Likes"];
-    Uint8List postOwnerImage = blogsdata[widget.blogId]!["UserDp"];
+    String userNick = snapshot.data["NickName"];
+    DateTime postTimes = snapshot.data["PostTime"].toDate();
+    String blogpostcontent = snapshot.data!["BlogPost"];
+    List<dynamic> postImgs = snapshot.data["Images"];
+    Map<String,dynamic> postComments = snapshot.data["Comments"];
+    List PostLikes = snapshot.data["Likes"];
+    Uint8List postOwnerImage = snapshot.data["UserDp"];
     bool commented = false;
     postComments.forEach((key, value) {
       if (value.containsValue(userData["nickname"])) {
         commented = true;
       }
     },);
-    return SafeArea(
-      child: Scaffold(
+          return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
@@ -62,8 +85,8 @@ class _DedicatedblogpageState extends State<Dedicatedblogpage> {
                             Padding(
                               padding: const EdgeInsets.only(right: 15.0),
                               child: CircleAvatar(
-                                                    backgroundImage: MemoryImage(postOwnerImage),
-                                                  ),
+                        backgroundImage: MemoryImage(postOwnerImage),
+                                        ),
                             ),
                       Column(
                         
@@ -294,7 +317,10 @@ class _DedicatedblogpageState extends State<Dedicatedblogpage> {
           ),
         ),
         
+      );
+        },
       ),
+      
     );
   }
 }

@@ -209,8 +209,9 @@ Future<String> rsvp({
 
   return state;
 }
-Future<String> join({
+Future<String> joinleave({
   required String communId,
+
 })async{
   String state = "Some Error occured...";
   try{
@@ -223,6 +224,8 @@ Future<String> join({
     });
     if (!origin.contains(communId)) {
       origin.add(communId);
+    }else{
+      origin.remove(communId);
     }
     
     joincomModel joins = joincomModel(comm: origin);

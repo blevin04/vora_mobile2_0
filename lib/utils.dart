@@ -6,15 +6,11 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
-
 import 'package:flutter/material.dart';
-
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
-
 import 'package:vora_mobile/Accounts.dart';
 
 FirebaseFirestore store = FirebaseFirestore.instance;
@@ -340,7 +336,12 @@ Future<String> likePost (String ContentId)async{
 
 Future<Map<String,dynamic>> getclubdatas (String clubId)async{
   Map<String,dynamic> clubd_ = {};
-
+    bool member = false;
+  await store.collection("users").doc(user.uid).get().then((userd){
+      member = userd.data()!["Communities"].contains(clubId);
+  });
+  final memberstatus = <String,dynamic>{"Member":member};
+  clubd_.addAll(memberstatus);
   await store.collection("Communities").doc(clubId).get().then((onValue){
     clubd_.addAll(onValue.data()!);
   });
@@ -522,4 +523,115 @@ int announcenum = 0;
     }); 
   }
 return announcenum;
+}
+
+
+//Delete data
+Future<String> deletedata(String postId)async{
+  String state = "";
+  print(postId);
+  try {
+     await store.collection("posts").doc(postId).delete();
+    final pathsdocs = storageref.child("posts/$postId/docs");
+    final pathimgs = storageref.child("posts/$postId/images");
+    pathsdocs.listAll().then((onValue){
+      onValue.items.forEach((item){
+        item.delete();
+      });
+    });
+    pathimgs.listAll().then((onValue){
+      onValue.items.forEach((item){
+        item.delete();
+      });
+    });
+    state = "Success";
+  } catch (e) {
+   // state = e.toString();
+  }
+  print("tattatatat = $state");
+  return state;
+}
+
+
+//Get the blog data
+Future<Map<String,dynamic>> getblogdatautil(String blogid)async{
+  Map<String,dynamic> blogdata = Map();
+String usern = "";
+  await store.collection("posts").doc(blogid).get().then((onValue)async{
+    blogdata.addAll(onValue.data()!);
+    List likesall = onValue.data()!["Likes"];
+     Map<String,dynamic> comAll = onValue.data()!["Comments"];
+     Map<String,dynamic> comED = Map();
+     comAll.forEach((k, v){
+      if (v.containsValue(user.uid)) {
+        comED = {"Commented":true};
+        
+      }else{
+       
+        if(comED.isEmpty){
+          comED = {"Commented":false};
+         
+        }
+      }
+     });
+     if (comAll.isEmpty) {
+       comED = {"Commented":false};
+     }
+    Map<String,dynamic> likeD = {};
+    if (likesall.contains(user.uid)) {
+      likeD = {"Liked":true};
+    }else{
+      likeD = {"Liked":false};
+    }
+    
+    usern = onValue.data()!["UserId"];
+  await store.collection("users").doc(usern).get().then((userd){
+    final userna = <String,dynamic>{"UserName":userd.data()!["fullName"]};
+    final nname = <String,dynamic>{"NickName":userd.data()!["nickname"]};
+    blogdata.addAll(userna);
+    blogdata.addAll(nname);
+    blogdata.addAll(likeD);
+    blogdata.addAll(comED);
+    
+  });
+  });
+  await storageref.child("/posts/$blogid/images").list().then((onValue)async{
+    List imgsdata = List.empty(growable: true);
+    for(var path in onValue.items){
+      var val = path.toString().split("/");
+      val = val[val.length-1].split(")");
+      String dir = val.first;
+      
+      await storageref.child("/posts/$blogid/images/$dir").getData().then((Imgdata){
+        imgsdata.add(Imgdata!);
+      });
+    }
+    final imgs = <String,dynamic>{"Images":imgsdata};
+   
+    blogdata.addAll(imgs);
+  });
+
+  await storageref.child("posts/$blogid/docs").list().then((doclist)async{
+    List docs = List.empty(growable: true);
+    for (var doc in doclist.items){
+      var val = doc.toString().split("/");
+      val = val[val.length-1].split(")");
+      String direct = val.first;
+      
+      await storageref.child("posts/$blogid/docs/$direct").getData().then((doc){
+        docs.add(doc!);
+      });
+    }
+    final documents = <String,dynamic>{"Documents":docs};
+    blogdata.addAll(documents);
+  });
+  await storageref.child("/profile/$usern/dp.png").getData().then((dp){
+    final userdp = <String,dynamic>{"UserDp":dp!};
+    blogdata.addAll(userdp);
+  });
+  final blog = <String,Map<String,dynamic>>{blogid:blogdata};
+  if (!blogsdata.containsKey(blogid)) {
+      blogsdata.addAll(blog);
+  }
+  return blogdata;
 }

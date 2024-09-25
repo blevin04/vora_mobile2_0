@@ -22,7 +22,6 @@ final  String clubId;
 class _DedicatedcommunitypageState extends State<Dedicatedcommunitypage> {
 Future<Map<String,dynamic>> clubdata()async{
   Map<String,dynamic> cData = {};
-
   await firestore_2.collection("Communities").doc(widget.clubId).get().then((onValue){
     final comdata = onValue.data()!;
     cData.addAll(comdata);
@@ -31,13 +30,10 @@ Future<Map<String,dynamic>> clubdata()async{
     final coverImg = <String,dynamic>{"CoverImg":cover!};
     cData.addAll(coverImg);
   });
-
 return cData;
 }
-
 Future<String> coName ()async{
   String cName = '';
-
   await firestore_2.collection("Communities").doc(widget.clubId).get().then((onValue){
     cName = onValue.data()!["Name"];
   });
@@ -56,53 +52,69 @@ Future<String> coName ()async{
           future: coName(),
           initialData: "Club",
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            String clubName = snapshot.data.toString();
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator(),);
             }
+            if(!snapshot.hasData){
+              return const Text("club",style:const TextStyle(color: Colors.white,fontSize: 20),);
+            }
+            String clubName = snapshot.data;
+            //print("club name = $clubName");
             return Text(clubName,style:const TextStyle(color: Colors.white,fontSize: 20),);
           },
         ),
         actions: [
           Visibility(
-            visible: !clubData[widget.clubId]!["Member"],
+            
             child:TextButton(onPressed: ()async{
               // print(widget.clubId);
               // print(clubData.keys.toList());
-            String state = await join(communId: widget.clubId);
+            String state = await joinleave(communId: widget.clubId);
+             
             if(state == "Success"){
-              showsnackbar(context, "Welcome to ${clubData["Name"]}");
+              setState(() {
+                clubData[widget.clubId]!["Member"] = !clubData[widget.clubId]!["Member"];
+              });
+              //showsnackbar(context, "Welcome to ${clubData["Name"]}");
             }
             }, 
             child: Container(
               padding:const EdgeInsets.all(10),
               width: 70,
-              decoration: BoxDecoration(color: Colors.lightBlue,borderRadius: BorderRadius.circular(10)),
-              child:const Center(child:  Text("Join",style: TextStyle(color: Colors.white),)),
+              decoration: BoxDecoration(
+                color:clubData[widget.clubId]!["Member"]? Colors.grey:Colors.lightBlue,borderRadius: BorderRadius.circular(10)),
+              child: Center(child: 
+               Text(clubData[widget.clubId]!["Member"]?"Leave":"Join",
+               style:const TextStyle(color: Colors.white),)),
             )) )
         ],
 
       ),
       body: RefreshIndicator(
         onRefresh: ()async {
-          setState(() {
-            
-          });
+          setState(() {});
         },
         child: SingleChildScrollView(
           child: FutureBuilder(
             future: clubdata(),
           //  initialData: Map(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (!snapshot.hasData) {
+             
+              if (snapshot.connectionState==ConnectionState.waiting) {
+                return  Container(
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),color: const Color.fromARGB(177, 91, 88, 88)),
+                  height: 300,
+                  width: MediaQuery.of(context).size.width,
+                  child:const Center(child:CircularProgressIndicator()),
+                );
+              }
+               if (!snapshot.hasData) {
                 return Center(child: Container(),);
               }
-              String aboutClub = snapshot.data!["About"];
+             
+               String aboutClub = snapshot.data!["About"];
               Uint8List CoverImg = snapshot.data!["CoverImg"];
               Map<String,dynamic> numbers = snapshot.data!["Numbers"];
-              if (snapshot.connectionState==ConnectionState.waiting) {
-                return const Center(child:CircularProgressIndicator());
-              }
               return Column(
                 children: [
                   Container(

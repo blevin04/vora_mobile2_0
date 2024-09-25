@@ -704,21 +704,19 @@ Widget content(BuildContext context,
                       },
                       child:  Padding(
                         padding:const  EdgeInsets.all(8.0),
-                        child: dottedopen?Container(
-                          child: Row(children: [
-                            IconButton(onPressed: (){
-                              String copytext = "$User_Name invites you to the event $Event_title hosted by $C_name on the ${time.day}/${time.month}/${time.year} starting at ${time.hour} regester at $registrationLink se you there!!!";
-                              Clipboard.setData(ClipboardData(text: copytext));
-                              showsnackbar(context, "Message copied to clipboard");
-                            }, icon:const Icon(Icons.share,color: Colors.white,),),
-                            IconButton(onPressed: (){}, icon: const Icon(Icons.block,color: Colors.white,)),
-                            IconButton(onPressed: (){
-                              setStatedotted((){
-                                dottedopen = !dottedopen;
-                              });
-                            }, icon:const Icon(FontAwesomeIcons.x,size: 18,color: Colors.white,))
-                          ],),
-                        ) :const Icon(Icons.more_vert,color: Colors.white,),
+                        child: dottedopen?Row(children: [
+                          IconButton(onPressed: (){
+                            String copytext = "$User_Name invites you to the event $Event_title hosted by $C_name on the ${time.day}/${time.month}/${time.year} starting at ${time.hour} regester at $registrationLink se you there!!!";
+                            Clipboard.setData(ClipboardData(text: copytext));
+                            showsnackbar(context, "Message copied to clipboard");
+                          }, icon:const Icon(Icons.share,color: Colors.white,),),
+                          IconButton(onPressed: (){}, icon: const Icon(Icons.block,color: Colors.white,)),
+                          IconButton(onPressed: (){
+                            setStatedotted((){
+                              dottedopen = !dottedopen;
+                            });
+                          }, icon:const Icon(FontAwesomeIcons.x,size: 18,color: Colors.white,))
+                        ],) :const Icon(Icons.more_vert,color: Colors.white,),
                       ),
                     );
                       },
@@ -783,8 +781,10 @@ Widget content(BuildContext context,
                         Container(
                           height: 60,
                           padding:const EdgeInsets.all(5),
-                          child:viewComments?SizedBox(height: 40,width: windowWidth/2,child:
-                          
+                          child:viewComments?
+                          SizedBox(height: 40,
+                          width: 160,
+                          child:
                           TextField(
                             onTapOutside: (event) => FocusScope.of(context).requestFocus(FocusNode()) ,
                             style: const TextStyle(color: Colors.white),

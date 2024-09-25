@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+// ignore_for_file: non_constant_identifier_postpages, use_build_context_synchronously
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +7,7 @@ import 'package:flutter/material.dart'hide CarouselController;
 
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vora_mobile/add_pages/new_post.dart';
+import 'package:vora_mobile/blogs.dart';
 import 'package:vora_mobile/clubs.dart';
 
 
@@ -21,7 +22,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:vora_mobile/utils.dart';
 
 
-TextEditingController name_change = TextEditingController();
+TextEditingController postpage_change = TextEditingController();
 TextEditingController nick_change = TextEditingController();
 final storage =
     FirebaseStorage.instance.ref().child('/profile/${user.uid}/dp.png');
@@ -112,6 +113,7 @@ Future<Map<String,dynamic>> postDatas(String PostId1)async{
   await store.collection("posts").doc(PostId1).get().then((pdata){
     dataspost.addAll(pdata.data()!);
   });
+ 
   return dataspost;
 }
 
@@ -169,25 +171,25 @@ PageController p_controller = PageController();
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Full Name",style: TextStyle(color: Colors.white),),
+                          const Text("Full postpage",style: TextStyle(color: Colors.white),),
                           TextField(
 
                             style:const TextStyle(color: Colors.white),
-                            controller: name_change,
+                            controller: postpage_change,
                             decoration: InputDecoration(
                               helperStyle:const TextStyle(color: Colors.white),
                               hintText: f_hint,
-                              // label: Text("Nick Name"),
+                              // label: Text("Nick postpage"),
                               // labelStyle: TextStyle(color: const Color.fromARGB(255, 255, 255, 255))
                             ),
                           ),
-                         const Text("Nick Name",style: TextStyle(color: Colors.white)),
+                         const Text("Nick postpage",style: TextStyle(color: Colors.white)),
                           TextField(
                             style:const TextStyle(color:Colors.white),
                             decoration:  InputDecoration(
                               
                               hintText: n_hint
-                              // helperText: "Nick Name",
+                              // helperText: "Nick postpage",
                               // helperStyle: TextStyle(color: Colors.white),
                             ),
                             controller: nick_change,
@@ -204,12 +206,12 @@ PageController p_controller = PageController();
                               
                             }
                             if (nick_change.text.isNotEmpty &&
-                                name_change.text.isNotEmpty
+                                postpage_change.text.isNotEmpty
                             ) {
                               
                               try {
                                 await store.collection("users").doc(user.uid).
-                               update({"fullName" : name_change.text,"nickname": nick_change.text});
+                               update({"fullpostpage" : postpage_change.text,"nickpostpage": nick_change.text});
                                Status = "Success";
                                Navigator.pop(context);
                                Navigator.pop(context);
@@ -224,8 +226,8 @@ PageController p_controller = PageController();
                             }else{
                               Status = "Failled";
                               nick_change.text.isEmpty?
-                              showsnackbar(context, "nickname cannot be empty"):null;
-                              name_change.text.isEmpty?showsnackbar(context, "Name cannot be empty"):null;
+                              showsnackbar(context, "nickpostpage cannot be empty"):null;
+                              postpage_change.text.isEmpty?showsnackbar(context, "postpage cannot be empty"):null;
                               Navigator.pop(context);
                             }
                            
@@ -464,8 +466,17 @@ PageController p_controller = PageController();
   }
 }
 
-Widget postpage(){
-  return FutureBuilder(
+class postpage extends StatefulWidget {
+  const postpage({super.key});
+
+  @override
+  State<postpage> createState() => _postpageState();
+}
+
+class _postpageState extends State<postpage> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
     future: getPostIds(),
     builder: (BuildContext context, AsyncSnapshot snapshot) {
       
@@ -477,7 +488,7 @@ Widget postpage(){
       }
       if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
-                                  }
+            }
 
       return snapshot.data.isEmpty?  Center(
         child: TextButton(onPressed: (){
@@ -504,10 +515,17 @@ Widget postpage(){
             String Bpost = snapshot1.data!["BlogPost"];
             List Plikes = snapshot1.data!["Likes"];
             int NumComments = snapshot1.data!["Comments"].length;
+            String posttitle = snapshot1.data!["Title"];
+            
             return Center(
-          child: InkWell(
-            onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=> Dedicatedblogpage(blogId: snapshot.data[index],))),
+              
+          child:StatefulBuilder(
+            builder: (BuildContext context, setState12) {
+              return InkWell(
+            onTap: ()async {
+              
+              await Navigator.push(context,MaterialPageRoute(builder:
+             (context)=> Dedicatedblogpage(blogId: snapshot.data[index],)));},
             child: Padding(
               padding: const EdgeInsets.all(5.0),
               child: Container(
@@ -517,6 +535,23 @@ Widget postpage(){
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
+                    Row( 
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(posttitle,style:const TextStyle(color: Colors.white),),
+                        IconButton(onPressed: ()async{
+                          print(snapshot.data[index]);
+                          String state = await deletedata(snapshot.data[index]);
+                          if (state == "Success") {
+                            setState((){
+                              snapshot.data.remove(snapshot.data[index]);
+                            });
+                          }
+                        }, 
+                        icon:const Icon(Icons.delete_sharp,
+                        color: Color.fromARGB(156, 219, 210, 210),))
+                      ],
+                    ),
                     Text(period(PsTime),style:const TextStyle(color: Colors.white),),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -532,7 +567,7 @@ Widget postpage(){
                             children: [
                                const Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
                                 const SizedBox(width: 10,),
-                                                      Text((Plikes.length - 1).toString(),
+                                                      Text((Plikes.length).toString(),
                                                       style:const TextStyle(color: Colors.white),),
                             ],
                           ),
@@ -546,19 +581,28 @@ Widget postpage(){
                 ),
               ),
             ),
+          );
+            },
           ),
+           
         );
           }):
-          Builder(builder: (context){
-           List blogKeys = blogsdata.keys.toList();
-          Map<String,dynamic> bData=  blogsdata[blogKeys[index]]!;
+          
+          StatefulBuilder(
+            builder: (BuildContext context, setState1){
+           //List blogKeys = blogsdata.keys.toList();
+          Map<String,dynamic> bData=  blogsdata[snapshot.data[index]]!;
           DateTime btime = bData["PostTime"].toDate();
           List likesT = bData["Likes"];
           int NumComments = bData["Comments"].length;
+          String posttitle = bData["Title"];
             return Center(
           child: InkWell(
-            onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=> Dedicatedblogpage(blogId: blogKeys[index],))),
+            
+            onTap: ()async {
+             // print(blogKeys[index]);
+              await Navigator.push(context,MaterialPageRoute(builder:
+             (context)=> Dedicatedblogpage(blogId: snapshot.data[index],)));},
             child: Padding(
               padding: const EdgeInsets.all(5.0),
               child: Container(
@@ -568,6 +612,25 @@ Widget postpage(){
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(posttitle,style:const TextStyle(color: Colors.white),),
+                        IconButton(onPressed: ()async{
+                          //print(blogKeys);
+                          String state = await deletedata(snapshot.data[index]);
+                          if (state == "Success") {
+                            setState((){
+                              blogsdata.remove(snapshot.data[index]);
+                             // blogsdata[blogKeys[index]]!.clear();
+
+                            });
+                          }
+                          print(state);
+                        }, 
+                        icon:const Icon(Icons.delete_sharp,
+                        color: Color.fromARGB(156, 219, 210, 210),))
+                      ],
+                    ),
                     Text(period(btime),style:const TextStyle(color: Colors.white),),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -583,7 +646,7 @@ Widget postpage(){
                             children: [
                               const  Icon(Icons.thumb_up_alt_rounded,color: Colors.white,),
                                const  SizedBox(width: 10,),
-                                                      Text((likesT.length - 1).toString(),style:const TextStyle(color: Colors.white),),
+                                                      Text((likesT.length).toString(),style:const TextStyle(color: Colors.white),),
                             ],
                           ),
                           Row(children: [   const Icon(Icons.comment,color: Colors.white,),
@@ -605,7 +668,8 @@ Widget postpage(){
       });
     },
   );
-}
+  }
+} 
 Widget clubs(){
   return 
    FutureBuilder(
@@ -635,23 +699,29 @@ Widget clubs(){
         return clubData[snapshot.data![index]] == null?
         FutureBuilder(
           future: getclubdatas(snapshot.data![index]),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
-                height: 80,
-                width: MediaQuery.of(context).size.width-80,
-                decoration: BoxDecoration(color: const Color.fromARGB(121, 255, 255, 255),borderRadius: BorderRadius.circular(10)),
-                child:const Center(child: CircularProgressIndicator(),)
+          builder: (BuildContext context, AsyncSnapshot snapshot1) {
+            if (snapshot1.connectionState == ConnectionState.waiting) {
+              return Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Container(
+                  height: 80,
+                  width: MediaQuery.of(context).size.width-80,
+                  decoration: BoxDecoration(color: const Color.fromARGB(121, 255, 255, 255),borderRadius: BorderRadius.circular(10)),
+                  child:const Center(child: CircularProgressIndicator(),)
+                ),
               );
             }
-            Uint8List c_image_ = snapshot.data["Image"];
-            String Clubname = snapshot.data["Name"];
-            List eventsNumber = snapshot.data["events"];
+            Uint8List c_image_ = snapshot1.data["Image"];
+            String Clubpostpage = snapshot1.data["Name"];
+            List eventsNumber = snapshot1.data["events"];
+            print(snapshot.data[index]);
             return Center(
           child: Padding(padding:const EdgeInsets.all(5),
           child: InkWell(
-            onTap: () => Navigator.push(context,MaterialPageRoute(builder:
-             (context)=>  Dedicatedcommunitypage(clubId: snapshot.data[index],))),
+            onTap: ()async{
+              print("club id ======= ${snapshot.data[index]}");
+             await Navigator.push(context,MaterialPageRoute(builder:
+             (context)=>  Dedicatedcommunitypage(clubId: snapshot.data[index],)));},
             child: Container(
               height: 62,
               decoration: BoxDecoration(border: Border.all(color: const Color.fromARGB(255, 53, 52, 52)),borderRadius: BorderRadius.circular(10)),
@@ -663,7 +733,7 @@ Widget clubs(){
                   backgroundImage: MemoryImage(c_image_),
                 ),
               ),
-              title: Text(Clubname,style:const TextStyle(color: Colors.white),),
+              title: Text(Clubpostpage,style:const TextStyle(color: Colors.white),),
               trailing: Text("${eventsNumber.length} events",style:const TextStyle(color: Colors.white),)
               
               ),
@@ -674,12 +744,12 @@ Widget clubs(){
           },
         ):Builder(builder: (context){
           Uint8List coverPic = clubData[snapshot.data[index]]!["Image"];
-          String clubName = clubData[snapshot.data[index]]!["Name"];
+          String clubpostpage = clubData[snapshot.data[index]]!["Name"];
           List eventsNumber = clubData[snapshot.data[index]]!["events"];
           return Center(
           child: Padding(padding:const EdgeInsets.all(5),
           child: InkWell(
-            onTap: () => Navigator.push(context,MaterialPageRoute(builder:
+            onTap: ()async =>await Navigator.push(context,MaterialPageRoute(builder:
              (context)=>  Dedicatedcommunitypage(clubId: snapshot.data[index],))),
             child: Container(
               height: 62,
@@ -692,7 +762,7 @@ Widget clubs(){
                   backgroundImage: MemoryImage(coverPic),
                 ),
               ),
-              title: Text(clubName,style:const TextStyle(color: Colors.white),),
+              title: Text(clubpostpage,style:const TextStyle(color: Colors.white),),
               trailing: Text("${eventsNumber.length} events",style:const TextStyle(color: Colors.white),)
               
               ),
