@@ -9,6 +9,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vora_mobile/Accounts.dart';
 
 import 'package:vora_mobile/announcemnts.dart';
 
@@ -50,7 +51,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
   void getcommunities() async {
     await store
         .collection("Communities")
-        .where("Visibility", isEqualTo: true)
+        .where("Lead", isEqualTo: user.uid)
         .get()
         .then((val) {
       for (var snapshot in val.docs) {
@@ -173,6 +174,7 @@ class _NewAnnouncementState extends State<NewAnnouncement> {
                           child: ListView.builder(
                               shrinkWrap: true,
                               itemCount: communities.length,
+                              physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (BuildContext context, index) {
                                 return ListTile(
                                   onTap: () {

@@ -926,14 +926,15 @@ Widget carosel(double windowheight,double windowWidth){
                               viewportFraction: 0.9,
                               autoPlayInterval: const Duration(seconds: 4)),
                           items:events_Ids
-                              .map((item) =>!eventData.containsKey(item)? FutureBuilder(
+                              .map((item) =>!checkevent(item)? 
+                              FutureBuilder(
                                 future: getcontent(item),
                                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                                   if (snapshot.connectionState ==ConnectionState.waiting) {
                                     return  Center(child: Container(),);
                                   }
                                   if (!snapshot.hasData) {
-                                    return const Center(child: Text("Upcoming Events"),);
+                                    return const Center(child: Text("Upcoming Events",style: TextStyle(color: Colors.white),),);
                                   }
                                   if (snapshot.connectionState == ConnectionState.none) {
                                     return const Center(child: Column(children: [Icon(Icons.wifi_off_rounded),Text("Offline...")],),);
@@ -1012,7 +1013,8 @@ Widget carosel(double windowheight,double windowWidth){
                                       )),
                                   );
                                 },
-                              ):InkWell(
+                              ):
+                              InkWell(
                                     onTap: ()async=>Navigator.push(context,MaterialPageRoute(builder: 
                                     (context)=> Dedicatedeventpage(eventId: item))),
                                     child: Container(

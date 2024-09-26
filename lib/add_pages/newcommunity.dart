@@ -482,9 +482,9 @@ void initState(){
                       state[0] = "Fill all the boxes";
                     }
                     }
+                    await Future.delayed(const Duration(seconds: 5));
                     if (state[0] == 'Success') {
                       showsnackbar(context, "Community added");
-                      
                      Navigator.pop(context);
                       Navigator.pushReplacement(
                           context,

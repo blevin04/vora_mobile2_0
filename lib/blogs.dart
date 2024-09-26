@@ -357,7 +357,7 @@ Widget contents(
 ){
   
   return 
-  blogsdata[blodsid] == null?
+  !checkpostdata(blodsid)?
   FutureBuilder(
     future: getblogdata( blodsid),
     builder:

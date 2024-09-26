@@ -46,9 +46,13 @@ Future<List<String>> addcommunity(
     await storage
         .child("/communities/$communityId/cover_picture")
         .putFile(File(cover_pic));
-    state = 'Success';
 
-    
+    await firestore.collection("users").doc(user.uid).get().then((onValue)async{
+      List clubs = onValue.data()!["Communities"];
+      clubs.add(communityId);
+    await firestore.collection("users").doc(user.uid).update({"Communities":clubs});
+    });
+    state = 'Success';
   } catch (e) {
     state = e.toString();
   }
@@ -102,6 +106,7 @@ Future<List<String>> AddEvent_(
     state = e.toString();
   }
   List<String> statuss = [state,EventId];
+  await Future.delayed(const Duration(seconds: 5));
   return statuss;
 }
 
@@ -138,7 +143,7 @@ Future<String> AddAnnouncement({
   } catch (e) {
     state = e.toString();
   }
-
+  
   return state;
 }
 
@@ -206,7 +211,7 @@ Future<String> rsvp({
   } catch (e) {
     state = e.toString();
   }
-
+  await Future.delayed(const Duration(seconds: 5));
   return state;
 }
 Future<String> joinleave({

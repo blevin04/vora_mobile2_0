@@ -308,7 +308,8 @@ class _NewPostState extends State<NewPost> {
                           post.clear();
                           doc = "";
                           imgs.clear();
-                          Navigator.pushReplacement(context, 
+                          Navigator.pop(context);
+                         await Navigator.pushReplacement(context, 
                           (MaterialPageRoute(builder: (context)=> Dedicatedblogpage(blogId:state.last ,))));
                           }
                       }

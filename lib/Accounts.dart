@@ -501,7 +501,7 @@ class _postpageState extends State<postpage> {
         itemBuilder: (BuildContext context,index){
          // print("Posts ar ${snapshot.data!}");
           
-        return blogsdata[snapshot.data[index]] == null?
+        return !checkpostdata(snapshot.data[index])?
         FutureBuilder(
           future: postDatas(snapshot.data[index]), 
           builder: (context,snapshot1){
@@ -555,7 +555,10 @@ class _postpageState extends State<postpage> {
                     Text(period(PsTime),style:const TextStyle(color: Colors.white),),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(Bpost,style:const TextStyle(color: Colors.white) ,),
+                      child: Text(Bpost,
+                      maxLines: 10,
+                      overflow: TextOverflow.ellipsis,
+                      style:const TextStyle(color: Colors.white) ,),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(5.0),
@@ -696,7 +699,7 @@ Widget clubs(){
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: snapshot.data!.length,
         itemBuilder: (context,index){
-        return clubData[snapshot.data![index]] == null?
+        return !checkClubdata(snapshot.data![index])?
         FutureBuilder(
           future: getclubdatas(snapshot.data![index]),
           builder: (BuildContext context, AsyncSnapshot snapshot1) {
@@ -714,7 +717,7 @@ Widget clubs(){
             Uint8List c_image_ = snapshot1.data["Image"];
             String Clubpostpage = snapshot1.data["Name"];
             List eventsNumber = snapshot1.data["events"];
-            print(snapshot.data[index]);
+            //print(snapshot.data[index]);
             return Center(
           child: Padding(padding:const EdgeInsets.all(5),
           child: InkWell(
@@ -803,7 +806,7 @@ Widget eventsattended(){
         itemCount: snapshot.data.length,
         itemBuilder: (context,index){
         
-          return eventData[snapshot.data[index]] == null?
+          return !checkevent(snapshot.data[index])?
           FutureBuilder(
             future: geteventsData(snapshot.data[index]),
             builder: (BuildContext context, AsyncSnapshot snapshot1) {
@@ -835,19 +838,28 @@ Widget eventsattended(){
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                          leading: CircleAvatar(radius: 40, 
-                        backgroundImage:MemoryImage(coverimg)), 
-                        onTap: (){},
-                        
-                        title: Column(
-                          children: [
-                            Text(eventTitle,style:const TextStyle(color: Colors.white),),
-                            Text("By $eventclub",style:const TextStyle(color: Colors.white),),
-                          ],
-                        ),
-                        trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
-                        ),
+                        child:Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                     CircleAvatar(radius: 40, 
+                            backgroundImage:MemoryImage(coverimg)), 
+                            const SizedBox(width: 10,),
+                                      Column(
+                              children: [
+                                Text(eventTitle,style:const TextStyle(color: Colors.white),),
+                                Text("By $eventclub",style:const TextStyle(
+                                color: Colors.white),)
+                              ],
+                            ),
+                                  ],
+                                ),
+                                Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
+                              ],
+                            )
+
                       ),
                         Text(aboutEvent,style:const TextStyle(color: Colors.white),softWrap: true,),
                       Center(child: Row(
@@ -931,20 +943,29 @@ Widget eventsattended(){
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(radius: 40, 
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                     CircleAvatar(
                             backgroundImage:MemoryImage(coverimg)), 
-                            onTap: (){},
-                            
-                            title: Column(
+                            const SizedBox(width: 20,),
+                                      Column(
                               children: [
                                 Text(eventTitle,style:const TextStyle(color: Colors.white),),
                                 Text("By $eventclub",style:const TextStyle(
                                 color: Colors.white),)
                               ],
                             ),
-                            trailing:Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
-                            ),
+                                  ],
+                                ),
+                                Text(period(eventDate),style:const TextStyle(color: Colors.white),) ,
+                              ],
+                            )
+
+                            
                           ),
                           Text(aboutEvent,style:const TextStyle(color: Colors.white),softWrap: true,),
 

@@ -406,7 +406,7 @@ class _EventsState extends State<Events> {
                         itemCount: eventIds.length,
                         itemBuilder: (context, index2) {
                           
-                          return eventData.containsKey(eventIds[index2])?
+                          return checkevent(eventIds[index2])?
                           StatefulBuilder(
                             builder: (BuildContext context, setState_1) {
                              
@@ -499,7 +499,7 @@ class _EventsState extends State<Events> {
                           }
                           
                           
-                          return eventData.containsKey(eventIdsEventspage[index2])?
+                          return !checkevent(eventIdsEventspage[index2])?
                           StatefulBuilder(
                             builder: (BuildContext context, setState_1) {
                                Uint8List C_image_comm = eventData[eventIdsEventspage[index2]]!["Cover_Image"];

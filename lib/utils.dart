@@ -2,6 +2,7 @@
 // ignore_for_file: use_build_context_synchronously, non_constant_identifier_names
 
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -634,4 +635,114 @@ String usern = "";
       blogsdata.addAll(blog);
   }
   return blogdata;
+}
+
+bool checkevent(String eventid1){
+  bool state = true;
+  if (eventData[eventid1] == null) {
+    state = false;
+  }
+
+if (state) {
+  Map<String,dynamic> checkmap = {
+    "Comments":{},
+    "Community":"com",
+    "Description":"desc",
+    "EventDate":Timestamp.now(),
+    "Likes":[],
+    "Regestration":"reg",
+    "Resorces":"res",
+    "Title":"title",
+    "Uid":"uniq",
+    "EventCover": Uint8List,
+    "Images":[],
+    "Liked":false,
+    "Cover_Image":Uint8List,
+
+  };
+    checkmap.forEach((key,value){
+    if (!eventData[eventid1]!.containsKey(key)) {
+      state = false;
+    }
+  });
+}
+  return state;
+}
+
+bool checkClubdata(String clubid1){
+  bool state = true;
+  if (clubData[clubid1]==null) {
+    state = false;
+  }
+
+  if (state) {
+      Map<String,dynamic> checkmap = {
+    "About":"abo",
+    "Category":[],
+    "Email":"em",
+    "Lead":"lead",
+    "Name":"nm",
+    "Numbers":{},
+    "Uid":"uniq",
+    "Visibility":true,
+    "events":[],
+    "Image":Uint8List,
+    "Member":true,
+  };
+      checkmap.forEach((key,value){
+    if (!clubData[clubid1]!.containsKey(key)) {
+      state = false;
+    }
+  });
+  }
+  return state;
+}
+
+bool checkpostdata(String postid1){
+  bool state =true;
+  if (blogsdata[postid1]==null) {
+    state = false;
+  }
+
+  if (state) {
+    
+    Map<String,dynamic> checkpost = {
+      "BlogPost":"pos",
+      "Comments":{},
+      "Likes":[],
+      "PostId":"pos",
+      "PostTime":Timestamp.now(),
+      "Title":"ttl",
+      "UserId":"nciq",
+      "Images":[],
+      "UserName":"dd",
+      "NickName":"wd",
+      "UserDp":Uint8List,
+      "Documents":[],
+    };
+
+    checkpost.forEach((key,value){
+      if (!blogsdata[postid1]!.containsKey(key)) {
+        state = false;
+      }
+    });
+  }
+  return state;
+}
+
+//delete a club:
+Future<String> deleteclub(String clubid2)async{
+  String state = "";
+  print(clubid2);
+  try {
+     await store.collection("Communities").doc(clubid2).delete();
+   
+    final pathimgs = storageref.child("communities/$clubid2/covercover_picture").delete();
+    state = "Success";
+    clubData.remove(clubid2);
+  } catch (e) {
+   // state = e.toString();
+  }
+  print("tattatatat = $state");
+  return state;
 }
